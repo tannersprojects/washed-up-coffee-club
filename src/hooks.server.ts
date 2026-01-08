@@ -1,6 +1,11 @@
 import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY } from '$env/static/public';
 import { createServerClient } from '@supabase/ssr';
 import type { Handle } from '@sveltejs/kit';
+import { getStravaConnection } from '$lib/server/auth';
+import { refreshAccessToken } from '$lib/server/strava';
+import { db } from '$lib/db';
+import { stravaConnectionsTable } from '$lib/db/schema';
+import { eq } from 'drizzle-orm';
 
 export const handle: Handle = async ({ event, resolve }) => {
 	event.locals.supabase = createServerClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY, {
@@ -31,6 +36,43 @@ export const handle: Handle = async ({ event, resolve }) => {
 		if (error) {
 			// JWT validation has failed
 			return { session: null, user: null };
+		}
+
+		// Check and refresh Strava tokens if needed
+		if (user) {
+			try {
+				const connection = await getStravaConnection(user.id);
+				if (connection) {
+					const expiresAt = new Date(connection.expiresAt);
+					const now = new Date();
+					const fiveMinutesFromNow = new Date(now.getTime() + 5 * 60 * 1000);
+
+					// Refresh if expired or expiring within 5 minutes
+					if (expiresAt <= fiveMinutesFromNow) {
+						try {
+							const newTokens = await refreshAccessToken(connection.refreshToken);
+
+							// Update database with new tokens
+							await db
+								.update(stravaConnectionsTable)
+								.set({
+									accessToken: newTokens.access_token,
+									refreshToken: newTokens.refresh_token,
+									expiresAt: new Date(newTokens.expires_at * 1000),
+									updatedAt: new Date()
+								})
+								.where(eq(stravaConnectionsTable.userId, user.id));
+						} catch (refreshError) {
+							// Token refresh failed - user may need to re-authenticate
+							console.error('Failed to refresh Strava token:', refreshError);
+							// Don't throw - let the user continue, they'll need to re-auth when making Strava API calls
+						}
+					}
+				}
+			} catch (err) {
+				// Error checking connection - continue without token refresh
+				console.error('Error checking Strava connection:', err);
+			}
 		}
 
 		return { session, user };
