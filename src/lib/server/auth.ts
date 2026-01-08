@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import { db } from '$lib/db';
 import { stravaConnectionsTable, profileTable } from '$lib/db/schema';
 import { eq } from 'drizzle-orm';
-import type { StravaTokenResponse, StravaAthlete } from '$lib/types/strava';
+import type { StravaTokenResponse, StravaSummaryAthlete } from '$lib/types/strava';
 
 // Create admin client for service role operations
 const adminClient = createClient(PUBLIC_SUPABASE_URL, SUPABASE_SECRET_KEY, {
@@ -21,7 +21,7 @@ const adminClient = createClient(PUBLIC_SUPABASE_URL, SUPABASE_SECRET_KEY, {
  * @returns Supabase user ID
  */
 export async function findOrCreateShadowUser(
-	athleteData: StravaAthlete,
+	athleteData: StravaSummaryAthlete,
 	tokens: StravaTokenResponse
 ): Promise<string> {
 	// Check if connection already exists
