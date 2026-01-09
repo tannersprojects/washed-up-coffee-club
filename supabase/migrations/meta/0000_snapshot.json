@@ -1,5 +1,5 @@
 {
-  "id": "02d338bc-1a0c-4712-ab7f-9602569be404",
+  "id": "ef18c2b6-285c-47ce-850d-5441ded324aa",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -18,19 +18,19 @@
           "name": "firstname",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "lastname": {
           "name": "lastname",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "username": {
           "name": "username",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "strava_athlete_id": {
           "name": "strava_athlete_id",

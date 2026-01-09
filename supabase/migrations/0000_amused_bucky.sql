@@ -1,8 +1,8 @@
 CREATE TABLE "profile" (
 	"id" uuid PRIMARY KEY NOT NULL,
-	"firstname" text,
-	"lastname" text,
-	"username" text,
+	"firstname" text NOT NULL,
+	"lastname" text NOT NULL,
+	"username" text NOT NULL,
 	"strava_athlete_id" bigint,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "profile_strava_athlete_id_unique" UNIQUE("strava_athlete_id")

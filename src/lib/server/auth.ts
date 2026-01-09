@@ -78,7 +78,7 @@ export async function findOrCreateShadowUser(
 			id: user.user.id,
 			firstname: athleteData.firstname,
 			lastname: athleteData.lastname,
-			username: athleteData.username,
+			username: athleteData.username || `user_${athleteData.id}`,
 			stravaAthleteId: athleteData.id,
 			updatedAt: new Date()
 		});
@@ -118,7 +118,7 @@ export async function updateUserProfile(
 		.set({
 			firstname: athleteData.firstname,
 			lastname: athleteData.lastname,
-			username: athleteData.username,
+			username: athleteData.username || `user_${athleteData.id}`,
 			stravaAthleteId: athleteData.id,
 			updatedAt: new Date()
 		})

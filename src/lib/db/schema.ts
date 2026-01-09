@@ -5,9 +5,9 @@ export const profileTable = pgTable(
 	'profile',
 	{
 		id: uuid('id').primaryKey(),
-		firstname: text('firstname'),
-		lastname: text('lastname'),
-		username: text('username'),
+		firstname: text('firstname').notNull(),
+		lastname: text('lastname').notNull(),
+		username: text('username').notNull(),
 		stravaAthleteId: bigint('strava_athlete_id', { mode: 'number' }).unique(),
 		updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull()
 	},

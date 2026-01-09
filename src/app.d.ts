@@ -1,14 +1,5 @@
 import type { Session, SupabaseClient, User } from '@supabase/supabase-js';
-
-// Profile type matching the database schema
-export interface Profile {
-	id: string;
-	firstname: string | null;
-	lastname: string | null;
-	username: string | null;
-	stravaAthleteId: number | null;
-	updatedAt: Date;
-}
+import type { Profile } from '$lib/types/profile';
 
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces

@@ -37,7 +37,7 @@
 					</div>
 					<div class="flex items-center gap-4">
 						<span class="text-sm text-gray-700">
-							{data.profile?.firstname || 'User'}
+							{data.profile?.firstname}
 						</span>
 						<form method="POST" action="/auth/logout">
 							<button

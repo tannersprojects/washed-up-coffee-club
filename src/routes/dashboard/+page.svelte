@@ -11,19 +11,15 @@
 
 		{#if data.profile}
 			<div class="space-y-2">
-				{#if data.profile.firstname || data.profile.lastname}
-					<p class="text-sm text-gray-600">
-						<strong>Name:</strong>
-						{data.profile.firstname || ''}
-						{data.profile.lastname || ''}
-					</p>
-				{/if}
-				{#if data.profile.username}
-					<p class="text-sm text-gray-600">
-						<strong>Strava Username:</strong>
-						{data.profile.username}
-					</p>
-				{/if}
+				<p class="text-sm text-gray-600">
+					<strong>Name:</strong>
+					{data.profile.firstname}
+					{data.profile.lastname}
+				</p>
+				<p class="text-sm text-gray-600">
+					<strong>Strava Username:</strong>
+					{data.profile.username}
+				</p>
 			</div>
 		{/if}
 	</div>
