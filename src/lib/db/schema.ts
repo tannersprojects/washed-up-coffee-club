@@ -1,9 +1,18 @@
 import { pgTable, uuid, text, timestamp, bigint, index } from 'drizzle-orm/pg-core';
 
 // Reference to Supabase auth.users (not managed by Drizzle, just for FK)
-export const profileTable = pgTable('profile', {
-	id: uuid('id').primaryKey()
-});
+export const profileTable = pgTable(
+	'profile',
+	{
+		id: uuid('id').primaryKey(),
+		firstname: text('firstname').notNull(),
+		lastname: text('lastname').notNull(),
+		username: text('username').notNull(),
+		stravaAthleteId: bigint('strava_athlete_id', { mode: 'number' }).unique(),
+		updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull()
+	},
+	(table) => [index('idx_profile_strava_athlete_id').on(table.stravaAthleteId)]
+);
 
 export const stravaConnectionsTable = pgTable(
 	'strava_connections',
