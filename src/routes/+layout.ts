@@ -30,6 +30,6 @@ export const load = async ({ fetch, data, depends }) => {
 		data: { session }
 	} = await supabase.auth.getSession();
 
-	// Pass through server-provided data (e.g. `user`) so it exists in LayoutData on the client.
-	return { supabase, session, user: data.user };
+	// Pass through server-provided data (e.g. `user`, `profile`) so it exists in LayoutData on the client.
+	return { supabase, session, user: data.user, profile: data.profile };
 };

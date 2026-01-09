@@ -1,7 +1,7 @@
 import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY } from '$env/static/public';
 import { createServerClient } from '@supabase/ssr';
 import type { Handle } from '@sveltejs/kit';
-import { getStravaConnection } from '$lib/server/auth';
+import { getStravaConnection, getUserProfile } from '$lib/server/auth';
 import { refreshAccessToken } from '$lib/server/strava';
 import { db } from '$lib/db';
 import { stravaConnectionsTable } from '$lib/db/schema';
@@ -26,6 +26,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 			data: { session }
 		} = await event.locals.supabase.auth.getSession();
 		if (!session) {
+			event.locals.profile = null;
 			return { session: null, user: null };
 		}
 
@@ -35,7 +36,21 @@ export const handle: Handle = async ({ event, resolve }) => {
 		} = await event.locals.supabase.auth.getUser();
 		if (error) {
 			// JWT validation has failed
+			event.locals.profile = null;
 			return { session: null, user: null };
+		}
+
+		// Load profile data from database and set on locals
+		// Profile is available via event.locals.profile, not returned from safeGetSession
+		if (user) {
+			try {
+				event.locals.profile = await getUserProfile(user.id);
+			} catch (err) {
+				console.error('Error loading user profile:', err);
+				event.locals.profile = null;
+			}
+		} else {
+			event.locals.profile = null;
 		}
 
 		// Check and refresh Strava tokens if needed

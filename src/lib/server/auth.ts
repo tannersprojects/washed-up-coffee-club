@@ -32,6 +32,8 @@ export async function findOrCreateShadowUser(
 		.limit(1);
 
 	if (existingConnection.length > 0) {
+		const userId = existingConnection[0].userId;
+
 		// Update existing connection with new tokens
 		await db
 			.update(stravaConnectionsTable)
@@ -44,7 +46,10 @@ export async function findOrCreateShadowUser(
 			})
 			.where(eq(stravaConnectionsTable.stravaAthleteId, athleteData.id));
 
-		return existingConnection[0].userId;
+		// Update profile data if Strava profile has changed
+		await updateUserProfile(userId, athleteData);
+
+		return userId;
 	}
 
 	// Create new shadow user
@@ -66,11 +71,16 @@ export async function findOrCreateShadowUser(
 		throw new Error(`Failed to create shadow user: ${userError?.message || 'Unknown error'}`);
 	}
 
-	// Create profile record to match the user ID
+	// Create profile record with user data
 	// This is required because strava_connections references profile.id
 	try {
 		await db.insert(profileTable).values({
-			id: user.user.id
+			id: user.user.id,
+			firstname: athleteData.firstname,
+			lastname: athleteData.lastname,
+			username: athleteData.username,
+			stravaAthleteId: athleteData.id,
+			updatedAt: new Date()
 		});
 	} catch (profileError) {
 		// Profile might already exist, or there might be a constraint issue
@@ -95,6 +105,27 @@ export async function findOrCreateShadowUser(
 // This function is kept for potential future use but is not currently called
 
 /**
+ * Updates user profile data from Strava athlete data
+ * @param userId - Supabase user ID
+ * @param athleteData - Strava athlete profile data
+ */
+export async function updateUserProfile(
+	userId: string,
+	athleteData: StravaSummaryAthlete
+): Promise<void> {
+	await db
+		.update(profileTable)
+		.set({
+			firstname: athleteData.firstname,
+			lastname: athleteData.lastname,
+			username: athleteData.username,
+			stravaAthleteId: athleteData.id,
+			updatedAt: new Date()
+		})
+		.where(eq(profileTable.id, userId));
+}
+
+/**
  * Gets the current user's Strava connection data
  * @param userId - Supabase user ID
  * @returns Strava connection record or null
@@ -107,4 +138,15 @@ export async function getStravaConnection(userId: string) {
 		.limit(1);
 
 	return connection[0] || null;
+}
+
+/**
+ * Gets user profile data from database
+ * @param userId - Supabase user ID
+ * @returns Profile record or null
+ */
+export async function getUserProfile(userId: string) {
+	const profile = await db.select().from(profileTable).where(eq(profileTable.id, userId)).limit(1);
+
+	return profile[0] || null;
 }

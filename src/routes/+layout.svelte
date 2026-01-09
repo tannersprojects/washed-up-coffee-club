@@ -2,10 +2,27 @@
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.svg';
 	import { page } from '$app/state';
+	import { invalidate } from '$app/navigation';
+	import { onMount } from 'svelte';
 
 	let { children, data } = $props();
 
 	const isLoginPage = $derived(page.url.pathname === '/login');
+	const { supabase, session } = $derived(data);
+
+	onMount(() => {
+		const {
+			data: { subscription }
+		} = supabase.auth.onAuthStateChange((event, _session) => {
+			if (_session?.expires_at !== session?.expires_at) {
+				invalidate('supabase:auth');
+			}
+		});
+
+		return () => {
+			subscription.unsubscribe();
+		};
+	});
 </script>
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
@@ -20,7 +37,7 @@
 					</div>
 					<div class="flex items-center gap-4">
 						<span class="text-sm text-gray-700">
-							{data.user?.user_metadata?.firstname || data.user?.email}
+							{data.profile?.firstname || 'User'}
 						</span>
 						<form method="POST" action="/auth/logout">
 							<button

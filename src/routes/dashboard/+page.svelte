@@ -9,17 +9,19 @@
 		<h2 class="mb-4 text-xl font-semibold text-gray-800">Welcome back!</h2>
 		<p class="mb-4 text-gray-600">You're successfully authenticated with Strava.</p>
 
-		{#if data.user?.user_metadata}
+		{#if data.profile}
 			<div class="space-y-2">
-				<p class="text-sm text-gray-600">
-					<strong>Name:</strong>
-					{data.user.user_metadata.firstname}
-					{data.user.user_metadata.lastname}
-				</p>
-				{#if data.user.user_metadata.username}
+				{#if data.profile.firstname || data.profile.lastname}
+					<p class="text-sm text-gray-600">
+						<strong>Name:</strong>
+						{data.profile.firstname || ''}
+						{data.profile.lastname || ''}
+					</p>
+				{/if}
+				{#if data.profile.username}
 					<p class="text-sm text-gray-600">
 						<strong>Strava Username:</strong>
-						{data.user.user_metadata.username}
+						{data.profile.username}
 					</p>
 				{/if}
 			</div>

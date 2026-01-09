@@ -1,5 +1,15 @@
 import type { Session, SupabaseClient, User } from '@supabase/supabase-js';
 
+// Profile type matching the database schema
+export interface Profile {
+	id: string;
+	firstname: string | null;
+	lastname: string | null;
+	username: string | null;
+	stravaAthleteId: number | null;
+	updatedAt: Date;
+}
+
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
 declare global {
@@ -10,9 +20,11 @@ declare global {
 			safeGetSession: () => Promise<{ session: Session | null; user: User | null }>;
 			session: Session | null;
 			user: User | null;
+			profile: Profile | null;
 		}
 		interface PageData {
 			session: Session | null;
+			profile: Profile | null;
 		}
 		// interface PageState {}
 		// interface Platform {}
