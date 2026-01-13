@@ -1,3 +1,36 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
+
+/* Global CSS Variables - The "Theme" */
+:root {
+	--frosted-blue: #8fcad0;
+	--grey-olive: #919191;
+	--vintage-grape: #46305f;
+	--white: #ffffff;
+	--black: #000000;
+}
+
+/* Base resets for SvelteKit */
+body {
+	background-color: var(--black);
+	color: var(--white);
+	margin: 0;
+	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	overflow-x: hidden; /* Prevents horizontal scroll on mobile */
+}
+
+/* Utility for Apple-style Reveal Animation */
+.reveal {
+	opacity: 0;
+	transform: translateY(40px) scale(0.98);
+	transition:
+		opacity 1.2s cubic-bezier(0.2, 0.8, 0.2, 1),
+		transform 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+	will-change: opacity, transform;
+}
+
+.reveal-active {
+	opacity: 1;
+	transform: translateY(0) scale(1);
+}
