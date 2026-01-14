@@ -36,47 +36,47 @@
 		{
 			id: 1,
 			src: running1,
-			caption: '06:00 AM // THE PAIN CAVE'
+			caption: 'Insert Description Here'
 		},
 		{
 			id: 2,
 			src: running2,
-			caption: 'COFFEE // POST-MORTEM'
+			caption: 'Insert Description Here'
 		},
 		{
 			id: 3,
 			src: running3,
-			caption: 'SUNDAY // CHURCH'
+			caption: 'Insert Description Here'
 		},
 		{
 			id: 4,
 			src: running4,
-			caption: 'NO ONE SURVIVED'
+			caption: 'Insert Description Here'
 		},
 		{
 			id: 5,
 			src: running5,
-			caption: 'THE COOL DOWN'
+			caption: 'Insert Description Here'
 		},
 		{
 			id: 6,
 			src: running6,
-			caption: 'THE COOL DOWN'
+			caption: 'Insert Description Here'
 		},
 		{
 			id: 7,
 			src: running7,
-			caption: 'THE COOL DOWN'
+			caption: 'Insert Description Here'
 		},
 		{
 			id: 8,
 			src: running8,
-			caption: 'THE COOL DOWN'
+			caption: 'Insert Description Here'
 		},
 		{
 			id: 9,
 			src: running9,
-			caption: 'THE COOL DOWN'
+			caption: 'Insert Description Here'
 		}
 	];
 
