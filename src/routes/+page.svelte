@@ -251,6 +251,14 @@
 	<!-- Reduced to 250vh to make it snappier -->
 	<div bind:this={cameraRollSection} class="relative h-[250vh] w-full bg-[#050505]">
 		<div class="sticky top-0 flex h-screen w-full items-center overflow-hidden">
+			<!-- GRADIENT MASKS (Softens the edges) -->
+			<div
+				class="pointer-events-none absolute inset-y-0 left-0 z-30 w-16 bg-linear-to-r from-[#050505] to-transparent md:w-40"
+			></div>
+			<div
+				class="pointer-events-none absolute inset-y-0 right-0 z-30 w-16 bg-linear-to-l from-[#050505] to-transparent md:w-40"
+			></div>
+
 			<!-- Sticky Header Title -->
 			<div
 				class="pointer-events-none absolute top-10 left-6 z-20 mix-blend-difference md:top-20 md:left-20"
@@ -302,6 +310,11 @@
 
 	<!-- SECTION 4: THE ROUTINE -->
 	<section class="relative z-10 overflow-hidden bg-[#050505] px-6 py-32 md:py-48">
+		<!-- TOP GRADIENT TRANSITION (Added this to smooth the entry) -->
+		<div
+			class="pointer-events-none absolute top-0 left-0 z-20 h-40 w-full bg-linear-to-b from-[#050505] via-[#050505]/80 to-transparent"
+		></div>
+
 		<!-- Background Glow -->
 		<div
 			class="pointer-events-none absolute top-0 left-1/2 h-[500px] w-full -translate-x-1/2 -translate-y-[20%] rounded-full opacity-20 blur-[140px]"
