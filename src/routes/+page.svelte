@@ -1,11 +1,24 @@
 <script lang="ts">
 	import { spring } from 'svelte/motion';
+	import running1 from '$lib/assets/images/running1.jpg';
+	import running2 from '$lib/assets/images/running2.jpg';
+	import running3 from '$lib/assets/images/running3.jpg';
+	import running4 from '$lib/assets/images/running4.jpg';
+	import running5 from '$lib/assets/images/running5.jpg';
+	import running6 from '$lib/assets/images/running6.jpg';
+	import running7 from '$lib/assets/images/running7.jpg';
+	import running8 from '$lib/assets/images/running8.jpg';
+	import running9 from '$lib/assets/images/running9.jpg';
 
 	// --- RUNES & STATE ---
 	let innerHeight = $state(0);
 	let scrollY = $state(0);
 	let cameraRollSection: HTMLElement;
 	let cameraRollProgress = $state(0);
+
+	// MOCK AUTH STATE
+	// Change this to false to see the "Connect Strava" view
+	let isLoggedIn = $state(true);
 
 	// Spring physics for smoother parallax (Apple "weight" feel)
 	// stiffness: 0.1 (loose), damping: 0.25 (bouncy but controlled)
@@ -21,27 +34,47 @@
 	const memories = [
 		{
 			id: 1,
-			src: 'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?q=80&w=800&auto=format&fit=crop',
+			src: running1,
 			caption: '06:00 AM // THE PAIN CAVE'
 		},
 		{
 			id: 2,
-			src: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?q=80&w=800&auto=format&fit=crop',
+			src: running2,
 			caption: 'COFFEE // POST-MORTEM'
 		},
 		{
 			id: 3,
-			src: 'https://images.unsplash.com/photo-1533561052669-c61d563d7676?q=80&w=800&auto=format&fit=crop',
+			src: running3,
 			caption: 'SUNDAY // CHURCH'
 		},
 		{
 			id: 4,
-			src: 'https://images.unsplash.com/photo-1596464716127-f2a82984de30?q=80&w=800&auto=format&fit=crop',
+			src: running4,
 			caption: 'NO ONE SURVIVED'
 		},
 		{
 			id: 5,
-			src: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=800&auto=format&fit=crop',
+			src: running5,
+			caption: 'THE COOL DOWN'
+		},
+		{
+			id: 6,
+			src: running6,
+			caption: 'THE COOL DOWN'
+		},
+		{
+			id: 7,
+			src: running7,
+			caption: 'THE COOL DOWN'
+		},
+		{
+			id: 8,
+			src: running8,
+			caption: 'THE COOL DOWN'
+		},
+		{
+			id: 9,
+			src: running9,
 			caption: 'THE COOL DOWN'
 		}
 	];
@@ -49,17 +82,27 @@
 	const routineSchedule = [
 		{
 			id: 1,
-			day: 'Saturday',
-			time: '06:00 AM',
-			location: "Sullivan's Island - Station 30",
-			accentColor: 'var(--accent-lime)'
-		},
-		{
-			id: 2,
 			day: 'Tuesday',
 			time: '05:00 AM',
 			location: 'Hampton Park - Moultrie Lot',
-			accentColor: 'var(--vintage-grape)'
+			accentColor: 'var(--vintage-grape)',
+			description: 'Tuesday Speed'
+		},
+		{
+			id: 2,
+			day: 'Thursday',
+			time: '05:00 AM',
+			location: 'Grace Bridge Street',
+			accentColor: 'var(--vintage-grape)',
+			description: 'Bridge Run'
+		},
+		{
+			id: 3,
+			day: 'Saturday',
+			time: '06:00 AM',
+			location: "Sullivan's Island - Station 30",
+			accentColor: 'var(--accent-lime)',
+			description: 'Run. Dip. Sip.'
 		}
 	];
 
@@ -144,11 +187,23 @@
 				Charleston, SC
 			</div>
 		</div>
-		<div class="text-right mix-blend-difference">
-			<div class="border border-white/20 bg-black/80 px-2 py-0.5 text-xs font-bold text-white">
-				EST. 2024
+
+		<!-- RIGHT SIDE NAV ACTIONS -->
+		<div class="flex items-center gap-6">
+			{#if isLoggedIn}
+				<button
+					class="hidden rounded-full border border-white/20 bg-white/5 px-4 py-1.5 text-xs font-bold tracking-widest text-white uppercase backdrop-blur-md transition-all hover:border-transparent hover:bg-white hover:text-black md:block"
+				>
+					Leaderboard
+				</button>
+			{/if}
+
+			<div class="text-right mix-blend-difference">
+				<div class="border border-white/20 bg-black/80 px-2 py-0.5 text-xs font-bold text-white">
+					EST. 2024
+				</div>
+				<div class="mt-1 animate-pulse font-mono text-[10px] text-(--frosted-blue)">● LIVE</div>
 			</div>
-			<div class="mt-1 animate-pulse font-mono text-[10px] text-(--frosted-blue)">● LIVE</div>
 		</div>
 	</nav>
 
@@ -227,20 +282,19 @@
 				>( The Process )</span
 			>
 			<h2 class="mb-12 text-4xl leading-[1.1] font-medium tracking-tight text-white md:text-6xl">
-				We aren't training for the Olympics. We're training so we can eat <span
-					class="text-(--frosted-blue) italic">pastries</span
-				> without guilt.
+				We do hard things. <br class="hidden md:block" />We just prefer to do them
+				<span class="text-(--frosted-blue) italic">together</span>.
 			</h2>
 
 			<div class="grid gap-12 border-t border-white/10 pt-12 md:grid-cols-2">
 				<p class="text-lg leading-relaxed font-light text-gray-400">
-					Washed Up Coffee Club is a collective of former "fast" people (and people who were never
-					fast) meeting up to put miles on legs and caffeine in veins. No drop policy, unless you
-					drop your croissant.
+					Washed Up Coffee Club is more than just miles. We are a community of friends pushing each
+					other to be our best selves. We celebrate the PRs, support through the injuries, and find
+					joy in the shared struggle of a hard workout.
 				</p>
 				<div class="border-l-2 border-(--vintage-grape) pl-6">
 					<p class="text-xl leading-tight font-bold text-white">
-						"It’s not about the pace. It’s about the company."
+						"The miles don't get easier. The support just gets stronger."
 					</p>
 				</div>
 			</div>
@@ -248,8 +302,8 @@
 	</section>
 
 	<!-- SECTION 3: CAMERA ROLL (Sticky Horizontal Scroll) -->
-	<!-- Reduced to 250vh to make it snappier -->
-	<div bind:this={cameraRollSection} class="relative h-[250vh] w-full bg-[#050505]">
+	<!-- Increased to 450vh to accommodate more images comfortably -->
+	<div bind:this={cameraRollSection} class="relative h-[450vh] w-full bg-[#050505]">
 		<div class="sticky top-0 flex h-screen w-full items-center overflow-hidden">
 			<!-- GRADIENT MASKS (Softens the edges) -->
 			<div
@@ -268,28 +322,21 @@
 			</div>
 
 			<!-- The Moving Film Strip -->
-			<!-- Adjusted padding: pl-[50vw] -> pl-[30vw] to start visible content sooner -->
-			<!-- Adjusted transform: -75% ensures the last item stays on screen longer -->
+			<!-- Adjusted transform: -85% ensures we reach the end of the longer strip -->
 			<div
 				class="flex gap-8 pl-[60vw] will-change-transform md:gap-16 md:pl-[40vw]"
-				style="transform: translateX(-{cameraRollProgress * 75}%);"
+				style="transform: translateX(-{cameraRollProgress * 85}%);"
 			>
 				{#each memories as memory, i}
-					<div
-						class="group relative flex shrink-0 flex-col gap-4"
-						style="
-							transform: scale({1 - Math.abs(cameraRollProgress * 5 - i) * 0.1}); 
-							opacity: {1 - Math.abs(cameraRollProgress * 5 - i) * 0.6};
-							transition: transform 0.1s, opacity 0.1s;
-						"
-					>
+					<!-- REMOVED: Dynamic scale/opacity/grayscale effects -->
+					<div class="group relative flex shrink-0 flex-col gap-4">
 						<div
 							class="relative h-[50vh] w-[35vh] overflow-hidden rounded-sm bg-gray-900 shadow-2xl md:h-[60vh] md:w-[45vh]"
 						>
 							<img
 								src={memory.src}
 								alt="Memory"
-								class="h-full w-full object-cover grayscale transition-all duration-700 group-hover:scale-110 group-hover:grayscale-0"
+								class="h-full w-full object-cover transition-all duration-700 group-hover:scale-110"
 							/>
 							<div
 								class="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-0 transition-opacity group-hover:opacity-30"
@@ -347,26 +394,47 @@
 
 			<div class="flex flex-col gap-px border border-white/10 bg-white/10">
 				{#each routineSchedule as schedule}
+					<!-- Added use:reveal to each row individually for cascading animation -->
+					<!-- Moved --accent style to parent so all children can access it -->
 					<div
-						class="group relative overflow-hidden bg-[#0a0a0a] p-8 transition-colors hover:bg-[#111] md:p-12"
+						use:reveal
+						class="reveal group relative overflow-hidden bg-[#0a0a0a] p-8 transition-colors hover:bg-[#111] md:p-12"
+						style="--accent: {schedule.accentColor}"
 					>
 						<!-- Hover Accent Line -->
 						<div
 							class="absolute top-0 left-0 h-full w-1 scale-y-0 bg-[var(--accent)] transition-transform duration-300 group-hover:scale-y-100"
-							style="--accent: {schedule.accentColor}"
 						></div>
 
 						<div
-							class="relative z-10 flex flex-col gap-4 md:flex-row md:items-baseline md:justify-between"
+							class="relative z-10 flex flex-col gap-4 md:flex-row md:items-start md:justify-between"
 						>
-							<h3
-								class="text-4xl font-bold tracking-tight text-white transition-colors group-hover:text-[var(--accent)] md:text-6xl"
-								style="--accent: {schedule.accentColor}"
-							>
-								{schedule.day}
-							</h3>
-							<div class="text-right">
-								<span class="block text-2xl font-medium text-white">{schedule.time}</span>
+							<!-- Left Column: Day & Description -->
+							<div class="max-w-md">
+								<h3
+									class="text-4xl font-bold tracking-tight text-white transition-colors group-hover:text-[var(--accent)] md:text-6xl"
+								>
+									{schedule.day}
+								</h3>
+								<!-- 
+                                    Enhanced Description: 
+                                    - Larger text (text-2xl md:text-3xl)
+                                    - Interactive: shifts right and brightens on hover
+                                -->
+								<p
+									class="mt-4 text-2xl leading-tight font-medium text-gray-500 transition-all duration-500 group-hover:translate-x-2 group-hover:text-white md:text-3xl"
+								>
+									{schedule.description}
+								</p>
+							</div>
+
+							<!-- Right Column: Time & Location -->
+							<div class="shrink-0 text-right">
+								<!-- Added transition-colors and group-hover:text-[var(--accent)] -->
+								<span
+									class="block text-2xl font-medium text-white transition-colors group-hover:text-[var(--accent)]"
+									>{schedule.time}</span
+								>
 								<span
 									class="mt-1 block text-sm font-bold tracking-widest text-gray-500 uppercase opacity-60"
 								>
@@ -389,9 +457,19 @@
 		></div>
 
 		<div class="relative z-10 text-center" use:reveal>
-			<h2 class="mb-10 text-6xl leading-[0.85] font-black tracking-tighter text-white md:text-9xl">
-				SUFFER<br />TOGETHER
-			</h2>
+			{#if isLoggedIn}
+				<h2
+					class="mb-10 text-6xl leading-[0.85] font-black tracking-tighter text-white md:text-9xl"
+				>
+					SEE HOW<br />YOU STACK UP
+				</h2>
+			{:else}
+				<h2
+					class="mb-10 text-6xl leading-[0.85] font-black tracking-tighter text-white md:text-9xl"
+				>
+					SUFFER<br />TOGETHER
+				</h2>
+			{/if}
 
 			<div class="group relative inline-block cursor-pointer">
 				<div
@@ -400,7 +478,7 @@
 				<button
 					class="relative rounded-full bg-white px-10 py-4 text-lg font-bold tracking-tight text-black transition-transform duration-200 active:scale-95"
 				>
-					Connect Strava
+					{isLoggedIn ? 'View Leaderboard' : 'Connect Strava'}
 				</button>
 			</div>
 		</div>
