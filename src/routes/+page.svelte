@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Spring } from 'svelte/motion';
+	import { fade } from 'svelte/transition';
 	import running1 from '$lib/assets/images/running1.jpg';
 	import running2 from '$lib/assets/images/running2.jpg';
 	import running3 from '$lib/assets/images/running3.jpg';
@@ -9,6 +10,8 @@
 	import running7 from '$lib/assets/images/running7.jpg';
 	import running8 from '$lib/assets/images/running8.jpg';
 	import running9 from '$lib/assets/images/running9.jpg';
+	import stravaConnectButton from '$lib/assets/1.1 Connect with Strava Buttons/Connect with Strava Orange/btn_strava_connect_with_orange.svg';
+	import whiteStravaConnectButton from '$lib/assets/1.1 Connect with Strava Buttons/Connect with Strava White/btn_strava_connect_with_white.svg';
 
 	// --- RUNES & STATE ---
 	let innerHeight = $state(0);
@@ -18,7 +21,7 @@
 
 	// MOCK AUTH STATE
 	// Change this to false to see the "Connect Strava" view
-	let isLoggedIn = $state(true);
+	let isLoggedIn = $state(false);
 
 	// SVELTE 5 STANDARD: Using the Spring class instead of the spring() store
 	// stiffness: 0.1 (loose), damping: 0.25 (bouncy but controlled)
@@ -182,7 +185,7 @@
 			<div
 				class="inline-block -rotate-1 transform bg-white px-2 py-1 text-sm leading-none font-bold tracking-tight text-black uppercase"
 			>
-				Washed Up
+				Washed Up Coffee Club
 			</div>
 			<div class="mt-2 pl-1 text-[10px] font-bold tracking-widest text-gray-400 uppercase">
 				Charleston, SC
@@ -197,6 +200,15 @@
 				>
 					Leaderboard
 				</button>
+			{:else if !isLoggedIn && scrollY < 50}
+				<a
+					href="/auth/strava/login"
+					class="inline-block cursor-pointer transition-opacity duration-300"
+					in:fade={{ duration: 300 }}
+					out:fade={{ duration: 200 }}
+				>
+					<img src={whiteStravaConnectButton} alt="Connect with Strava" class="h-auto w-auto" />
+				</a>
 			{/if}
 
 			<div class="text-right mix-blend-difference">
@@ -347,7 +359,7 @@
 								class="h-full w-full object-cover transition-all duration-700 group-hover:scale-110"
 							/>
 							<div
-								class="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-0 transition-opacity group-hover:opacity-30"
+								class="absolute inset-0 bg-linear-to-tr from-white/10 to-transparent opacity-0 transition-opacity group-hover:opacity-30"
 							></div>
 						</div>
 						<p
@@ -422,7 +434,7 @@
 					>
 						<!-- Hover Accent Line -->
 						<div
-							class="absolute top-0 left-0 h-full w-1 scale-y-0 bg-[var(--accent)] transition-transform duration-300 group-hover:scale-y-100"
+							class="absolute top-0 left-0 h-full w-1 scale-y-0 bg-(--accent) transition-transform duration-300 group-hover:scale-y-100"
 						></div>
 
 						<div
@@ -431,7 +443,7 @@
 							<!-- Left Column: Day & Description -->
 							<div class="max-w-md">
 								<h3
-									class="text-4xl font-bold tracking-tight text-white transition-colors group-hover:text-[var(--accent)] md:text-6xl"
+									class="text-4xl font-bold tracking-tight text-white transition-colors group-hover:text-(--accent) md:text-6xl"
 								>
 									{schedule.day}
 								</h3>
@@ -449,9 +461,8 @@
 
 							<!-- Right Column: Time & Location -->
 							<div class="shrink-0 text-right">
-								<!-- Added transition-colors and group-hover:text-[var(--accent)] -->
 								<span
-									class="block text-2xl font-medium text-white transition-colors group-hover:text-[var(--accent)]"
+									class="block text-2xl font-medium text-white transition-colors group-hover:text-(--accent)"
 									>{schedule.time}</span
 								>
 								<span
@@ -490,16 +501,22 @@
 				</h2>
 			{/if}
 
-			<div class="group relative inline-block cursor-pointer">
-				<div
-					class="absolute -inset-1 rounded-full bg-linear-to-r from-(--accent-lime) to-(--frosted-blue) opacity-60 blur-lg transition duration-500 group-hover:opacity-100 group-hover:blur-xl"
-				></div>
-				<button
-					class="relative rounded-full bg-white px-10 py-4 text-lg font-bold tracking-tight text-black transition-transform duration-200 active:scale-95"
-				>
-					{isLoggedIn ? 'View Leaderboard' : 'Connect Strava'}
-				</button>
-			</div>
+			{#if isLoggedIn}
+				<div class="group relative inline-block cursor-pointer">
+					<div
+						class="pointer-events-none absolute -inset-1 rounded-full bg-linear-to-r from-(--accent-lime) to-(--frosted-blue) opacity-60 blur-lg transition duration-500 group-hover:opacity-100 group-hover:blur-xl"
+					></div>
+					<button
+						class="relative cursor-pointer rounded-full bg-white px-10 py-4 text-lg font-bold tracking-tight text-black transition-transform duration-200 active:scale-95"
+					>
+						View Leaderboard
+					</button>
+				</div>
+			{:else}
+				<a href="/auth/strava/login" class="inline-block cursor-pointer">
+					<img src={stravaConnectButton} alt="Connect with Strava" class="h-auto w-auto" />
+				</a>
+			{/if}
 		</div>
 
 		<footer
