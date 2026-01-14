@@ -12,26 +12,39 @@
 	--accent-lime: #ccff00;
 }
 
-/* Base resets for SvelteKit */
+/* Base resets */
 body {
 	background-color: var(--black);
 	color: var(--white);
 	margin: 0;
 	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-	overflow-x: hidden; /* Prevents horizontal scroll on mobile */
+	overflow-x: hidden; /* Critical for the sticky horizontal scroll */
+	-webkit-font-smoothing: antialiased;
 }
 
-/* Utility for Apple-style Reveal Animation */
+/* Apple-style Reveal Animation 
+  Added a slight delay logic via child selectors if needed, 
+  but base class handles the heavy lifting.
+*/
 .reveal {
 	opacity: 0;
-	transform: translateY(40px) scale(0.98);
+	transform: translateY(30px) scale(0.98);
 	transition:
-		opacity 1.2s cubic-bezier(0.2, 0.8, 0.2, 1),
-		transform 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+		opacity 1s cubic-bezier(0.16, 1, 0.3, 1),
+		transform 1s cubic-bezier(0.16, 1, 0.3, 1);
 	will-change: opacity, transform;
 }
 
 .reveal-active {
 	opacity: 1;
 	transform: translateY(0) scale(1);
+}
+
+/* Hide scrollbar for the horizontal section purely for aesthetics on some browsers */
+.no-scrollbar::-webkit-scrollbar {
+	display: none;
+}
+.no-scrollbar {
+	-ms-overflow-style: none;
+	scrollbar-width: none;
 }

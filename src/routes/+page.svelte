@@ -1,35 +1,51 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { spring } from 'svelte/motion';
 
-	// Svelte 5 Runes
-	let scrollY = $state(0);
+	// --- RUNES & STATE ---
 	let innerHeight = $state(0);
+	let scrollY = $state(0);
+	let cameraRollSection: HTMLElement;
+	let cameraRollProgress = $state(0);
 
-	// Mock data for the "Camera Roll"
+	// Spring physics for smoother parallax (Apple "weight" feel)
+	// stiffness: 0.1 (loose), damping: 0.25 (bouncy but controlled)
+	const smoothScroll = spring(0, { stiffness: 0.1, damping: 0.25 });
+
+	// Sync spring with scroll position
+	$effect(() => {
+		smoothScroll.set(scrollY);
+		updateCameraRoll();
+	});
+
+	// --- DATA ---
 	const memories = [
 		{
 			id: 1,
-			src: 'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?q=80&w=600&auto=format&fit=crop',
+			src: 'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?q=80&w=800&auto=format&fit=crop',
 			caption: '06:00 AM // THE PAIN CAVE'
 		},
 		{
 			id: 2,
-			src: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?q=80&w=600&auto=format&fit=crop',
+			src: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?q=80&w=800&auto=format&fit=crop',
 			caption: 'COFFEE // POST-MORTEM'
 		},
 		{
 			id: 3,
-			src: 'https://images.unsplash.com/photo-1533561052669-c61d563d7676?q=80&w=600&auto=format&fit=crop',
+			src: 'https://images.unsplash.com/photo-1533561052669-c61d563d7676?q=80&w=800&auto=format&fit=crop',
 			caption: 'SUNDAY // CHURCH'
 		},
 		{
 			id: 4,
-			src: 'https://images.unsplash.com/photo-1596464716127-f2a82984de30?q=80&w=600&auto=format&fit=crop',
+			src: 'https://images.unsplash.com/photo-1596464716127-f2a82984de30?q=80&w=800&auto=format&fit=crop',
 			caption: 'NO ONE SURVIVED'
+		},
+		{
+			id: 5,
+			src: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=800&auto=format&fit=crop',
+			caption: 'THE COOL DOWN'
 		}
 	];
 
-	// Routine schedule data
 	const routineSchedule = [
 		{
 			id: 1,
@@ -47,455 +63,339 @@
 		}
 	];
 
-	function handleScroll() {
-		scrollY = window.scrollY;
-	}
+	// --- ACTIONS & LOGIC ---
 
-	// Apple-style Scroll Reveal Action
-	// UPDATED: Now reverses animation when scrolling up/away
+	// Intersection Observer for fade-in elements
 	function reveal(node: HTMLElement) {
 		const observer = new IntersectionObserver(
 			(entries) => {
 				entries.forEach((entry) => {
 					if (entry.isIntersecting) {
 						node.classList.add('reveal-active');
-					} else {
-						// Remove class when out of view to allow re-animation
-						node.classList.remove('reveal-active');
+						observer.unobserve(node); // Reveal once, then stay
 					}
 				});
 			},
-			{ threshold: 0.15 } // Trigger when 15% visible
+			{ threshold: 0.15, rootMargin: '0px 0px -50px 0px' }
 		);
 
 		observer.observe(node);
-
 		return {
 			destroy() {
 				observer.disconnect();
 			}
 		};
 	}
+
+	// Logic to drive the horizontal scroll section
+	function updateCameraRoll() {
+		if (!cameraRollSection) return;
+		const rect = cameraRollSection.getBoundingClientRect();
+
+		// Logic:
+		// 1. We want the animation to start when the top of the section hits the top of the viewport.
+		// 2. We want it to end when the bottom of the section hits the bottom of the viewport.
+		// 3. The scrollable distance is (sectionHeight - windowHeight).
+
+		const sectionHeight = rect.height;
+		const scrollDistance = sectionHeight - innerHeight;
+
+		// How many pixels have we scrolled *into* the sticky area?
+		// rect.top is positive when below viewport, negative when scrolled past.
+		// We want 0 when rect.top is 0.
+		const scrolledInto = -rect.top;
+
+		if (scrolledInto >= 0 && scrolledInto <= scrollDistance) {
+			cameraRollProgress = scrolledInto / scrollDistance;
+		} else if (scrolledInto < 0) {
+			cameraRollProgress = 0;
+		} else if (scrolledInto > scrollDistance) {
+			cameraRollProgress = 1;
+		}
+	}
 </script>
 
-<svelte:window bind:scrollY bind:innerHeight on:scroll={handleScroll} />
+<svelte:window bind:scrollY bind:innerHeight />
 
-<!-- MAIN CONTAINER -->
+<!-- GLOBAL WRAPPER -->
 <div
 	class="relative w-full bg-[#050505] text-white selection:bg-(--accent-lime) selection:text-black"
-	style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;"
 >
-	<!-- STRONGER GRAIN OVERLAY -->
+	<!-- NOISE OVERLAY -->
 	<div
-		class="pointer-events-none fixed inset-0 z-60 opacity-[0.12] mix-blend-overlay"
+		class="pointer-events-none fixed inset-0 z-50 opacity-[0.06] mix-blend-overlay"
 		style="background-image: url('https://grainy-gradients.vercel.app/noise.svg');"
 	></div>
 
 	<!-- NAVIGATION -->
 	<nav
-		class="fixed top-0 z-50 flex w-full items-start justify-between px-6 py-8 mix-blend-difference"
+		class="fixed top-0 z-40 flex w-full items-start justify-between px-6 py-6 transition-all duration-500 {scrollY >
+		50
+			? 'bg-black/40 backdrop-blur-md'
+			: ''}"
 	>
-		<div class="flex flex-col">
+		<div class="flex flex-col mix-blend-difference">
 			<div
-				class="inline-block -rotate-1 transform bg-white px-1 py-0.5 text-sm leading-none font-bold tracking-tight text-black uppercase"
+				class="inline-block -rotate-1 transform bg-white px-2 py-1 text-sm leading-none font-bold tracking-tight text-black uppercase"
 			>
-				Washed Up Coffee Club
+				Washed Up
 			</div>
 			<div class="mt-2 pl-1 text-[10px] font-bold tracking-widest text-gray-400 uppercase">
-				Pittsburgh, PA
+				Charleston, SC
 			</div>
 		</div>
-		<div class="text-right">
-			<div
-				class="border border-white/20 bg-black px-2 py-0.5 text-xs font-bold text-white opacity-100"
-			>
+		<div class="text-right mix-blend-difference">
+			<div class="border border-white/20 bg-black/80 px-2 py-0.5 text-xs font-bold text-white">
 				EST. 2024
 			</div>
-			<div class="mt-1 font-mono text-[10px] text-(--frosted-blue)">● LIVE</div>
+			<div class="mt-1 animate-pulse font-mono text-[10px] text-(--frosted-blue)">● LIVE</div>
 		</div>
 	</nav>
 
-	<!-- HERO SECTION -->
+	<!-- SECTION 1: HERO (Spring Physics Parallax) -->
 	<section class="relative flex h-screen flex-col items-center justify-center overflow-hidden px-4">
-		<!-- BRIGHTER Background Blobs -->
+		<!-- BACKGROUND BLOBS (Reactive to spring) -->
 		<div
-			class="animate-pulse-slow absolute top-1/4 left-1/4 h-[600px] w-[600px] rounded-full mix-blend-screen blur-[120px]"
-			style="background-color: color-mix(in srgb, var(--vintage-grape) 50%, transparent);"
+			class="absolute top-1/4 left-1/4 h-[50vh] w-[50vh] rounded-full opacity-60 mix-blend-screen blur-[120px] will-change-transform"
+			style="background-color: var(--vintage-grape); transform: translateY({$smoothScroll *
+				0.15}px);"
 		></div>
 		<div
-			class="absolute right-0 bottom-0 h-[700px] w-[700px] rounded-full mix-blend-screen blur-[140px]"
-			style="background-color: color-mix(in srgb, var(--frosted-blue) 35%, transparent);"
-		></div>
-		<div
-			class="absolute top-0 right-1/4 h-[500px] w-[500px] rounded-full mix-blend-screen blur-[130px]"
-			style="background-color: color-mix(in srgb, var(--vintage-grape) 40%, transparent);"
-		></div>
-		<div
-			class="absolute top-1/2 left-1/2 h-[400px] w-[400px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[100px]"
-			style="background-color: color-mix(in srgb, var(--accent-lime) 15%, transparent);"
+			class="absolute right-0 bottom-0 h-[60vh] w-[60vh] rounded-full opacity-50 mix-blend-screen blur-[140px] will-change-transform"
+			style="background-color: var(--frosted-blue); transform: translateY({$smoothScroll *
+				-0.1}px);"
 		></div>
 
-		<!-- REPEATED TEXT WALL (Background) -->
+		<!-- BACKGROUND TEXT WALL -->
 		<div
-			class="pointer-events-none absolute inset-0 z-0 flex items-center justify-center overflow-hidden opacity-[0.65] mix-blend-overlay select-none"
-			style="mask-image: linear-gradient(135deg, black 0%, rgba(0,0,0,0.15) 80%); -webkit-mask-image: linear-gradient(135deg, black 0%, rgba(0,0,0,0.15) 80%);"
+			class="pointer-events-none absolute inset-0 z-0 flex items-center justify-center overflow-hidden opacity-[0.25] mix-blend-overlay select-none"
 		>
-			<div class="flex w-[200%] -rotate-12 flex-col gap-0">
-				{#each Array(15) as _, i}
+			<div class="flex w-[150%] -rotate-12 flex-col gap-0">
+				{#each Array(10) as _, i}
 					<div
-						class="text-[12vw] leading-[0.85] font-black tracking-tighter whitespace-nowrap text-white uppercase blur-md will-change-transform"
-						style="transform: translateX(calc({i % 2 === 0 ? '-10%' : '5%'} + {(i % 2 === 0
-							? -1
-							: 1) *
-							scrollY *
-							0.2}px));
-						text-shadow: 
-							-20px 0 10px rgba(255,255,255,0.4),
-							-40px 0 15px rgba(255,255,255,0.2),
-							20px 0 10px rgba(255,255,255,0.4),
-							40px 0 15px rgba(255,255,255,0.2);"
+						class="text-[10vw] leading-[0.85] font-black tracking-tighter whitespace-nowrap text-white uppercase will-change-transform"
+						style="transform: translateX({(i % 2 === 0 ? -1 : 1) * $smoothScroll * 0.08}px);"
 					>
-						Run. Dip. Sip. &nbsp; Run. Dip. Sip.
+						Run. Dip. Sip.
 					</div>
 				{/each}
 			</div>
 		</div>
 
-		<!-- MAIN TYPOGRAPHY LAYER -->
-		<!-- Parallax Scale/Fade Effect -->
+		<!-- HERO TEXT -->
 		<div
-			class="relative z-10 mx-auto flex w-full max-w-6xl flex-col items-center will-change-transform"
-			style="transform: scale({1 - scrollY * 0.0005}) translateY({scrollY * 0.2}px); opacity: {1 -
-				scrollY * 0.002}"
+			class="relative z-10 flex flex-col items-center will-change-transform"
+			style="transform: translateY({$smoothScroll * 0.3}px); opacity: {1 -
+				scrollY / (innerHeight * 0.8)};"
 		>
-			<!-- Date Stamp (Top Left) -->
-			<div class="absolute -top-32 left-0 hidden rotate-[-4deg] md:block">
-				<span
-					class="bg-white box-decoration-clone px-2 py-1 text-xs font-bold tracking-widest text-black uppercase shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)]"
-				>
-					(Actual Life 3)<br />
-					January 1 — December 31
-				</span>
-			</div>
-
-			<!-- FRED AGAIN STYLE TEXT -->
 			<div class="relative">
-				<!-- The "Ghost" Layer -->
+				<!-- Blur/Ghost Layer -->
 				<h1
-					class="pointer-events-none absolute inset-0 scale-105 transform text-center text-[13vw] leading-[0.8] font-bold tracking-[-0.06em] text-white/40 uppercase blur-md select-none"
+					class="absolute inset-0 scale-105 transform text-center text-[15vw] leading-[0.8] font-bold tracking-[-0.06em] text-(--accent-lime) opacity-20 blur-xl"
 				>
-					<span class="block">Run.</span>
-					<span class="block">Dip.</span>
-					<span class="block">Sip.</span>
+					Run.<br />Dip.<br />Sip.
 				</h1>
-
-				<!-- The "Real" Layer -->
+				<!-- Crisp Layer -->
 				<h1
-					class="relative z-10 text-center text-[13vw] leading-[0.8] font-bold tracking-[-0.06em] uppercase mix-blend-screen select-none"
+					class="relative z-10 text-center text-[15vw] leading-[0.8] font-bold tracking-[-0.06em] uppercase"
 				>
 					<span class="block text-white">Run.</span>
-					<span class="block text-white/90">Dip.</span>
-					<span class="block bg-linear-to-b from-white to-white/20 bg-clip-text text-transparent"
+					<span class="block text-white/80">Dip.</span>
+					<span class="block bg-linear-to-b from-white to-white/10 bg-clip-text text-transparent"
 						>Sip.</span
 					>
 				</h1>
 			</div>
 
-			<!-- The "Subtitle" -->
-			<div class="z-20 mt-16 text-center">
-				<p
-					class="inline-block rounded-full border border-white/20 bg-white/5 px-4 py-2 text-xs font-medium tracking-wide backdrop-blur-md md:text-sm"
-				>
-					feat. <span class="text-(--accent-lime)">The Panic of the Last Mile</span>
-				</p>
+			<div class="mt-12 flex items-center gap-4">
+				<div class="h-px w-12 bg-white/30"></div>
+				<p class="text-xs font-bold tracking-[0.2em] text-white/60 uppercase">Scroll to Decay</p>
+				<div class="h-px w-12 bg-white/30"></div>
 			</div>
 		</div>
 
-		<!-- Scroll Indicator -->
+		<!-- Fade out gradient -->
 		<div
-			class="absolute bottom-12 left-0 w-full text-center mix-blend-difference"
-			style="opacity: {1 - scrollY * 0.005}"
-		>
-			<span class="text-[10px] font-bold tracking-[0.3em] text-white/60 uppercase"
-				>Scroll to Decay</span
-			>
-		</div>
-
-		<!-- TRANSITION GRADIENT: Hero -> Manifesto -->
-		<div
-			class="pointer-events-none absolute bottom-0 left-0 z-20 h-64 w-full bg-linear-to-b from-transparent to-[#050505]"
+			class="absolute bottom-0 z-20 h-32 w-full bg-linear-to-b from-transparent to-[#050505]"
 		></div>
 	</section>
 
-	<!-- "THE MANIFESTO" -->
-	<section class="relative z-20 bg-[#050505] px-6 py-40">
-		<!-- LIGHT SPILL: Hero -> Manifesto (Vintage Grape) -->
-		<div
-			class="pointer-events-none absolute top-0 left-1/2 h-96 w-full -translate-x-1/2 -translate-y-1/2 transform rounded-full blur-[120px]"
-			style="background-color: color-mix(in srgb, var(--vintage-grape) 20%, transparent);"
-		></div>
-
-		<div use:reveal class="reveal relative mx-auto max-w-3xl">
-			<!-- Sticker Graphic -->
-			<div
-				class="absolute -top-16 right-0 z-10 -rotate-6 bg-(--accent-lime) px-6 py-3 text-xl font-black tracking-tighter text-black md:-right-24"
-				style="box-shadow: 0 0 50px color-mix(in srgb, var(--accent-lime) 20%, transparent);"
+	<!-- SECTION 2: MANIFESTO -->
+	<section class="relative z-20 mx-auto max-w-4xl px-6 py-32 md:py-40">
+		<div use:reveal class="reveal">
+			<span class="mb-6 block text-xs font-bold tracking-widest text-(--accent-lime) uppercase"
+				>( The Process )</span
 			>
-				SLOW IS OKAY
-			</div>
-
-			<h2 class="mb-12 text-5xl font-bold tracking-[-0.04em] text-white md:text-7xl">
-				The Process<span class="text-(--vintage-grape)">.</span>
+			<h2 class="mb-12 text-4xl leading-[1.1] font-medium tracking-tight text-white md:text-6xl">
+				We aren't training for the Olympics. We're training so we can eat <span
+					class="text-(--frosted-blue) italic">pastries</span
+				> without guilt.
 			</h2>
 
-			<div class="space-y-8 text-xl leading-snug font-medium text-gray-300 md:text-2xl">
-				<p>
-					We aren't training for the Olympics. We're training so we can eat pastries without guilt.
-				</p>
-				<p class="text-white">
+			<div class="grid gap-12 border-t border-white/10 pt-12 md:grid-cols-2">
+				<p class="text-lg leading-relaxed font-light text-gray-400">
 					Washed Up Coffee Club is a collective of former "fast" people (and people who were never
-					fast) meeting up to put miles on legs and caffeine in veins.
+					fast) meeting up to put miles on legs and caffeine in veins. No drop policy, unless you
+					drop your croissant.
 				</p>
-
-				<!-- Pull Quote Style -->
-				<div class="border-l-4 border-white/10 pt-8 pl-6">
-					<p
-						class="cursor-default text-3xl font-bold tracking-tight text-white/40 transition-colors duration-500 hover:text-white md:text-4xl"
-					>
-						"It’s not about the pace.<br />
-						It’s about the
-						<span class="bg-white/10 box-decoration-clone px-2 text-(--accent-lime)">company</span
-						>."
+				<div class="border-l-2 border-(--vintage-grape) pl-6">
+					<p class="text-xl leading-tight font-bold text-white">
+						"It’s not about the pace. It’s about the company."
 					</p>
 				</div>
 			</div>
 		</div>
-
-		<!-- TRANSITION GRADIENT: Manifesto -> Camera Roll (#050505 to #080808) -->
-		<div
-			class="pointer-events-none absolute bottom-0 left-0 h-32 w-full bg-linear-to-b from-transparent to-[#080808]"
-		></div>
 	</section>
 
-	<!-- "CAMERA ROLL" -->
-	<section use:reveal class="reveal relative z-20 bg-[#080808] py-20">
-		<!-- LIGHT SPILL: Manifesto -> Camera Roll (Accent Lime) -->
-		<div
-			class="pointer-events-none absolute top-0 left-1/2 h-64 w-full -translate-x-1/2 -translate-y-1/2 transform rounded-full blur-[100px]"
-			style="background-color: color-mix(in srgb, var(--accent-lime) 5%, transparent);"
-		></div>
-
-		<div class="mb-8 flex items-end justify-between px-6">
-			<h3 class="text-xs font-bold tracking-widest text-white/50 uppercase">(Evidence)</h3>
-			<span class="rounded bg-white/5 px-2 py-1 text-xs font-bold text-(--frosted-blue)"
-				>.HEIC // RAW</span
+	<!-- SECTION 3: CAMERA ROLL (Sticky Horizontal Scroll) -->
+	<!-- Reduced to 250vh to make it snappier -->
+	<div bind:this={cameraRollSection} class="relative h-[250vh] w-full bg-[#050505]">
+		<div class="sticky top-0 flex h-screen w-full items-center overflow-hidden">
+			<!-- Sticky Header Title -->
+			<div
+				class="pointer-events-none absolute top-10 left-6 z-20 mix-blend-difference md:top-20 md:left-20"
 			>
-		</div>
+				<h3 class="mb-2 text-sm font-bold tracking-widest text-white uppercase">( Evidence )</h3>
+				<h2 class="text-5xl font-bold tracking-tighter text-white md:text-7xl">Camera Roll</h2>
+			</div>
 
-		<!-- Grid -->
-		<div class="grid grid-cols-2 gap-2 px-2 md:grid-cols-4">
-			{#each memories as memory}
-				<div class="group relative aspect-3/4 overflow-hidden bg-gray-900">
-					<!-- Image -->
-					<img
-						src={memory.src}
-						alt="Run Memory"
-						class="group-hover:blur-0 h-full w-full scale-110 object-cover opacity-50 blur-xl grayscale transition-all duration-700
-                   ease-out group-hover:scale-100 group-hover:opacity-100 group-hover:grayscale-0"
-					/>
-
-					<!-- Text overlay -->
+			<!-- The Moving Film Strip -->
+			<!-- Adjusted padding: pl-[50vw] -> pl-[30vw] to start visible content sooner -->
+			<!-- Adjusted transform: -75% ensures the last item stays on screen longer -->
+			<div
+				class="flex gap-8 pl-[60vw] will-change-transform md:gap-16 md:pl-[40vw]"
+				style="transform: translateX(-{cameraRollProgress * 75}%);"
+			>
+				{#each memories as memory, i}
 					<div
-						class="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+						class="group relative flex shrink-0 flex-col gap-4"
+						style="
+							transform: scale({1 - Math.abs(cameraRollProgress * 5 - i) * 0.1}); 
+							opacity: {1 - Math.abs(cameraRollProgress * 5 - i) * 0.6};
+							transition: transform 0.1s, opacity 0.1s;
+						"
 					>
+						<div
+							class="relative h-[50vh] w-[35vh] overflow-hidden rounded-sm bg-gray-900 shadow-2xl md:h-[60vh] md:w-[45vh]"
+						>
+							<img
+								src={memory.src}
+								alt="Memory"
+								class="h-full w-full object-cover grayscale transition-all duration-700 group-hover:scale-110 group-hover:grayscale-0"
+							/>
+							<div
+								class="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-0 transition-opacity group-hover:opacity-30"
+							></div>
+						</div>
 						<p
-							class="-rotate-2 bg-black px-3 py-1 text-center text-xs font-bold text-white shadow-xl md:text-sm"
+							class="font-mono text-xs font-bold tracking-widest text-gray-500 uppercase transition-colors group-hover:text-(--accent-lime)"
 						>
 							{memory.caption}
 						</p>
 					</div>
-				</div>
-			{/each}
+				{/each}
+				<!-- Spacer -->
+				<div class="w-[10vw] shrink-0"></div>
+			</div>
 		</div>
+	</div>
 
-		<!-- TRANSITION GRADIENT: Camera Roll -> Routine (#080808 to #050505) -->
+	<!-- SECTION 4: THE ROUTINE -->
+	<section class="relative z-10 overflow-hidden bg-[#050505] px-6 py-32 md:py-48">
+		<!-- Background Glow -->
 		<div
-			class="pointer-events-none absolute bottom-0 left-0 h-32 w-full bg-linear-to-b from-transparent to-[#050505]"
-		></div>
-	</section>
-
-	<!-- ROUTINE / LOGISTICS -->
-	<section use:reveal class="reveal relative z-10 overflow-hidden px-6 py-40">
-		<!-- LIGHT SPILL: Camera Roll -> Routine (Frosted Blue) -->
-		<div
-			class="pointer-events-none absolute top-0 left-1/2 h-96 w-full -translate-x-1/2 -translate-y-1/2 transform rounded-full blur-[120px]"
-			style="background-color: color-mix(in srgb, var(--frosted-blue) 20%, transparent);"
+			class="pointer-events-none absolute top-0 left-1/2 h-[500px] w-full -translate-x-1/2 -translate-y-[20%] rounded-full opacity-20 blur-[140px]"
+			style="background-color: var(--frosted-blue);"
 		></div>
 
-		<!-- REPEATED TEXT WALL (Background) -->
+		<!-- BACKGROUND TEXT WALL (Re-added) -->
 		<div
-			class="pointer-events-none absolute inset-0 z-0 flex items-center justify-center overflow-hidden opacity-[0.65] mix-blend-overlay select-none"
-			style="mask-image: linear-gradient(135deg, black 0%, rgba(0,0,0,0.15) 80%); -webkit-mask-image: linear-gradient(135deg, black 0%, rgba(0,0,0,0.15) 80%);"
+			class="pointer-events-none absolute inset-0 z-0 flex items-center justify-center overflow-hidden opacity-[0.15] mix-blend-overlay select-none"
 		>
-			<div class="flex w-[200%] -rotate-12 flex-col gap-0">
-				{#each Array(12) as _, i}
+			<div class="flex w-[150%] rotate-12 flex-col gap-0">
+				{#each Array(10) as _, i}
 					<div
-						class="text-[12vw] leading-[0.85] font-black tracking-tighter whitespace-nowrap text-white uppercase blur-md will-change-transform"
-						style="transform: translateX(calc({i % 2 === 0 ? '-10%' : '5%'} + {(i % 2 === 0
-							? -1
-							: 1) *
-							scrollY *
-							0.15}px));
-						text-shadow: 
-							-20px 0 10px rgba(255,255,255,0.4),
-							-40px 0 15px rgba(255,255,255,0.2),
-							20px 0 10px rgba(255,255,255,0.4),
-							40px 0 15px rgba(255,255,255,0.2);"
+						class="text-[10vw] leading-[0.85] font-black tracking-tighter whitespace-nowrap text-white uppercase will-change-transform"
+						style="transform: translateX({(i % 2 === 0 ? 1 : -1) * ($smoothScroll * 0.05)}px);"
 					>
-						Saturday. Thursday. &nbsp; Saturday. Thursday.
+						Saturday. Thursday.
 					</div>
 				{/each}
 			</div>
 		</div>
 
-		<div class="relative z-10 mx-auto max-w-4xl">
-			<!-- Section Header -->
-			<h2 class="mb-16 text-5xl font-bold tracking-[-0.04em] text-(--frosted-blue) md:text-9xl">
-				The Routine<span class="text-(--frosted-blue)">.</span>
+		<div class="relative z-10 mx-auto max-w-5xl">
+			<h2
+				class="mb-24 text-center text-4xl font-bold tracking-tighter text-white md:text-8xl"
+				use:reveal
+			>
+				The Routine.
 			</h2>
 
-			<div class="grid gap-24">
+			<div class="flex flex-col gap-px border border-white/10 bg-white/10">
 				{#each routineSchedule as schedule}
-					<div class="group cursor-default">
-						<h3
-							class="text-6xl font-bold tracking-tighter text-white transition-all duration-500 md:text-8xl"
-							style="transition: all 0.5s ease;"
-						>
-							{schedule.day}.
-						</h3>
+					<div
+						class="group relative overflow-hidden bg-[#0a0a0a] p-8 transition-colors hover:bg-[#111] md:p-12"
+					>
+						<!-- Hover Accent Line -->
 						<div
-							role="region"
-							aria-label="{schedule.day} run details"
-							class="mt-6 flex flex-col gap-6 border-l-2 border-white/20 pl-6 md:flex-row md:items-center md:gap-12"
+							class="absolute top-0 left-0 h-full w-1 scale-y-0 bg-[var(--accent)] transition-transform duration-300 group-hover:scale-y-100"
+							style="--accent: {schedule.accentColor}"
+						></div>
+
+						<div
+							class="relative z-10 flex flex-col gap-4 md:flex-row md:items-baseline md:justify-between"
 						>
-							<div>
+							<h3
+								class="text-4xl font-bold tracking-tight text-white transition-colors group-hover:text-[var(--accent)] md:text-6xl"
+								style="--accent: {schedule.accentColor}"
+							>
+								{schedule.day}
+							</h3>
+							<div class="text-right">
+								<span class="block text-2xl font-medium text-white">{schedule.time}</span>
 								<span
-									class="mb-1 inline-block bg-white/5 px-1 text-xs font-bold tracking-widest text-gray-500 uppercase"
-									>Time</span
+									class="mt-1 block text-sm font-bold tracking-widest text-gray-500 uppercase opacity-60"
 								>
-								<span class="block text-2xl font-medium">{schedule.time}</span>
-							</div>
-							<div>
-								<span
-									class="mb-1 inline-block bg-white/5 px-1 text-xs font-bold tracking-widest text-gray-500 uppercase"
-									>Location</span
-								>
-								<span class="block text-2xl font-medium">{schedule.location}</span>
+									{schedule.location}
+								</span>
 							</div>
 						</div>
 					</div>
 				{/each}
 			</div>
 		</div>
-
-		<!-- TRANSITION GRADIENT: Routine -> Footer (Subtle depth) -->
-		<div
-			class="pointer-events-none absolute bottom-0 left-0 h-32 w-full bg-linear-to-b from-transparent to-[#050505]"
-		></div>
 	</section>
 
-	<!-- FOOTER / CTA -->
-	<section
-		use:reveal
-		class="reveal relative z-20 flex h-[80vh] flex-col items-center justify-center px-4"
-	>
-		<!-- LIGHT SPILL: Routine -> Footer (Vintage Grape to close loop) -->
+	<!-- SECTION 5: FOOTER -->
+	<section class="relative flex h-[80vh] flex-col items-center justify-center overflow-hidden">
+		<!-- Huge Glow -->
 		<div
-			class="pointer-events-none absolute top-0 left-1/2 h-64 w-full -translate-x-1/2 -translate-y-1/2 transform rounded-full blur-[100px]"
-			style="background-color: color-mix(in srgb, var(--vintage-grape) 10%, transparent);"
+			class="pointer-events-none absolute top-1/2 left-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-15 blur-[150px]"
+			style="background-color: var(--accent-lime);"
 		></div>
 
-		<div class="mb-16 text-center">
-			<p
-				class="mb-4 inline-block bg-white/5 px-2 py-1 text-sm font-bold tracking-widest text-gray-500 uppercase"
-			>
-				(Join The Club)
-			</p>
-			<h2 class="text-5xl font-bold tracking-[-0.04em] text-white md:text-7xl">
-				Ready to <br />
-				<span
-					class="hover:blur-0 cursor-pointer bg-clip-text text-transparent blur-[2px] transition-all duration-500"
-					style="background-image: linear-gradient(to right, var(--accent-lime), var(--frosted-blue));"
-					>Suffer Together?</span
-				>
+		<div class="relative z-10 text-center" use:reveal>
+			<h2 class="mb-10 text-6xl leading-[0.85] font-black tracking-tighter text-white md:text-9xl">
+				SUFFER<br />TOGETHER
 			</h2>
+
+			<div class="group relative inline-block cursor-pointer">
+				<div
+					class="absolute -inset-1 rounded-full bg-linear-to-r from-(--accent-lime) to-(--frosted-blue) opacity-60 blur-lg transition duration-500 group-hover:opacity-100 group-hover:blur-xl"
+				></div>
+				<button
+					class="relative rounded-full bg-white px-10 py-4 text-lg font-bold tracking-tight text-black transition-transform duration-200 active:scale-95"
+				>
+					Connect Strava
+				</button>
+			</div>
 		</div>
 
-		<!-- AUTH BUTTON -->
-		<div class="group relative cursor-pointer">
-			<!-- Glow effect -->
-			<div
-				class="absolute -inset-2 rounded-lg bg-[#FC4C02] opacity-20 blur-xl transition duration-500 group-hover:opacity-50"
-			></div>
-
-			<button
-				class="relative flex items-center gap-4 rounded-lg border border-white/20 bg-black px-10 py-5 text-white transition-all duration-300 hover:border-[#FC4C02] hover:bg-[#FC4C02]/10"
-			>
-				<span class="text-xl font-black text-[#FC4C02]">STRAVA</span>
-				<div class="h-6 w-px bg-white/20"></div>
-				<span class="font-bold tracking-wide">Connect Account</span>
-			</button>
-
-			<p
-				class="absolute top-full left-0 mt-6 w-full text-center text-[10px] font-bold tracking-widest text-gray-500 uppercase opacity-0 transition-opacity group-hover:opacity-100"
-			>
-				Required for Leaderboard
-			</p>
-		</div>
-
-		<footer class="absolute bottom-8 w-full text-center">
-			<p class="text-[10px] tracking-widest text-white/30 uppercase">
-				Washed Up Coffee Club &copy; {new Date().getFullYear()}
-			</p>
+		<footer
+			class="absolute bottom-8 w-full text-center font-mono text-[10px] tracking-widest text-white/30 uppercase"
+		>
+			Charleston, SC // Est 2024
 		</footer>
 	</section>
 </div>
-
-<style>
-	/* Slow pulse for the background blobs */
-	@keyframes pulse-slow {
-		0%,
-		100% {
-			opacity: 0.4;
-			transform: scale(1);
-		}
-		50% {
-			opacity: 0.2;
-			transform: scale(1.1);
-		}
-	}
-	.animate-pulse-slow {
-		animation: pulse-slow 10s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-	}
-
-	/* Apple-style Reveal Animation Classes */
-	:global(.reveal) {
-		opacity: 0;
-		transform: translateY(40px) scale(0.98);
-		transition:
-			opacity 1.2s cubic-bezier(0.2, 0.8, 0.2, 1),
-			transform 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
-		will-change: opacity, transform;
-	}
-
-	:global(.reveal-active) {
-		opacity: 1;
-		transform: translateY(0) scale(1);
-	}
-
-	/* Global Scroll Fix: Handles body background and overflow */
-	:global(body) {
-		background-color: #050505;
-		overflow-x: hidden;
-	}
-</style>
