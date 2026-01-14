@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { spring } from 'svelte/motion';
+	import { Spring } from 'svelte/motion';
 	import running1 from '$lib/assets/images/running1.jpg';
 	import running2 from '$lib/assets/images/running2.jpg';
 	import running3 from '$lib/assets/images/running3.jpg';
@@ -20,13 +20,14 @@
 	// Change this to false to see the "Connect Strava" view
 	let isLoggedIn = $state(true);
 
-	// Spring physics for smoother parallax (Apple "weight" feel)
+	// SVELTE 5 STANDARD: Using the Spring class instead of the spring() store
 	// stiffness: 0.1 (loose), damping: 0.25 (bouncy but controlled)
-	const smoothScroll = spring(0, { stiffness: 0.1, damping: 0.25 });
+	const smoothScroll = new Spring(0, { stiffness: 0.1, damping: 0.25 });
 
 	// Sync spring with scroll position
 	$effect(() => {
-		smoothScroll.set(scrollY);
+		// New syntax: Set .target to animate towards the value
+		smoothScroll.target = scrollY;
 		updateCameraRoll();
 	});
 
@@ -85,7 +86,7 @@
 			day: 'Tuesday',
 			time: '05:00 AM',
 			location: 'Hampton Park - Moultrie Lot',
-			accentColor: 'var(--vintage-grape)',
+			accentColor: 'var(--frosted-blue)',
 			description: 'Tuesday Speed'
 		},
 		{
@@ -93,7 +94,7 @@
 			day: 'Thursday',
 			time: '05:00 AM',
 			location: 'Grace Bridge Street',
-			accentColor: 'var(--vintage-grape)',
+			accentColor: 'var(--accent-lime)',
 			description: 'Bridge Run'
 		},
 		{
@@ -101,7 +102,7 @@
 			day: 'Saturday',
 			time: '06:00 AM',
 			location: "Sullivan's Island - Station 30",
-			accentColor: 'var(--accent-lime)',
+			accentColor: 'var(--frosted-blue)',
 			description: 'Run. Dip. Sip.'
 		}
 	];
@@ -210,14 +211,15 @@
 	<!-- SECTION 1: HERO (Spring Physics Parallax) -->
 	<section class="relative flex h-screen flex-col items-center justify-center overflow-hidden px-4">
 		<!-- BACKGROUND BLOBS (Reactive to spring) -->
+		<!-- New Syntax: Use smoothScroll.current instead of $smoothScroll -->
 		<div
 			class="absolute top-1/4 left-1/4 h-[50vh] w-[50vh] rounded-full opacity-60 mix-blend-screen blur-[120px] will-change-transform"
-			style="background-color: var(--vintage-grape); transform: translateY({$smoothScroll *
+			style="background-color: var(--vintage-grape); transform: translateY({smoothScroll.current *
 				0.15}px);"
 		></div>
 		<div
 			class="absolute right-0 bottom-0 h-[60vh] w-[60vh] rounded-full opacity-50 mix-blend-screen blur-[140px] will-change-transform"
-			style="background-color: var(--frosted-blue); transform: translateY({$smoothScroll *
+			style="background-color: var(--frosted-blue); transform: translateY({smoothScroll.current *
 				-0.1}px);"
 		></div>
 
@@ -229,7 +231,7 @@
 				{#each Array(10) as _, i}
 					<div
 						class="text-[10vw] leading-[0.85] font-black tracking-tighter whitespace-nowrap text-white uppercase will-change-transform"
-						style="transform: translateX({(i % 2 === 0 ? -1 : 1) * $smoothScroll * 0.08}px);"
+						style="transform: translateX({(i % 2 === 0 ? -1 : 1) * smoothScroll.current * 0.08}px);"
 					>
 						Run. Dip. Sip.
 					</div>
@@ -240,7 +242,7 @@
 		<!-- HERO TEXT -->
 		<div
 			class="relative z-10 flex flex-col items-center will-change-transform"
-			style="transform: translateY({$smoothScroll * 0.3}px); opacity: {1 -
+			style="transform: translateY({smoothScroll.current * 0.3}px); opacity: {1 -
 				scrollY / (innerHeight * 0.8)};"
 		>
 			<div class="relative">
@@ -302,8 +304,8 @@
 	</section>
 
 	<!-- SECTION 3: CAMERA ROLL (Sticky Horizontal Scroll) -->
-	<!-- Increased to 450vh to accommodate more images comfortably -->
-	<div bind:this={cameraRollSection} class="relative h-[450vh] w-full bg-[#050505]">
+	<!-- Reduced to 300vh for a tighter, cleaner interaction -->
+	<div bind:this={cameraRollSection} class="relative h-[300vh] w-full bg-[#050505]">
 		<div class="sticky top-0 flex h-screen w-full items-center overflow-hidden">
 			<!-- GRADIENT MASKS (Softens the edges) -->
 			<div
@@ -322,13 +324,19 @@
 			</div>
 
 			<!-- The Moving Film Strip -->
-			<!-- Adjusted transform: -85% ensures we reach the end of the longer strip -->
+			<!-- 
+                UPDATED LOGIC:
+                1. Removed large pl-[60vw]. Now starts at pl-4 (md:pl-20) so images are visible immediately.
+                2. transform using calc() ensures we scroll EXACTLY the overflow width.
+                   (100% - 100vw) is the amount of content that is off-screen.
+                   We multiply this by progress (0 to 1) to slide it exactly to the end.
+            -->
 			<div
-				class="flex gap-8 pl-[60vw] will-change-transform md:gap-16 md:pl-[40vw]"
-				style="transform: translateX(-{cameraRollProgress * 85}%);"
+				class="flex gap-8 pl-4 will-change-transform md:gap-16 md:pl-20"
+				style="transform: translateX(calc(-1 * {cameraRollProgress} * (100% - 100vw)));"
 			>
 				{#each memories as memory, i}
-					<!-- REMOVED: Dynamic scale/opacity/grayscale effects -->
+					<!-- Standard Display (No Effects) -->
 					<div class="group relative flex shrink-0 flex-col gap-4">
 						<div
 							class="relative h-[50vh] w-[35vh] overflow-hidden rounded-sm bg-gray-900 shadow-2xl md:h-[60vh] md:w-[45vh]"
@@ -349,8 +357,8 @@
 						</p>
 					</div>
 				{/each}
-				<!-- Spacer -->
-				<div class="w-[10vw] shrink-0"></div>
+				<!-- Small Spacer for Right Edge Breathing Room -->
+				<div class="w-4 shrink-0 md:w-20"></div>
 			</div>
 		</div>
 	</div>
@@ -376,7 +384,8 @@
 				{#each Array(10) as _, i}
 					<div
 						class="text-[10vw] leading-[0.85] font-black tracking-tighter whitespace-nowrap text-white uppercase will-change-transform"
-						style="transform: translateX({(i % 2 === 0 ? 1 : -1) * ($smoothScroll * 0.05)}px);"
+						style="transform: translateX({(i % 2 === 0 ? 1 : -1) *
+							(smoothScroll.current * 0.05)}px);"
 					>
 						Saturday. Thursday.
 					</div>
@@ -392,13 +401,23 @@
 				The Routine.
 			</h2>
 
-			<div class="flex flex-col gap-px border border-white/10 bg-white/10">
+			<!-- 
+                UPDATED CONTAINER: 
+                Switched to border-b (bottom closure). 
+                Removed border-t because the first item will now provide it.
+            -->
+			<div class="flex flex-col border-x border-b border-white/10">
 				{#each routineSchedule as schedule}
-					<!-- Added use:reveal to each row individually for cascading animation -->
-					<!-- Moved --accent style to parent so all children can access it -->
+					<!-- 
+                        UPDATED ITEM:
+                        Changed border-b to border-t.
+                        Now every item draws its own "roof". 
+                        This prevents the background of the next item from overlapping 
+                        and hiding the border of the previous item.
+                    -->
 					<div
 						use:reveal
-						class="reveal group relative overflow-hidden bg-[#0a0a0a] p-8 transition-colors hover:bg-[#111] md:p-12"
+						class="reveal group relative overflow-hidden border-t border-white/10 bg-[#0a0a0a] p-8 transition-colors hover:bg-[#111] md:p-12"
 						style="--accent: {schedule.accentColor}"
 					>
 						<!-- Hover Accent Line -->
