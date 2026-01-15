@@ -1,15 +1,6 @@
 <script lang="ts">
 	import { Spring } from 'svelte/motion';
 	import { fade } from 'svelte/transition';
-	import running1 from '$lib/assets/images/running1.jpg';
-	import running2 from '$lib/assets/images/running2.jpg';
-	import running3 from '$lib/assets/images/running3.jpg';
-	import running4 from '$lib/assets/images/running4.jpg';
-	import running5 from '$lib/assets/images/running5.jpg';
-	import running6 from '$lib/assets/images/running6.jpg';
-	import running7 from '$lib/assets/images/running7.jpg';
-	import running8 from '$lib/assets/images/running8.jpg';
-	import running9 from '$lib/assets/images/running9.jpg';
 	import stravaConnectButton from '$lib/assets/1.1 Connect with Strava Buttons/Connect with Strava Orange/btn_strava_connect_with_orange.svg';
 	import whiteStravaConnectButton from '$lib/assets/1.1 Connect with Strava Buttons/Connect with Strava White/btn_strava_connect_with_white.svg';
 	import { toast } from 'svelte-sonner';
@@ -42,7 +33,6 @@
 		}
 	});
 
-	// SVELTE 5 STANDARD: Using the Spring class instead of the spring() store
 	// stiffness: 0.1 (loose), damping: 0.25 (bouncy but controlled)
 	const smoothScroll = new Spring(0, { stiffness: 0.1, damping: 0.25 });
 
