@@ -12,16 +12,33 @@
 	import running9 from '$lib/assets/images/running9.jpg';
 	import stravaConnectButton from '$lib/assets/1.1 Connect with Strava Buttons/Connect with Strava Orange/btn_strava_connect_with_orange.svg';
 	import whiteStravaConnectButton from '$lib/assets/1.1 Connect with Strava Buttons/Connect with Strava White/btn_strava_connect_with_white.svg';
+	import { toast } from 'svelte-sonner';
+	import { page } from '$app/state';
+	import { goto } from '$app/navigation';
+	import { AUTH_ERROR_MESSAGES } from '$lib/constants/auth';
 
-	// --- RUNES & STATE ---
+	// --- PROPS & STATE ---
+	let { data } = $props();
+	let isLoggedIn = $derived(!!data.session);
+
 	let innerHeight = $state(0);
 	let scrollY = $state(0);
 	let cameraRollSection: HTMLElement;
 	let cameraRollProgress = $state(0);
 
-	// MOCK AUTH STATE
-	// Change this to false to see the "Connect Strava" view
-	let isLoggedIn = $state(false);
+	// Check for authentication errors and show toast
+	$effect(() => {
+		const error = page.url.searchParams.get('error');
+		if (error) {
+			const message = AUTH_ERROR_MESSAGES[error] || AUTH_ERROR_MESSAGES.unknown;
+			toast.error('Authentication Failed', {
+				description: message,
+				duration: 5000
+			});
+			// Clean URL by removing error param
+			goto('/', { replaceState: true });
+		}
+	});
 
 	// SVELTE 5 STANDARD: Using the Spring class instead of the spring() store
 	// stiffness: 0.1 (loose), damping: 0.25 (bouncy but controlled)
