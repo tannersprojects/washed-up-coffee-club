@@ -1,15 +1,6 @@
 <script lang="ts">
 	import { Spring } from 'svelte/motion';
 	import { fade } from 'svelte/transition';
-	import running1 from '$lib/assets/images/running1.jpg';
-	import running2 from '$lib/assets/images/running2.jpg';
-	import running3 from '$lib/assets/images/running3.jpg';
-	import running4 from '$lib/assets/images/running4.jpg';
-	import running5 from '$lib/assets/images/running5.jpg';
-	import running6 from '$lib/assets/images/running6.jpg';
-	import running7 from '$lib/assets/images/running7.jpg';
-	import running8 from '$lib/assets/images/running8.jpg';
-	import running9 from '$lib/assets/images/running9.jpg';
 	import stravaConnectButton from '$lib/assets/1.1 Connect with Strava Buttons/Connect with Strava Orange/btn_strava_connect_with_orange.svg';
 	import whiteStravaConnectButton from '$lib/assets/1.1 Connect with Strava Buttons/Connect with Strava White/btn_strava_connect_with_white.svg';
 	import { toast } from 'svelte-sonner';
@@ -20,6 +11,8 @@
 	// --- PROPS & STATE ---
 	let { data } = $props();
 	let isLoggedIn = $derived(!!data.session);
+	let memories = $derived(data.memories || []);
+	let routineSchedule = $derived(data.routineSchedules || []);
 
 	let innerHeight = $state(0);
 	let scrollY = $state(0);
@@ -40,7 +33,6 @@
 		}
 	});
 
-	// SVELTE 5 STANDARD: Using the Spring class instead of the spring() store
 	// stiffness: 0.1 (loose), damping: 0.25 (bouncy but controlled)
 	const smoothScroll = new Spring(0, { stiffness: 0.1, damping: 0.25 });
 
@@ -50,82 +42,6 @@
 		smoothScroll.target = scrollY;
 		updateCameraRoll();
 	});
-
-	// --- DATA ---
-	const memories = [
-		{
-			id: 1,
-			src: running1,
-			caption: 'Insert Description Here'
-		},
-		{
-			id: 2,
-			src: running2,
-			caption: 'Insert Description Here'
-		},
-		{
-			id: 3,
-			src: running3,
-			caption: 'Insert Description Here'
-		},
-		{
-			id: 4,
-			src: running4,
-			caption: 'Insert Description Here'
-		},
-		{
-			id: 5,
-			src: running5,
-			caption: 'Insert Description Here'
-		},
-		{
-			id: 6,
-			src: running6,
-			caption: 'Insert Description Here'
-		},
-		{
-			id: 7,
-			src: running7,
-			caption: 'Insert Description Here'
-		},
-		{
-			id: 8,
-			src: running8,
-			caption: 'Insert Description Here'
-		},
-		{
-			id: 9,
-			src: running9,
-			caption: 'Insert Description Here'
-		}
-	];
-
-	const routineSchedule = [
-		{
-			id: 1,
-			day: 'Tuesday',
-			time: '05:00 AM',
-			location: 'Hampton Park - Moultrie Lot',
-			accentColor: 'var(--frosted-blue)',
-			description: 'Tuesday Speed'
-		},
-		{
-			id: 2,
-			day: 'Thursday',
-			time: '05:00 AM',
-			location: 'Grace Bridge Street',
-			accentColor: 'var(--accent-lime)',
-			description: 'Bridge Run'
-		},
-		{
-			id: 3,
-			day: 'Saturday',
-			time: '06:00 AM',
-			location: "Sullivan's Island - Station 30",
-			accentColor: 'var(--frosted-blue)',
-			description: 'Run. Dip. Sip.'
-		}
-	];
 
 	// --- ACTIONS & LOGIC ---
 
