@@ -1,4 +1,13 @@
-import { pgTable, uuid, text, timestamp, bigint, index } from 'drizzle-orm/pg-core';
+import {
+	pgTable,
+	uuid,
+	text,
+	timestamp,
+	bigint,
+	integer,
+	boolean,
+	index
+} from 'drizzle-orm/pg-core';
 
 // Reference to Supabase auth.users (not managed by Drizzle, just for FK)
 export const profileTable = pgTable(
@@ -30,4 +39,35 @@ export const stravaConnectionsTable = pgTable(
 		updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull()
 	},
 	(table) => [index('idx_strava_connections_user_id').on(table.userId)]
+);
+
+export const memoriesTable = pgTable(
+	'memories',
+	{
+		id: uuid('id').defaultRandom().primaryKey(),
+		src: text('src').notNull(),
+		caption: text('caption').notNull(),
+		sortOrder: integer('sort_order').notNull().default(0),
+		isActive: boolean('is_active').notNull().default(true),
+		createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+		updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull()
+	},
+	(table) => [index('idx_memories_sort_order').on(table.sortOrder)]
+);
+
+export const routineSchedulesTable = pgTable(
+	'routine_schedules',
+	{
+		id: uuid('id').defaultRandom().primaryKey(),
+		day: text('day').notNull(),
+		time: text('time').notNull(),
+		location: text('location').notNull(),
+		accentColor: text('accent_color').notNull(),
+		description: text('description').notNull(),
+		sortOrder: integer('sort_order').notNull().default(0),
+		isActive: boolean('is_active').notNull().default(true),
+		createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+		updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull()
+	},
+	(table) => [index('idx_routine_schedules_sort_order').on(table.sortOrder)]
 );

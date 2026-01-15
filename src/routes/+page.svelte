@@ -20,6 +20,8 @@
 	// --- PROPS & STATE ---
 	let { data } = $props();
 	let isLoggedIn = $derived(!!data.session);
+	let memories = $derived(data.memories || []);
+	let routineSchedule = $derived(data.routineSchedules || []);
 
 	let innerHeight = $state(0);
 	let scrollY = $state(0);
@@ -50,82 +52,6 @@
 		smoothScroll.target = scrollY;
 		updateCameraRoll();
 	});
-
-	// --- DATA ---
-	const memories = [
-		{
-			id: 1,
-			src: running1,
-			caption: 'Insert Description Here'
-		},
-		{
-			id: 2,
-			src: running2,
-			caption: 'Insert Description Here'
-		},
-		{
-			id: 3,
-			src: running3,
-			caption: 'Insert Description Here'
-		},
-		{
-			id: 4,
-			src: running4,
-			caption: 'Insert Description Here'
-		},
-		{
-			id: 5,
-			src: running5,
-			caption: 'Insert Description Here'
-		},
-		{
-			id: 6,
-			src: running6,
-			caption: 'Insert Description Here'
-		},
-		{
-			id: 7,
-			src: running7,
-			caption: 'Insert Description Here'
-		},
-		{
-			id: 8,
-			src: running8,
-			caption: 'Insert Description Here'
-		},
-		{
-			id: 9,
-			src: running9,
-			caption: 'Insert Description Here'
-		}
-	];
-
-	const routineSchedule = [
-		{
-			id: 1,
-			day: 'Tuesday',
-			time: '05:00 AM',
-			location: 'Hampton Park - Moultrie Lot',
-			accentColor: 'var(--frosted-blue)',
-			description: 'Tuesday Speed'
-		},
-		{
-			id: 2,
-			day: 'Thursday',
-			time: '05:00 AM',
-			location: 'Grace Bridge Street',
-			accentColor: 'var(--accent-lime)',
-			description: 'Bridge Run'
-		},
-		{
-			id: 3,
-			day: 'Saturday',
-			time: '06:00 AM',
-			location: "Sullivan's Island - Station 30",
-			accentColor: 'var(--frosted-blue)',
-			description: 'Run. Dip. Sip.'
-		}
-	];
 
 	// --- ACTIONS & LOGIC ---
 
