@@ -22,10 +22,7 @@ body {
 	-webkit-font-smoothing: antialiased;
 }
 
-/* Apple-style Reveal Animation 
-  Added a slight delay logic via child selectors if needed, 
-  but base class handles the heavy lifting.
-*/
+/* Apple-style Reveal Animation */
 .reveal {
 	opacity: 0;
 	transform: translateY(30px) scale(0.98);
