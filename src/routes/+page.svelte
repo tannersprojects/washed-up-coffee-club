@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { Spring } from 'svelte/motion';
 	import { fade } from 'svelte/transition';
-	// Replace these with your actual import paths
+
+	// Asset Imports
 	import stravaConnectButton from '$lib/assets/1.1 Connect with Strava Buttons/Connect with Strava Orange/btn_strava_connect_with_orange.svg';
 	import whiteStravaConnectButton from '$lib/assets/1.1 Connect with Strava Buttons/Connect with Strava White/btn_strava_connect_with_white.svg';
 	import doHardThings from '$lib/assets/images/doHardThings.jpg';
 	import community from '$lib/assets/images/theCommunity3.jpg';
+
 	import { toast } from 'svelte-sonner';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
@@ -22,14 +24,23 @@
 	let innerWidth = $state(0);
 	let scrollY = $state(0);
 
-	// Derived dimensions for responsive logic
+	// --- RESPONSIVE LOGIC ---
+	// Mobile: Standard breakpoint
 	let isMobile = $derived(innerWidth < 768);
+
+	// "Compact Vertical": Detects Laptops (e.g., 14" MacBook Pro has ~900px height or less)
+	let isShortScreen = $derived(innerHeight < 900);
+
+	// MASTER SWITCH:
+	// If Mobile OR Short Screen -> Use the "Vertical Stack" layout (Safe, no overlap).
+	// If Big Screen -> Use the "Overlay" layout (Apple style, overlap, mix-blend).
+	let useVerticalLayout = $derived(isMobile || isShortScreen);
 
 	// Element bindings
 	let cameraRollSection: HTMLElement;
 	let cameraRollProgress = $state(0);
 
-	// Check for authentication errors
+	// Auth Error Handling
 	$effect(() => {
 		const error = page.url.searchParams.get('error');
 		if (error) {
@@ -42,10 +53,10 @@
 		}
 	});
 
-	// Spring Physics for Scroll - slightly stiffer on mobile for better responsiveness
+	// Spring Physics for Scroll
 	const smoothScroll = new Spring(0, {
-		stiffness: 0.1,
-		damping: 0.25
+		stiffness: 0.08,
+		damping: 0.3
 	});
 
 	$effect(() => {
@@ -79,7 +90,6 @@
 		if (!cameraRollSection) return;
 		const rect = cameraRollSection.getBoundingClientRect();
 		const sectionHeight = rect.height;
-		// Use innerHeight state to ensure we react to resizing
 		const scrollDistance = sectionHeight - innerHeight;
 		const scrolledInto = -rect.top;
 
@@ -96,24 +106,17 @@
 	let trackPath = $state<SVGPathElement | null>(null);
 	let trackLength = $state(0);
 
-	// 1. Calculate Morph Progress
 	let morphProgress = $derived(
 		Math.min(1, Math.max(0, smoothScroll.current / (isMobile ? 200 : 300)))
 	);
 
-	// 2. Helper for linear interpolation
 	const lerp = (start: number, end: number, t: number) => start + (end - start) * t;
 
-	// 3. Define the Shape Coordinates dynamically
 	let trackD = $derived.by(() => {
-		// Responsive Dimensions for the "Stadium Loop"
-		// On mobile, we want the loop to fill the width (5% margins)
-		// On desktop, we want it centered (25% margins)
 		const marginX = isMobile ? innerWidth * 0.05 : innerWidth * 0.25;
 		const topY = isMobile ? innerHeight * 0.45 : innerHeight * 0.55;
 		const bottomY = isMobile ? innerHeight * 0.75 : innerHeight * 0.85;
 
-		// STATE A: THE STADIUM LOOP (Responsive)
 		const loop = {
 			p0: { x: marginX, y: topY },
 			c1: { x: marginX, y: innerHeight * 0.25 },
@@ -124,7 +127,6 @@
 			end: { x: marginX, y: topY }
 		};
 
-		// STATE B: THE OPEN WAVE
 		const line = {
 			p0: { x: -100, y: innerHeight * 0.8 },
 			c1: { x: innerWidth * 0.2, y: innerHeight * 0.8 },
@@ -136,7 +138,6 @@
 		};
 
 		const t = morphProgress;
-
 		const curr = {
 			p0x: lerp(loop.p0.x, line.p0.x, t),
 			p0y: lerp(loop.p0.y, line.p0.y, t),
@@ -157,24 +158,19 @@
 		return `M ${curr.p0x},${curr.p0y} C ${curr.c1x},${curr.c1y} ${curr.c2x},${curr.c2y} ${curr.midx},${curr.midy} C ${curr.c3x},${curr.c3y} ${curr.c4x},${curr.c4y} ${curr.endx},${curr.endy}`;
 	});
 
-	// 4. Update track length
 	$effect(() => {
 		trackD;
-		if (trackPath) {
-			trackLength = trackPath.getTotalLength();
-		}
+		if (trackPath) trackLength = trackPath.getTotalLength();
 	});
 </script>
 
 <svelte:window bind:scrollY bind:innerHeight bind:innerWidth />
 
 <!-- GLOBAL WRAPPER -->
-<div
-	class="relative w-full bg-[#050505] font-sans text-white selection:bg-(--accent-lime) selection:text-black"
->
+<div class="relative w-full bg-[#050505] font-sans text-white">
 	<!-- GLOBAL NOISE OVERLAY -->
 	<div
-		class="pointer-events-none fixed inset-0 z-50 opacity-[0.08] mix-blend-overlay"
+		class="pointer-events-none fixed inset-0 z-50 opacity-[0.06] mix-blend-overlay"
 		style="background-image: url('https://grainy-gradients.vercel.app/noise.svg');"
 	></div>
 
@@ -182,7 +178,7 @@
 	<nav
 		class="fixed top-0 z-40 flex w-full items-start justify-between px-6 py-6 transition-all duration-500 {scrollY >
 		50
-			? 'bg-black/60 shadow-sm backdrop-blur-md'
+			? 'bg-black/80 shadow-sm backdrop-blur-md'
 			: ''}"
 	>
 		<div class="flex flex-col mix-blend-difference">
@@ -205,7 +201,6 @@
 				>
 					Leaderboard
 				</button>
-				<!-- Mobile Icon for Leaderboard -->
 				<button class="text-(--accent-lime) md:hidden">
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
@@ -257,7 +252,7 @@
 	</nav>
 
 	<!-- SECTION 1: HERO WITH TRACK OVERLAY -->
-	<section class="relative h-dvh w-full overflow-hidden bg-[#050505]">
+	<section class="relative h-dvh min-h-[600px] w-full overflow-hidden bg-[#050505]">
 		<!-- Top Fade -->
 		<div
 			class="pointer-events-none absolute top-0 left-0 z-20 h-40 w-full bg-linear-to-b from-[#050505] to-transparent"
@@ -312,19 +307,20 @@
 			style="transform: translateY({smoothScroll.current * 0.3}px); opacity: {1 -
 				scrollY / (innerHeight * 0.8)};"
 		>
-			<div class="relative">
+			<div class="relative px-4">
 				<h1
-					class="-skew-x-12 transform text-center text-[14vw] leading-[0.8] font-black tracking-tighter uppercase italic md:text-[18vw]"
+					class="-skew-x-12 transform text-center leading-[0.8] font-black tracking-tighter uppercase italic"
+					style="font-size: clamp(4rem, 16vw, 15rem);"
 				>
 					<span
 						class="block bg-linear-to-b from-white via-white to-gray-500 bg-clip-text text-transparent"
 						>Run.</span
 					>
 					<span
-						class="ml-[10vw] block bg-linear-to-b from-gray-400 via-gray-600 to-gray-800 bg-clip-text text-transparent"
+						class="ml-[0.5em] block bg-linear-to-b from-gray-400 via-gray-600 to-gray-800 bg-clip-text text-transparent"
 						>Dip.</span
 					>
-					<span class="ml-[20vw] block text-(--accent-lime)">Sip.</span>
+					<span class="ml-[1em] block text-(--accent-lime)">Sip.</span>
 				</h1>
 			</div>
 
@@ -341,14 +337,16 @@
 	</section>
 
 	<!-- SECTION 2: MANIFESTO -->
-	<section class="relative z-20 mx-auto max-w-4xl px-6 py-24 md:py-40">
+	<section class="relative z-20 mx-auto max-w-4xl px-6 py-24 md:py-32 lg:py-40">
 		<div use:reveal class="reveal">
 			<div class="mb-8 flex items-center gap-4 opacity-50">
 				<div class="h-px w-8 bg-white"></div>
 				<span class="font-mono text-xs tracking-widest text-white uppercase">The Split</span>
 			</div>
 
-			<h2 class="mb-12 text-3xl leading-[1.1] font-medium tracking-tight text-white md:text-6xl">
+			<h2
+				class="mb-12 text-3xl leading-[1.1] font-medium tracking-tight text-white md:text-5xl lg:text-6xl"
+			>
 				We do hard things. <br class="hidden md:block" />We just prefer to do them
 				<span
 					class="bg-linear-to-r from-(--frosted-blue) to-white bg-clip-text text-transparent italic"
@@ -412,85 +410,108 @@
 	</section>
 
 	<!-- SECTION 3: CAMERA ROLL (The "Photo Finish") -->
-	<!-- CHANGED: h-[300vh] to h-[300dvh] for mobile smoothness -->
+	<!-- 
+     REFACTOR FIX V2:
+     - Vertical Mode (Laptop/Mobile): Flex Col. Title Top, Images Bottom.
+     - Large Mode (Original): Absolute Title Top-Left. Images Scroll Under. Mix Blend Difference.
+  -->
 	<div bind:this={cameraRollSection} class="relative h-[300dvh] w-full bg-[#050505]">
-		<!-- 
-       UPDATED: 
-       - Added `justify-between` to ensure Title stays at top and Images stay at bottom.
-       - Added `gap-8` to enforce physical spacing if screen height is tight.
-    -->
-		<div
-			class="sticky top-0 flex h-dvh w-full flex-col justify-between gap-8 overflow-hidden xl:flex-row xl:items-center xl:gap-0"
-		>
+		<div class="sticky top-0 flex h-dvh w-full flex-col overflow-hidden">
 			<!-- Top Fade -->
 			<div
 				class="pointer-events-none absolute top-0 left-0 z-30 h-32 w-full bg-linear-to-b from-[#050505] to-transparent"
 			></div>
 
-			<!-- Track Marking Background Lines -->
+			<!-- Background Lines -->
 			<div
-				class="pointer-events-none absolute inset-0 flex h-full w-full flex-col justify-between opacity-20"
+				class="pointer-events-none absolute inset-0 z-0 flex h-full w-full flex-col justify-between opacity-20"
 			>
 				{#each Array(5) as _}
 					<div class="h-px w-full bg-white/20"></div>
 				{/each}
 			</div>
 
-			<!-- Title Area -->
 			<!-- 
-         < xl (1280px): Relative, pt-24 (clear nav), in document flow.
-         >= xl: Absolute, overlay, mix-blend-difference.
+         CONTAINER LOGIC:
+         Vertical: flex-col, justify-between (spreads title and images out)
+         Large: block (allows absolute positioning to work relative to this container)
       -->
 			<div
-				class="relative z-20 w-full px-6 pt-24 pb-4 mix-blend-normal xl:absolute xl:top-20 xl:left-20 xl:w-auto xl:p-0 xl:pt-0 xl:mix-blend-difference"
+				class="relative z-10 h-full w-full
+               {useVerticalLayout ? 'flex flex-col justify-between' : 'block'}"
 			>
-				<h3 class="mb-2 font-mono text-xs font-bold tracking-widest text-(--accent-lime) uppercase">
-					// Evidence
-				</h3>
-				<h2
-					class="text-4xl font-black tracking-tighter text-white uppercase italic md:text-5xl lg:text-8xl"
+				<!-- TITLE BLOCK -->
+				<!-- 
+           Vertical: Relative, padding top, sits in flow.
+           Large: Absolute, Top-20 (80px), Left-20 (80px), Mix Blend Mode.
+        -->
+				<div
+					class="pointer-events-none z-20
+                 {useVerticalLayout
+						? 'relative flex w-full flex-col justify-end px-6 pt-24 pb-4'
+						: 'absolute top-20 left-20 w-auto mix-blend-difference'}"
 				>
-					Photo Finish
-				</h2>
-			</div>
-
-			<!-- Images Container -->
-			<!-- 
-         CHANGED: 
-         - `items-end` + `pb-12`: Anchors images to bottom of screen in vertical layout (< xl), preventing them from floating up into title.
-         - `md:h-[45vh]`: Reduced max height on laptops to ensure better clearance.
-      -->
-			<div
-				class="flex w-max flex-1 items-end gap-4 pb-12 pl-6 will-change-transform xl:h-full xl:items-center xl:gap-8 xl:pb-0 xl:pl-20"
-				style="transform: translateX(calc(-1 * {cameraRollProgress} * (100% - 100vw)));"
-			>
-				{#each memories as memory, i}
-					<div
-						class="group relative flex shrink-0 rotate-[var(--angle)] flex-col bg-white p-2 shadow-xl transition-all duration-500 hover:z-50 hover:scale-105 hover:rotate-0 md:p-3"
-						style="--angle: {(i % 2 === 0 ? 1 : -1) * (((i * 3) % 4) + 1)}deg;"
-					>
-						<div
-							class="absolute -top-1 left-1/2 h-3 w-3 -translate-x-1/2 rounded-full bg-black/20"
-						></div>
-
-						<!-- Mobile height adjustments to fit nicely -->
-						<div
-							class="relative h-[40vh] w-[30vh] overflow-hidden bg-gray-200 transition-all duration-500 md:h-[45vh] md:w-[35vh]"
+					<div>
+						<h3
+							class="mb-2 font-mono text-xs font-bold tracking-widest text-(--accent-lime) uppercase"
 						>
-							<img src={memory.src} alt="Memory" class="h-full w-full object-cover" />
-						</div>
-						<div class="mt-3 flex items-end justify-between">
-							<p
-								class="max-w-[20vh] truncate font-mono text-[10px] font-bold tracking-widest text-black uppercase"
-							>
-								{memory.caption}
-							</p>
-							<p class="font-mono text-[10px] text-gray-400">0{i + 1}</p>
-						</div>
+							// Evidence
+						</h3>
+						<h2
+							class="text-5xl font-black tracking-tighter text-white uppercase italic lg:text-7xl xl:text-8xl"
+						>
+							Photo<br />Finish
+						</h2>
 					</div>
-				{/each}
-				<!-- End spacer -->
-				<div class="w-10 shrink-0 md:w-40"></div>
+				</div>
+
+				<!-- IMAGES TRACK -->
+				<!--
+            Vertical: w-full, flex-1, padding bottom/left.
+            Large: h-full, flex items-center, padding left-20 (aligns with title start).
+        -->
+				<div
+					class="flex overflow-hidden
+                 {useVerticalLayout
+						? 'w-full flex-1 items-end pb-12 pl-6'
+						: 'h-full items-center pl-20'}"
+				>
+					<div
+						class="flex w-max items-center gap-4 will-change-transform md:gap-12"
+						style="transform: translateX(calc({isMobile
+							? '-5%'
+							: '0%'} - {cameraRollProgress} * (100% - {isMobile ? '80vw' : '100vw'})));"
+					>
+						{#each memories as memory, i}
+							<div
+								class="group relative flex shrink-0 rotate-[var(--angle)] flex-col bg-white p-2 shadow-xl transition-all duration-500 hover:z-50 hover:scale-105 hover:rotate-0 md:p-3"
+								style="--angle: {(i % 2 === 0 ? 1 : -1) * (((i * 3) % 4) + 1)}deg;"
+							>
+								<div
+									class="absolute -top-1 left-1/2 h-3 w-3 -translate-x-1/2 rounded-full bg-black/20"
+								></div>
+
+								<div
+									class="relative h-[40vh] max-h-[350px] w-[30vh] max-w-[280px] overflow-hidden bg-gray-200 transition-all duration-500 md:h-[50vh] md:max-h-[500px] md:w-[35vh] md:max-w-[350px]"
+								>
+									<img src={memory.src} alt="Memory" class="h-full w-full object-cover" />
+								</div>
+
+								<div class="mt-3 flex items-end justify-between">
+									<p
+										class="max-w-[150px] truncate font-mono text-[10px] font-bold tracking-widest text-black uppercase"
+									>
+										{memory.caption}
+									</p>
+									<p class="font-mono text-[10px] text-gray-400">0{i + 1}</p>
+								</div>
+							</div>
+						{/each}
+
+						<!-- End spacer -->
+						<div class="w-10 shrink-0 md:w-40"></div>
+					</div>
+				</div>
 			</div>
 
 			<!-- Bottom Fade -->
@@ -501,7 +522,7 @@
 	</div>
 
 	<!-- SECTION 4: THE ROUTINE -->
-	<section class="relative z-10 overflow-hidden bg-[#050505] px-6 py-24 md:py-48">
+	<section class="relative z-10 overflow-hidden bg-[#050505] px-6 py-24 md:py-32">
 		<!-- Top Fade -->
 		<div
 			class="pointer-events-none absolute top-0 left-0 z-20 h-32 w-full bg-linear-to-b from-[#050505] to-transparent"
@@ -514,7 +535,7 @@
 			<div class="flex w-[150%] rotate-12 flex-col gap-0">
 				{#each Array(10) as _, i}
 					<div
-						class="text-[10vh] leading-[0.85] font-black tracking-tighter whitespace-nowrap text-white/50 uppercase will-change-transform md:text-[10vw]"
+						class="text-[12vh] leading-[0.85] font-black tracking-tighter whitespace-nowrap text-white/50 uppercase will-change-transform md:text-[10vw]"
 						style="transform: translateX({(i % 2 === 0 ? 1 : -1) *
 							(smoothScroll.current * 0.05)}px);"
 					>
@@ -533,7 +554,7 @@
 				class="mb-16 flex flex-col justify-between gap-2 border-b border-white/20 pb-4 md:mb-24 md:flex-row md:items-end"
 			>
 				<h2
-					class="text-4xl font-black tracking-tighter text-white uppercase italic md:text-8xl"
+					class="text-4xl font-black tracking-tighter text-white uppercase italic md:text-7xl lg:text-8xl"
 					use:reveal
 				>
 					Weekly Splits
@@ -545,7 +566,7 @@
 				{#each routineSchedule as schedule, i}
 					<div
 						use:reveal
-						class="reveal group relative grid grid-cols-1 gap-4 border-b-2 border-dashed border-white/10 py-8 transition-all hover:border-solid hover:border-white/30 hover:bg-white/5 md:grid-cols-[100px_1fr_auto] md:gap-8 md:py-12"
+						class="reveal group relative grid grid-cols-1 gap-4 border-b-2 border-dashed border-white/10 py-8 transition-all hover:border-solid hover:border-white/30 hover:bg-white/5 md:grid-cols-[80px_1fr_auto] md:gap-8 md:py-10 lg:grid-cols-[100px_1fr_auto]"
 						style="--accent: {schedule.accentColor}"
 					>
 						<!-- Lane Number (Hidden on mobile) -->
@@ -561,7 +582,7 @@
 
 						<div class="flex flex-col justify-center">
 							<h3
-								class="text-4xl font-black tracking-tight text-white uppercase italic transition-colors group-hover:text-(--accent) md:text-7xl"
+								class="text-4xl font-black tracking-tight text-white uppercase italic transition-colors group-hover:text-(--accent) md:text-6xl lg:text-7xl"
 							>
 								{schedule.day}
 							</h3>
@@ -605,7 +626,7 @@
 
 	<!-- SECTION 5: FOOTER -->
 	<section
-		class="relative flex h-[80vh] flex-col items-center justify-center overflow-hidden bg-[#050505] md:h-screen"
+		class="relative flex min-h-[80vh] flex-col items-center justify-center overflow-hidden bg-[#050505] py-20 md:h-screen md:py-0"
 	>
 		<!-- Top Fade -->
 		<div
@@ -620,7 +641,7 @@
 		<div class="relative z-10 px-4 text-center" use:reveal>
 			{#if isLoggedIn}
 				<h2
-					class="mb-8 text-4xl leading-[0.85] font-black tracking-tighter text-white uppercase italic md:text-9xl"
+					class="mb-8 text-4xl leading-[0.85] font-black tracking-tighter text-white uppercase italic md:text-7xl lg:text-9xl"
 				>
 					Check Your<br /><span
 						class="bg-linear-to-r from-(--accent-lime) to-white bg-clip-text text-transparent"
@@ -629,7 +650,7 @@
 				</h2>
 			{:else}
 				<h2
-					class="mb-8 text-4xl leading-[0.85] font-black tracking-tighter text-white uppercase italic md:text-9xl"
+					class="mb-8 text-4xl leading-[0.85] font-black tracking-tighter text-white uppercase italic md:text-7xl lg:text-9xl"
 				>
 					Toe The<br /><span
 						class="bg-linear-to-r from-(--vintage-grape) to-white bg-clip-text text-transparent"
