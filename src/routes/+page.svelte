@@ -257,7 +257,6 @@
 	</nav>
 
 	<!-- SECTION 1: HERO WITH TRACK OVERLAY -->
-	<!-- CHANGED: h-screen to h-dvh for better mobile browser support -->
 	<section class="relative h-dvh w-full overflow-hidden bg-[#050505]">
 		<!-- Top Fade -->
 		<div
@@ -314,7 +313,6 @@
 				scrollY / (innerHeight * 0.8)};"
 		>
 			<div class="relative">
-				<!-- CHANGED: Adjusted typography sizing for mobile (text-[14vw]) vs desktop (text-[18vw]) -->
 				<h1
 					class="-skew-x-12 transform text-center text-[14vw] leading-[0.8] font-black tracking-tighter uppercase italic md:text-[18vw]"
 				>
@@ -416,12 +414,13 @@
 	<!-- SECTION 3: CAMERA ROLL (The "Photo Finish") -->
 	<!-- CHANGED: h-[300vh] to h-[300dvh] for mobile smoothness -->
 	<div bind:this={cameraRollSection} class="relative h-[300dvh] w-full bg-[#050505]">
-		<!-- CHANGED: `top-0` sticky container now uses h-dvh. 
-         Logic: On mobile, align to bottom (items-end) + padding (pb-24) to keep images visible under the header. 
-         On desktop, center them (items-center).
+		<!-- 
+       UPDATED: 
+       - Added `justify-between` to ensure Title stays at top and Images stay at bottom.
+       - Added `gap-8` to enforce physical spacing if screen height is tight.
     -->
 		<div
-			class="sticky top-0 flex h-dvh w-full items-end overflow-hidden pb-24 md:items-center md:pb-0"
+			class="sticky top-0 flex h-dvh w-full flex-col justify-between gap-8 overflow-hidden xl:flex-row xl:items-center xl:gap-0"
 		>
 			<!-- Top Fade -->
 			<div
@@ -438,8 +437,12 @@
 			</div>
 
 			<!-- Title Area -->
+			<!-- 
+         < xl (1280px): Relative, pt-24 (clear nav), in document flow.
+         >= xl: Absolute, overlay, mix-blend-difference.
+      -->
 			<div
-				class="pointer-events-none absolute top-10 left-6 z-20 mix-blend-difference lg:top-20 lg:left-20"
+				class="relative z-20 w-full px-6 pt-24 pb-4 mix-blend-normal xl:absolute xl:top-20 xl:left-20 xl:w-auto xl:p-0 xl:pt-0 xl:mix-blend-difference"
 			>
 				<h3 class="mb-2 font-mono text-xs font-bold tracking-widest text-(--accent-lime) uppercase">
 					// Evidence
@@ -452,9 +455,13 @@
 			</div>
 
 			<!-- Images Container -->
-			<!-- CHANGED: gap adjusted for mobile (gap-4) vs desktop (gap-8) -->
+			<!-- 
+         CHANGED: 
+         - `items-end` + `pb-12`: Anchors images to bottom of screen in vertical layout (< xl), preventing them from floating up into title.
+         - `md:h-[45vh]`: Reduced max height on laptops to ensure better clearance.
+      -->
 			<div
-				class="flex items-center gap-4 pl-6 will-change-transform lg:gap-8 lg:pl-20"
+				class="flex w-max flex-1 items-end gap-4 pb-12 pl-6 will-change-transform xl:h-full xl:items-center xl:gap-8 xl:pb-0 xl:pl-20"
 				style="transform: translateX(calc(-1 * {cameraRollProgress} * (100% - 100vw)));"
 			>
 				{#each memories as memory, i}
@@ -466,9 +473,9 @@
 							class="absolute -top-1 left-1/2 h-3 w-3 -translate-x-1/2 rounded-full bg-black/20"
 						></div>
 
-						<!-- CHANGED: Adjusted dimensions for mobile to prevent them being too tall -->
+						<!-- Mobile height adjustments to fit nicely -->
 						<div
-							class="relative h-[40vh] w-[30vh] overflow-hidden bg-gray-200 transition-all duration-500 md:h-[55vh] md:w-[40vh]"
+							class="relative h-[40vh] w-[30vh] overflow-hidden bg-gray-200 transition-all duration-500 md:h-[45vh] md:w-[35vh]"
 						>
 							<img src={memory.src} alt="Memory" class="h-full w-full object-cover" />
 						</div>
@@ -597,7 +604,6 @@
 	</section>
 
 	<!-- SECTION 5: FOOTER -->
-	<!-- CHANGED: h-dvh for better mobile centering -->
 	<section
 		class="relative flex h-[80vh] flex-col items-center justify-center overflow-hidden bg-[#050505] md:h-screen"
 	>
