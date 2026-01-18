@@ -39,7 +39,7 @@
 	<div class="relative z-10 px-4 text-center" use:reveal>
 		{#if isLoggedIn}
 			<h2
-				class="mb-8 text-4xl leading-[0.85] font-black tracking-tighter text-white uppercase italic md:text-9xl"
+				class="mb-8 text-6xl leading-[0.85] font-black tracking-tighter text-white uppercase italic md:text-9xl"
 			>
 				Check Your<br /><span
 					class="bg-linear-to-r from-(--accent-lime) to-white bg-clip-text text-transparent"
@@ -48,7 +48,7 @@
 			</h2>
 		{:else}
 			<h2
-				class="mb-8 text-4xl leading-[0.85] font-black tracking-tighter text-white uppercase italic md:text-9xl"
+				class="mb-8 text-6xl leading-[0.85] font-black tracking-tighter text-white uppercase italic md:text-9xl"
 			>
 				Toe The<br /><span
 					class="bg-linear-to-r from-(--vintage-grape) to-white bg-clip-text text-transparent"
