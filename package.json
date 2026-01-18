@@ -12,9 +12,9 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"format": "prettier --write .",
 		"lint": "prettier --check . && eslint .",
-		"db:generate": "drizzle-kit generate",
-		"db:migrate": "drizzle-kit migrate",
-		"db:push": "drizzle-kit push",
+		"db:generate": "NODE_OPTIONS='--import tsx' drizzle-kit generate",
+		"db:migrate": "NODE_OPTIONS='--import tsx' drizzle-kit migrate",
+		"db:push": "NODE_OPTIONS='--import tsx' drizzle-kit push",
 		"db:studio": "drizzle-kit studio"
 	},
 	"devDependencies": {
@@ -38,6 +38,7 @@
 		"svelte": "^5.45.6",
 		"svelte-check": "^4.3.4",
 		"tailwindcss": "^4.1.17",
+		"tsx": "^4.21.0",
 		"typescript": "^5.9.3",
 		"typescript-eslint": "^8.48.1",
 		"vite": "^7.2.6"
