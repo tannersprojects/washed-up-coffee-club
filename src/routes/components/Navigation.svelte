@@ -14,7 +14,7 @@
 	<div class="flex flex-col mix-blend-difference">
 		<div class="flex items-center gap-2">
 			<div class="h-3 w-3 rounded-full bg-(--accent-lime)"></div>
-			<div class="text-sm font-bold tracking-tight text-white uppercase">Washed Up CC</div>
+			<div class="text-sm font-bold tracking-tight text-white uppercase">Washed Up Coffee Club</div>
 		</div>
 		<div class="hidden pl-5 font-mono text-[10px] tracking-widest text-gray-400 uppercase sm:block">
 			CHS / SC / USA
@@ -26,9 +26,9 @@
 			<button
 				class="hidden rounded-full border border-white/20 bg-white/5 px-4 py-1.5 text-xs font-bold tracking-widest text-white uppercase backdrop-blur-md transition-all hover:border-(--accent-lime) hover:text-(--accent-lime) md:block"
 			>
-				Leaderboard
-			</button>
-			<button class="text-(--accent-lime) md:hidden">
+				<a href="/dashboard"> Dashboard </a></button
+			>
+			<button aria-label="Open dashboard menu" class="text-(--accent-lime) md:hidden">
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
 					width="20"

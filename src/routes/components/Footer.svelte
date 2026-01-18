@@ -59,8 +59,9 @@
 
 		<div class="mt-8 flex justify-center">
 			{#if isLoggedIn}
-				<button
+				<a
 					class="group relative flex items-center gap-3 bg-white px-6 py-3 text-base font-bold tracking-wider text-black uppercase transition-all hover:bg-(--accent-lime) md:px-8 md:py-4 md:text-lg"
+					href="/dashboard"
 				>
 					View Leaderboard
 					<svg
@@ -77,7 +78,7 @@
 							d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
 						/>
 					</svg>
-				</button>
+				</a>
 			{:else}
 				<a
 					href="/auth/strava/login"

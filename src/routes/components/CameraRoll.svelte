@@ -45,13 +45,13 @@
 		></div>
 
 		<!-- Background Lines -->
-		<div
+		<!-- <div
 			class="pointer-events-none absolute inset-0 flex h-full w-full flex-col justify-between opacity-20"
 		>
 			{#each Array(5) as _}
 				<div class="h-px w-full bg-white/20"></div>
 			{/each}
-		</div>
+		</div> -->
 
 		<!-- TITLE SECTION -->
 		<!-- Always top, full width -->
