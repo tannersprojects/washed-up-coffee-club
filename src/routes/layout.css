@@ -2,14 +2,17 @@
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
 
-/* Global CSS Variables - The "Theme" */
+/* Global CSS Variables */
 :root {
 	--frosted-blue: #8fcad0;
 	--grey-olive: #919191;
 	--vintage-grape: #46305f;
 	--white: #ffffff;
-	--black: #000000;
+	--black: #050505;
 	--accent-lime: #ccff00;
+
+	/* Spacing Variables for fluid layouts */
+	--header-height: 80px;
 }
 
 /* Base resets */
@@ -18,20 +21,20 @@ body {
 	color: var(--white);
 	margin: 0;
 	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-	overflow-x: hidden; /* Critical for the sticky horizontal scroll */
+	overflow-x: hidden;
 	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
 }
 
 /* Apple-style Reveal Animation 
-  Added a slight delay logic via child selectors if needed, 
-  but base class handles the heavy lifting.
+   Optimized for smoother hardware acceleration
 */
 .reveal {
 	opacity: 0;
 	transform: translateY(30px) scale(0.98);
 	transition:
-		opacity 1s cubic-bezier(0.16, 1, 0.3, 1),
-		transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+		opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1),
+		transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
 	will-change: opacity, transform;
 }
 
@@ -40,11 +43,17 @@ body {
 	transform: translateY(0) scale(1);
 }
 
-/* Hide scrollbar for the horizontal section purely for aesthetics on some browsers */
+/* Utility to hide scrollbars but keep functionality */
+.no-scrollbar {
+	-ms-overflow-style: none; /* IE and Edge */
+	scrollbar-width: none; /* Firefox */
+}
 .no-scrollbar::-webkit-scrollbar {
 	display: none;
 }
-.no-scrollbar {
-	-ms-overflow-style: none;
-	scrollbar-width: none;
+
+/* Text Selection Style */
+::selection {
+	background-color: var(--accent-lime);
+	color: black;
 }
