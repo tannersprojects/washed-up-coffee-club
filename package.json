@@ -12,9 +12,9 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"format": "prettier --write .",
 		"lint": "prettier --check . && eslint .",
-		"db:generate": "NODE_OPTIONS='--import tsx' drizzle-kit generate",
-		"db:migrate": "NODE_OPTIONS='--import tsx' drizzle-kit migrate",
-		"db:push": "NODE_OPTIONS='--import tsx' drizzle-kit push",
+		"db:generate": "tsx node_modules/drizzle-kit/bin.cjs generate",
+		"db:migrate": "tsx node_modules/drizzle-kit/bin.cjs migrate",
+		"db:push": "tsx node_modules/drizzle-kit/bin.cjs push",
 		"db:studio": "drizzle-kit studio"
 	},
 	"devDependencies": {
