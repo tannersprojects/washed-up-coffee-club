@@ -16,7 +16,7 @@ CREATE TABLE "challenge_contributions" (
 CREATE TABLE "challenge_participants" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"challenge_id" uuid NOT NULL,
-	"user_id" uuid NOT NULL,
+	"profile_id" uuid NOT NULL,
 	"status" "participant_status" DEFAULT 'registered',
 	"joined_at" timestamp with time zone DEFAULT now(),
 	"result_value" integer DEFAULT 0,
@@ -75,7 +75,7 @@ CREATE TABLE "routine_schedules" (
 --> statement-breakpoint
 CREATE TABLE "strava_connections" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"user_id" uuid NOT NULL,
+	"profile_id" uuid NOT NULL,
 	"strava_athlete_id" bigint NOT NULL,
 	"access_token" text NOT NULL,
 	"refresh_token" text NOT NULL,
@@ -88,12 +88,12 @@ CREATE TABLE "strava_connections" (
 --> statement-breakpoint
 ALTER TABLE "challenge_contributions" ADD CONSTRAINT "challenge_contributions_participant_id_challenge_participants_id_fk" FOREIGN KEY ("participant_id") REFERENCES "public"."challenge_participants"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "challenge_participants" ADD CONSTRAINT "challenge_participants_challenge_id_challenges_id_fk" FOREIGN KEY ("challenge_id") REFERENCES "public"."challenges"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "challenge_participants" ADD CONSTRAINT "challenge_participants_user_id_profile_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."profile"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "strava_connections" ADD CONSTRAINT "strava_connections_user_id_profile_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."profile"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "challenge_participants" ADD CONSTRAINT "challenge_participants_profile_id_profile_id_fk" FOREIGN KEY ("profile_id") REFERENCES "public"."profile"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "strava_connections" ADD CONSTRAINT "strava_connections_profile_id_profile_id_fk" FOREIGN KEY ("profile_id") REFERENCES "public"."profile"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "idx_contribution_unique" ON "challenge_contributions" USING btree ("participant_id","strava_activity_id");--> statement-breakpoint
-CREATE INDEX "idx_participant_challenge_user" ON "challenge_participants" USING btree ("challenge_id","user_id");--> statement-breakpoint
+CREATE INDEX "idx_participant_challenge_profile" ON "challenge_participants" USING btree ("challenge_id","profile_id");--> statement-breakpoint
 CREATE INDEX "idx_participant_result" ON "challenge_participants" USING btree ("challenge_id","result_value");--> statement-breakpoint
 CREATE INDEX "idx_memories_sort_order" ON "memories" USING btree ("sort_order");--> statement-breakpoint
 CREATE INDEX "idx_profile_strava_athlete_id" ON "profile" USING btree ("strava_athlete_id");--> statement-breakpoint
 CREATE INDEX "idx_routine_schedules_sort_order" ON "routine_schedules" USING btree ("sort_order");--> statement-breakpoint
-CREATE INDEX "idx_strava_connections_user_id" ON "strava_connections" USING btree ("user_id");
+CREATE INDEX "idx_strava_connections_profile_id" ON "strava_connections" USING btree ("profile_id");

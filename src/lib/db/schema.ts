@@ -10,6 +10,7 @@ import {
 	index,
 	pgEnum
 } from 'drizzle-orm/pg-core';
+import { relations } from 'drizzle-orm';
 
 // --- ENUMS ---
 // Enforcing strict types for logic branching
@@ -60,7 +61,7 @@ export const stravaConnectionsTable = pgTable(
 	'strava_connections',
 	{
 		id: uuid('id').defaultRandom().primaryKey(),
-		userId: uuid('user_id')
+		profileId: uuid('profile_id')
 			.notNull()
 			.references(() => profileTable.id, { onDelete: 'cascade' }),
 		stravaAthleteId: bigint('strava_athlete_id', { mode: 'number' }).notNull().unique(),
@@ -71,7 +72,7 @@ export const stravaConnectionsTable = pgTable(
 		createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 		updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull()
 	},
-	(table) => [index('idx_strava_connections_user_id').on(table.userId)]
+	(table) => [index('idx_strava_connections_profile_id').on(table.profileId)]
 );
 
 export const memoriesTable = pgTable(
@@ -139,7 +140,7 @@ export const challengeParticipantsTable = pgTable(
 		challengeId: uuid('challenge_id')
 			.references(() => challengesTable.id, { onDelete: 'cascade' })
 			.notNull(),
-		userId: uuid('user_id')
+		profileId: uuid('profile_id')
 			.references(() => profileTable.id, { onDelete: 'cascade' })
 			.notNull(),
 
@@ -159,7 +160,7 @@ export const challengeParticipantsTable = pgTable(
 		updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull()
 	},
 	(table) => [
-		index('idx_participant_challenge_user').on(table.challengeId, table.userId),
+		index('idx_participant_challenge_profile').on(table.challengeId, table.profileId),
 		index('idx_participant_result').on(table.challengeId, table.resultValue)
 	]
 );
@@ -194,4 +195,47 @@ export const challengeContributionsTable = pgTable(
 		// Ensure we don't accidentally double-count the same Strava activity for the same participant
 		index('idx_contribution_unique').on(table.participantId, table.stravaActivityId)
 	]
+);
+
+// --- RELATIONS ---
+
+export const profileRelations = relations(profileTable, ({ many }) => ({
+	stravaConnections: many(stravaConnectionsTable),
+	challengeParticipants: many(challengeParticipantsTable)
+}));
+
+export const stravaConnectionsRelations = relations(stravaConnectionsTable, ({ one }) => ({
+	profile: one(profileTable, {
+		fields: [stravaConnectionsTable.profileId],
+		references: [profileTable.id]
+	})
+}));
+
+export const challengesRelations = relations(challengesTable, ({ many }) => ({
+	participants: many(challengeParticipantsTable)
+}));
+
+export const challengeParticipantsRelations = relations(
+	challengeParticipantsTable,
+	({ one, many }) => ({
+		challenge: one(challengesTable, {
+			fields: [challengeParticipantsTable.challengeId],
+			references: [challengesTable.id]
+		}),
+		profile: one(profileTable, {
+			fields: [challengeParticipantsTable.profileId],
+			references: [profileTable.id]
+		}),
+		contributions: many(challengeContributionsTable)
+	})
+);
+
+export const challengeContributionsRelations = relations(
+	challengeContributionsTable,
+	({ one }) => ({
+		participant: one(challengeParticipantsTable, {
+			fields: [challengeContributionsTable.participantId],
+			references: [challengeParticipantsTable.id]
+		})
+	})
 );

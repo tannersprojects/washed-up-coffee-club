@@ -27,5 +27,5 @@
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
 
 <!-- Global Toast Notifications -->
-<Toaster position="top-center" theme="dark" richColors />
+<Toaster position="top-right" theme="dark" richColors />
 {@render children()}
