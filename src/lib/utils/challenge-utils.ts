@@ -1,13 +1,4 @@
-/**
- * Type representing a leaderboard row
- */
-type LeaderboardRow = {
-	participant: {
-		status: string | null;
-		[key: string]: unknown;
-	};
-	[key: string]: unknown;
-};
+import type { LeaderboardRow } from '$routes/dashboard/types.js';
 
 /**
  * Calculates the total distance in kilometers for all completed participants

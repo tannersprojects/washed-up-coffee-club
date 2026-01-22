@@ -11,6 +11,7 @@ import {
 	pgEnum
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
+import type { InferSelectModel } from 'drizzle-orm';
 
 // --- ENUMS ---
 // Enforcing strict types for logic branching
@@ -239,3 +240,11 @@ export const challengeContributionsRelations = relations(
 		})
 	})
 );
+
+// --- TYPE EXPORTS ---
+// Export inferred types from Drizzle schema for use throughout the application
+
+export type Profile = InferSelectModel<typeof profileTable>;
+export type Challenge = InferSelectModel<typeof challengesTable>;
+export type ChallengeParticipant = InferSelectModel<typeof challengeParticipantsTable>;
+export type ChallengeContribution = InferSelectModel<typeof challengeContributionsTable>;
