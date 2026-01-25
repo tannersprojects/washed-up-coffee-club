@@ -1,15 +1,18 @@
 <script lang="ts">
 	import { formatDate } from '$lib/utils/date-utils.js';
 	import { fly } from 'svelte/transition';
-	import type { ChallengeWithParticipation, LeaderboardRow } from '../types.js';
+	import type { LeaderboardRow } from '$lib/types/dashboard.js';
+	import { getDashboardUI } from '../_logic/DashboardUI.svelte.js';
 
 	type Props = {
 		row: LeaderboardRow;
-		challenge: ChallengeWithParticipation;
 		index: number;
 	};
 
-	let { row, challenge, index }: Props = $props();
+	let { row, index }: Props = $props();
+
+	const dashboard = getDashboardUI();
+	const challenge = $derived(dashboard.selectedChallenge);
 
 	// Helper function for status color
 	const getStatusColor = (status: string | null) => {
@@ -82,7 +85,7 @@
 	<!-- Distance -->
 	<div class="flex flex-col items-end justify-center">
 		<span class="font-mono font-bold text-white">
-			{#if challenge.goalValue}
+			{#if challenge?.goalValue}
 				{(challenge.goalValue / 1000).toFixed(1)}
 				<span class="text-[10px] text-gray-500">KM</span>
 			{:else}

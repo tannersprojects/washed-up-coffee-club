@@ -14,25 +14,21 @@ export const load = async ({ locals }: { locals: App.Locals }) => {
 		throw redirect(302, '/');
 	}
 
-	const challenge = await loadActiveChallenge(profile.id);
+	// Load all active challenges with participation status
+	const challenges = await loadActiveChallenges(profile.id);
 
-	if (!challenge) {
-		return {
-			user,
-			profile,
-			challenge: null,
-			leaderboard: null
-		};
+	// Load leaderboards for all challenges
+	const leaderboards: Record<string, Awaited<ReturnType<typeof buildLeaderboard>>> = {};
+	for (const challenge of challenges) {
+		const participants = await loadChallengeParticipants(challenge.id);
+		leaderboards[challenge.id] = buildLeaderboard(participants);
 	}
-
-	const challengeParticipants = await loadChallengeParticipants(challenge.id);
-	const leaderboard = buildLeaderboard(challengeParticipants);
 
 	return {
 		user,
 		profile,
-		challenge,
-		leaderboard
+		challenges,
+		leaderboards
 	};
 };
 
@@ -47,22 +43,22 @@ async function checkUserParticipation(challengeId: string, profileId: string) {
 	return participant || null;
 }
 
-async function loadActiveChallenge(profileId: string): Promise<ChallengeWithParticipation | null> {
-	const challenge = await db.query.challengesTable.findFirst({
+async function loadActiveChallenges(profileId: string): Promise<ChallengeWithParticipation[]> {
+	const challenges = await db.query.challengesTable.findMany({
 		where: eq(challengesTable.isActive, true)
 	});
 
-	if (!challenge) {
-		return null;
-	}
-
-	const participant = await checkUserParticipation(challenge.id, profileId);
-
-	return {
-		...challenge,
-		isParticipating: participant !== null,
-		participant: participant
-	};
+	// Attach participation status to each challenge
+	return Promise.all(
+		challenges.map(async (challenge) => {
+			const participant = await checkUserParticipation(challenge.id, profileId);
+			return {
+				...challenge,
+				isParticipating: participant !== null,
+				participant: participant
+			};
+		})
+	);
 }
 
 async function loadChallengeParticipants(challengeId: string) {

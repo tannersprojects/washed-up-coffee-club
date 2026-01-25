@@ -1,9 +1,8 @@
 <script lang="ts">
-	type Props = {
-		timeLeft: string;
-	};
+	import { getDashboardUI } from '../_logic/DashboardUI.svelte';
 
-	let { timeLeft }: Props = $props();
+	let dashboard = getDashboardUI();
+	let timeLeft = $derived(dashboard.selectedChallenge?.timeLeft || '00:00:00');
 </script>
 
 <div class="flex flex-col items-end">

@@ -111,7 +111,7 @@ export const routineSchedulesTable = pgTable(
 export const challengesTable = pgTable('challenges', {
 	id: uuid('id').defaultRandom().primaryKey(),
 	title: text('title').notNull(),
-	description: text('description'),
+	description: text('description').notNull().default(''),
 
 	// Rules
 	type: challengeTypeEnum('type').notNull().default(CHALLENGE_TYPE.CUMULATIVE),
@@ -128,7 +128,7 @@ export const challengesTable = pgTable('challenges', {
 	endDate: timestamp('end_date', { withTimezone: true }).notNull(),
 
 	status: challengeStatusEnum('status').notNull().default(CHALLENGE_STATUS.UPCOMING),
-	isActive: boolean('is_active').default(true),
+	isActive: boolean('is_active').notNull().default(true),
 
 	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull()
 });

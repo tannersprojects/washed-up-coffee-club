@@ -1,19 +1,15 @@
 <script lang="ts">
-	import type { ChallengeWithParticipation } from '$lib/types/dashboard.js';
 	import { isChallengeJoinable } from '$lib/utils/challenge-utils.js';
+	import { getDashboardUI } from '../_logic/DashboardUI.svelte.js';
 
-	type Props = {
-		challenge: ChallengeWithParticipation;
-		isSubmitting?: boolean;
-	};
-
-	let { challenge, isSubmitting = false }: Props = $props();
-
-	const joinable = $derived(isChallengeJoinable(challenge));
+	let dashboard = getDashboardUI();
+	let challenge = $derived(dashboard.selectedChallenge);
+	let isSubmitting = $derived(dashboard.isSubmitting);
+	let joinable = $derived(isChallengeJoinable(challenge));
 </script>
 
 <div class="flex">
-	{#if challenge.isParticipating}
+	{#if challenge?.isParticipating}
 		<div
 			class="flex rounded-full border border-(--accent-lime)/30 bg-(--accent-lime)/10 px-4 py-2 text-sm font-bold tracking-widest text-(--accent-lime) uppercase"
 		>

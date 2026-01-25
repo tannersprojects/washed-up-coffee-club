@@ -1,6 +1,7 @@
-import type { LeaderboardRow } from '$routes/dashboard/types.js';
-import type { Challenge } from '$lib/db/schema';
+import type { LeaderboardRow } from '$lib/types/dashboard.js';
 import { CHALLENGE_STATUS } from '$lib/constants/challenge_status.js';
+import type { ChallengeUI } from '../../routes/dashboard/_logic/ChallengeUI.svelte';
+import type { Challenge } from '$lib/db/schema';
 
 /**
  * Calculates the total distance in kilometers for all completed participants
@@ -33,7 +34,7 @@ export function calculateTotalDistanceKm(
  * @param challenge - The challenge to validate
  * @returns true if challenge is joinable, false otherwise
  */
-export function isChallengeJoinable(challenge: Challenge | null): boolean {
+export function isChallengeJoinable(challenge: ChallengeUI | Challenge | null): boolean {
 	if (!challenge) {
 		return false;
 	}

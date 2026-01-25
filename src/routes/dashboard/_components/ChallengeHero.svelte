@@ -1,18 +1,12 @@
 <script lang="ts">
 	import { formatDate } from '$lib/utils/date-utils.js';
-	import type { ChallengeStats, ChallengeWithParticipation } from '$lib/types/dashboard.js';
+	import { getDashboardUI } from '../_logic/DashboardUI.svelte.js';
 	import CountdownTimer from './CountdownTimer.svelte';
 	import ChallengeStatsGrid from './ChallengeStatsGrid.svelte';
 	import JoinChallengeButton from './JoinChallengeButton.svelte';
 
-	type Props = {
-		challenge: ChallengeWithParticipation;
-		timeLeft: string;
-		stats: ChallengeStats;
-		isSubmitting?: boolean;
-	};
-
-	let { challenge, timeLeft, stats, isSubmitting = false }: Props = $props();
+	const dashboard = getDashboardUI();
+	const challenge = $derived(dashboard.selectedChallenge);
 </script>
 
 <header class="mx-auto mb-16 max-w-5xl px-6">
@@ -25,21 +19,21 @@
 					Active Challenge
 				</span>
 				<span class="font-mono text-[10px] tracking-widest text-gray-500 uppercase">
-					{formatDate(challenge.startDate)}
+					{formatDate(challenge?.startDate || new Date())}
 				</span>
 			</div>
 			<h1
 				class="text-4xl font-black tracking-tighter text-white uppercase italic md:text-6xl md:whitespace-nowrap"
 			>
-				{challenge.title}
+				{challenge?.title || ''}
 			</h1>
 			<div class="mt-4">
-				<JoinChallengeButton {challenge} {isSubmitting} />
+				<JoinChallengeButton />
 			</div>
 		</div>
 
-		<CountdownTimer {timeLeft} />
+		<CountdownTimer />
 	</div>
 
-	<ChallengeStatsGrid {stats} />
+	<ChallengeStatsGrid />
 </header>

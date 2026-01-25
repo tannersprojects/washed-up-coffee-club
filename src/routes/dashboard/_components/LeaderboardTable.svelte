@@ -1,14 +1,10 @@
 <script lang="ts">
-	import type { ChallengeWithParticipation, LeaderboardRow } from '../types.js';
+	import { getDashboardUI } from '../_logic/DashboardUI.svelte.js';
 	import LeaderboardRowComponent from './LeaderboardRow.svelte';
 	import EmptyState from './EmptyState.svelte';
 
-	type Props = {
-		leaderboard: LeaderboardRow[];
-		challenge: ChallengeWithParticipation;
-	};
-
-	let { leaderboard, challenge }: Props = $props();
+	const dashboard = getDashboardUI();
+	const leaderboard = $derived(dashboard.selectedLeaderboard?.rows || []);
 </script>
 
 <!-- List Header -->
@@ -26,7 +22,7 @@
 <!-- List Rows -->
 <div class="flex flex-col">
 	{#each leaderboard as row, i}
-		<LeaderboardRowComponent {row} {challenge} index={i} />
+		<LeaderboardRowComponent {row} index={i} />
 	{/each}
 
 	<!-- Empty State if no runners -->

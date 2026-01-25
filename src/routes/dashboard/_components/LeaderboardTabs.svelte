@@ -1,12 +1,8 @@
 <script lang="ts">
-	type Tab = 'leaderboard' | 'details';
+	import { getDashboardUI } from '../_logic/DashboardUI.svelte';
 
-	type Props = {
-		activeTab: Tab;
-		onTabChange: (tab: Tab) => void;
-	};
-
-	let { activeTab, onTabChange }: Props = $props();
+	let dashboard = getDashboardUI();
+	let activeTab = $derived(dashboard.activeTab);
 </script>
 
 <div class="mb-8 flex border-b border-white/10">
@@ -15,7 +11,7 @@
 		'leaderboard'
 			? 'border-(--accent-lime) text-white'
 			: 'border-transparent text-gray-500 hover:text-white'}"
-		onclick={() => onTabChange('leaderboard')}
+		onclick={() => dashboard.handleTabChange('leaderboard')}
 	>
 		Leaderboard
 	</button>
@@ -24,7 +20,7 @@
 		'details'
 			? 'border-(--accent-lime) text-white'
 			: 'border-transparent text-gray-500 hover:text-white'}"
-		onclick={() => onTabChange('details')}
+		onclick={() => dashboard.handleTabChange('details')}
 	>
 		Details
 	</button>
