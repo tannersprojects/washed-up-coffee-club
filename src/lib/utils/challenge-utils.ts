@@ -1,4 +1,6 @@
 import type { LeaderboardRow } from '$routes/dashboard/types.js';
+import type { Challenge } from '$lib/db/schema';
+import { CHALLENGE_STATUS } from '$lib/constants/challenge_status.js';
 
 /**
  * Calculates the total distance in kilometers for all completed participants
@@ -24,4 +26,41 @@ export function calculateTotalDistanceKm(
 	}, 0);
 
 	return totalKm.toFixed(1);
+}
+
+/**
+ * Validates if a challenge can be joined
+ * @param challenge - The challenge to validate
+ * @returns true if challenge is joinable, false otherwise
+ */
+export function isChallengeJoinable(challenge: Challenge | null): boolean {
+	if (!challenge) {
+		return false;
+	}
+
+	const now = new Date();
+
+	// Check challenge is active
+	if (challenge.status !== CHALLENGE_STATUS.ACTIVE) {
+		return false;
+	}
+
+	// Check challenge is marked as active
+	if (!challenge.isActive) {
+		return false;
+	}
+
+	// Check challenge hasn't ended
+	const endDate = new Date(challenge.endDate);
+	if (now >= endDate) {
+		return false;
+	}
+
+	// Check challenge has started (optional but good practice)
+	const startDate = new Date(challenge.startDate);
+	if (now < startDate) {
+		return false;
+	}
+
+	return true;
 }

@@ -1,6 +1,5 @@
 <script lang="ts">
-	import type { Challenge } from '$lib/db/schema';
-	import type { LeaderboardRow } from '../types.js';
+	import type { ChallengeWithParticipation, LeaderboardRow } from '../types.js';
 	import LeaderboardTabs from './LeaderboardTabs.svelte';
 	import LeaderboardTable from './LeaderboardTable.svelte';
 	import ChallengeDetails from './ChallengeDetails.svelte';
@@ -9,7 +8,7 @@
 
 	type Props = {
 		leaderboard: LeaderboardRow[];
-		challenge: Challenge;
+		challenge: ChallengeWithParticipation;
 		activeTab: Tab;
 		onTabChange: (tab: Tab) => void;
 	};

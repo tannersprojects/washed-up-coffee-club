@@ -2,7 +2,9 @@
 	import { formatTimeRemaining } from '$lib/utils/timer-utils.js';
 	import { calculateTotalDistanceKm } from '$lib/utils/challenge-utils.js';
 	import { onMount } from 'svelte';
-	import type { ChallengeStats } from './types.js';
+	import { enhance } from '$app/forms';
+	import { invalidateAll } from '$app/navigation';
+	import type { ChallengeStats, ChallengeWithParticipation } from '$lib/types/dashboard.js';
 	import DashboardNav from './components/DashboardNav.svelte';
 	import ChallengeHero from './components/ChallengeHero.svelte';
 	import LeaderboardSection from './components/LeaderboardSection.svelte';
@@ -12,9 +14,12 @@
 	let { data } = $props();
 
 	// Use derived state so if data refreshes, UI updates automatically
-	let challenge = $derived(data.challenge);
+	let challenge = $derived(data.challenge) as ChallengeWithParticipation | null;
 	let leaderboard = $derived(data.leaderboard || []);
 	let profile = $derived(data.profile);
+
+	// Form submission state
+	let isSubmitting = $state(false);
 
 	// --- STATE & LOGIC ---
 	let timeLeft = $state('00:00:00');
@@ -46,6 +51,31 @@
 		activeTab = tab;
 	};
 
+	// Form submission handler
+	const handleJoinChallenge = () => {
+		// Run immediately before submission
+		isSubmitting = true;
+
+		return async ({
+			result,
+			update
+		}: {
+			result: { type: 'success' | 'failure' | 'redirect' | 'error' };
+			update: (options?: { reset?: boolean }) => Promise<void>;
+		}) => {
+			// Wait for the server response
+			await update();
+
+			// Run after the form action completes
+			isSubmitting = false;
+
+			if (result.type === 'success') {
+				// Invalidate all data to refresh the page
+				await invalidateAll();
+			}
+		};
+	};
+
 	// Countdown Logic
 	onMount(() => {
 		if (!challenge?.endDate) return;
@@ -72,7 +102,10 @@
 
 	<main class="relative pt-24 pb-20">
 		{#if challenge}
-			<ChallengeHero {challenge} {timeLeft} {stats} />
+			<form method="POST" action="?/joinChallenge" use:enhance={handleJoinChallenge}>
+				<input type="hidden" name="challengeId" value={challenge.id} />
+				<ChallengeHero {challenge} {timeLeft} {stats} {isSubmitting} />
+			</form>
 			<LeaderboardSection {leaderboard} {challenge} {activeTab} onTabChange={handleTabChange} />
 		{:else}
 			<EmptyState

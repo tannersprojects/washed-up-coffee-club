@@ -1,12 +1,11 @@
 <script lang="ts">
-	import type { Challenge } from '$lib/db/schema';
-	import type { LeaderboardRow } from '../types.js';
+	import type { ChallengeWithParticipation, LeaderboardRow } from '../types.js';
 	import LeaderboardRowComponent from './LeaderboardRow.svelte';
 	import EmptyState from './EmptyState.svelte';
 
 	type Props = {
 		leaderboard: LeaderboardRow[];
-		challenge: Challenge;
+		challenge: ChallengeWithParticipation;
 	};
 
 	let { leaderboard, challenge }: Props = $props();

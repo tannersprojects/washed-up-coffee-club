@@ -16,7 +16,9 @@
 			<div
 				class="h-3 w-3 rounded-full bg-(--accent-lime) transition-transform group-hover:scale-110"
 			></div>
-			<span class="text-sm font-bold tracking-tight text-white uppercase">Washed Up CC</span>
+			<span class="text-sm font-bold tracking-tight text-white uppercase">
+				Washed Up Coffee Club
+			</span>
 		</a>
 		<span class="mx-2 text-white/20">/</span>
 		<span class="font-mono text-xs tracking-widest text-white/60 uppercase">Dashboard</span>

@@ -32,3 +32,13 @@ export interface ChallengeStats {
 	activeRunners: number;
 	totalDistanceKm: string;
 }
+
+/**
+ * Challenge with participation status attached
+ * This allows each challenge to carry its own participation status,
+ * supporting multiple simultaneous challenges
+ */
+export type ChallengeWithParticipation = Challenge & {
+	isParticipating: boolean;
+	participant: ChallengeParticipant | null;
+};

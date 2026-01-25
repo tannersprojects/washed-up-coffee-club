@@ -1,12 +1,11 @@
 <script lang="ts">
 	import { formatDate } from '$lib/utils/date-utils.js';
 	import { fly } from 'svelte/transition';
-	import type { Challenge } from '$lib/db/schema';
-	import type { LeaderboardRow } from '../types.js';
+	import type { ChallengeWithParticipation, LeaderboardRow } from '../types.js';
 
 	type Props = {
 		row: LeaderboardRow;
-		challenge: Challenge;
+		challenge: ChallengeWithParticipation;
 		index: number;
 	};
 
@@ -76,9 +75,7 @@
 			{row.contribution?.activityName || 'No Data'}
 		</span>
 		{#if row.contribution}
-			<span class="text-[10px] text-gray-600"
-				>{formatDate(row.contribution.occurredAt)}</span
-			>
+			<span class="text-[10px] text-gray-600">{formatDate(row.contribution.occurredAt)}</span>
 		{/if}
 	</div>
 
@@ -109,17 +106,13 @@
 	<!-- Time/Status -->
 	<div class="flex flex-col items-end justify-center text-right">
 		{#if row.participant.status === 'completed'}
-			<span class="font-mono text-xl font-bold text-white"
-				>{row.participant.resultDisplay}</span
-			>
+			<span class="font-mono text-xl font-bold text-white">{row.participant.resultDisplay}</span>
 			<span class="font-mono text-[10px] tracking-wider text-(--accent-lime) uppercase"
 				>Official</span
 			>
 		{:else}
-			<span
-				class="font-mono text-sm font-bold uppercase {getStatusColor(
-					row.participant.status
-				)}">{row.participant.status}</span
+			<span class="font-mono text-sm font-bold uppercase {getStatusColor(row.participant.status)}"
+				>{row.participant.status}</span
 			>
 			<span class="font-mono text-[10px] tracking-wider text-gray-500 uppercase">
 				{row.participant.resultDisplay || '--'}

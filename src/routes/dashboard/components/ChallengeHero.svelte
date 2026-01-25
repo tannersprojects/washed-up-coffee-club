@@ -1,17 +1,18 @@
 <script lang="ts">
 	import { formatDate } from '$lib/utils/date-utils.js';
-	import type { Challenge } from '$lib/db/schema';
-	import type { ChallengeStats } from '../types.js';
+	import type { ChallengeStats, ChallengeWithParticipation } from '$lib/types/dashboard.js';
 	import CountdownTimer from './CountdownTimer.svelte';
 	import ChallengeStatsGrid from './ChallengeStatsGrid.svelte';
+	import JoinChallengeButton from './JoinChallengeButton.svelte';
 
 	type Props = {
-		challenge: Challenge;
+		challenge: ChallengeWithParticipation;
 		timeLeft: string;
 		stats: ChallengeStats;
+		isSubmitting?: boolean;
 	};
 
-	let { challenge, timeLeft, stats }: Props = $props();
+	let { challenge, timeLeft, stats, isSubmitting = false }: Props = $props();
 </script>
 
 <header class="mx-auto mb-16 max-w-5xl px-6">
@@ -28,10 +29,13 @@
 				</span>
 			</div>
 			<h1
-				class="text-5xl font-black tracking-tighter text-white uppercase italic md:text-8xl"
+				class="text-4xl font-black tracking-tighter text-white uppercase italic md:text-6xl md:whitespace-nowrap"
 			>
 				{challenge.title}
 			</h1>
+			<div class="mt-4">
+				<JoinChallengeButton {challenge} {isSubmitting} />
+			</div>
 		</div>
 
 		<CountdownTimer {timeLeft} />
