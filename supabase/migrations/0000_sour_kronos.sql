@@ -22,21 +22,23 @@ CREATE TABLE "challenge_participants" (
 	"result_value" integer DEFAULT 0,
 	"result_display" text,
 	"highlight_activity_id" bigint,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "challenges" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"title" text NOT NULL,
-	"description" text,
+	"description" text DEFAULT '' NOT NULL,
 	"type" "challenge_type" DEFAULT 'cumulative' NOT NULL,
 	"goal_value" integer,
 	"segment_id" bigint,
 	"start_date" timestamp with time zone NOT NULL,
 	"end_date" timestamp with time zone NOT NULL,
 	"status" "challenge_status" DEFAULT 'upcoming' NOT NULL,
-	"is_active" boolean DEFAULT true,
-	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+	"is_active" boolean DEFAULT true NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "memories" (
@@ -56,6 +58,7 @@ CREATE TABLE "profile" (
 	"username" text NOT NULL,
 	"strava_athlete_id" bigint,
 	"role" "profile_role" DEFAULT 'user' NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "profile_strava_athlete_id_unique" UNIQUE("strava_athlete_id")
 );

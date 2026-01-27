@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { getDashboardUI } from '../_logic/DashboardUI.svelte';
+	import { getDashboardContext } from '../_logic/context.js';
 
-	let dashboard = getDashboardUI();
+	let dashboard = getDashboardContext();
 	let timeLeft = $derived(dashboard.selectedChallenge?.timeLeft || '00:00:00');
 </script>
 

@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { getDashboardUI } from '../_logic/DashboardUI.svelte.js';
+	import { getDashboardContext } from '../_logic/context.js';
 	import LeaderboardTabs from './LeaderboardTabs.svelte';
 	import LeaderboardTable from './LeaderboardTable.svelte';
 	import ChallengeDetails from './ChallengeDetails.svelte';
 
-	const dashboard = getDashboardUI();
+	const dashboard = getDashboardContext();
 	const activeTab = $derived(dashboard.activeTab);
 </script>
 

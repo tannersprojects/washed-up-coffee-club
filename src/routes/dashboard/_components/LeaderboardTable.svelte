@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { getDashboardUI } from '../_logic/DashboardUI.svelte.js';
+	import { getDashboardContext } from '../_logic/context.js';
 	import LeaderboardRowComponent from './LeaderboardRow.svelte';
 	import EmptyState from './EmptyState.svelte';
 
-	const dashboard = getDashboardUI();
+	const dashboard = getDashboardContext();
 	const leaderboard = $derived(dashboard.selectedLeaderboard?.rows || []);
 </script>
 

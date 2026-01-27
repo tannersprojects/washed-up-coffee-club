@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { formatDate } from '$lib/utils/date-utils.js';
-	import { getDashboardUI } from '../_logic/DashboardUI.svelte.js';
+	import { getDashboardContext } from '../_logic/context.js';
 
-	let dashboard = getDashboardUI();
+	let dashboard = getDashboardContext();
 	let challenge = $derived(dashboard.selectedChallenge);
 	let goalDistanceKm = $derived(
 		challenge?.goalValue ? (challenge.goalValue / 1000).toFixed(1) : null

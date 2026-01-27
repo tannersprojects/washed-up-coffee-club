@@ -48,8 +48,8 @@ export class ChallengeUI {
 		this.createdAt = data.createdAt;
 
 		// Initialize participation fields
-		this.isParticipating = data.isParticipating;
-		this.participant = data.participant;
+		this.isParticipating = $state(data.isParticipating);
+		this.participant = $state(data.participant);
 
 		// Initialize reactive state
 		this.timeLeft = $state(formatTimeRemaining(this.endDate));

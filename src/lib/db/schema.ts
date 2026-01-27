@@ -53,6 +53,7 @@ export const profileTable = pgTable(
 		username: text('username').notNull(),
 		stravaAthleteId: bigint('strava_athlete_id', { mode: 'number' }).unique(),
 		role: profileRoleEnum('role').notNull().default(PROFILE_ROLE.USER),
+		createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 		updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull()
 	},
 	(table) => [index('idx_profile_strava_athlete_id').on(table.stravaAthleteId)]
@@ -107,30 +108,19 @@ export const routineSchedulesTable = pgTable(
 	(table) => [index('idx_routine_schedules_sort_order').on(table.sortOrder)]
 );
 
-// 1. CHALLENGES TABLE
 export const challengesTable = pgTable('challenges', {
 	id: uuid('id').defaultRandom().primaryKey(),
 	title: text('title').notNull(),
 	description: text('description').notNull().default(''),
-
-	// Rules
 	type: challengeTypeEnum('type').notNull().default(CHALLENGE_TYPE.CUMULATIVE),
-
-	// The Goal
-	// Distance: meters (e.g. 80467 for 50 miles)
-	// Time: seconds
 	goalValue: integer('goal_value'),
-
-	// Optional: Segment Restriction
 	segmentId: bigint('segment_id', { mode: 'number' }),
-
 	startDate: timestamp('start_date', { withTimezone: true }).notNull(),
 	endDate: timestamp('end_date', { withTimezone: true }).notNull(),
-
 	status: challengeStatusEnum('status').notNull().default(CHALLENGE_STATUS.UPCOMING),
 	isActive: boolean('is_active').notNull().default(true),
-
-	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull()
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+	updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull()
 });
 
 export const challengeParticipantsTable = pgTable(
@@ -157,7 +147,7 @@ export const challengeParticipantsTable = pgTable(
 		// For 'best_effort', this links to the winning activity.
 		// For 'cumulative', this could link to the *latest* activity that pushed them over the goal.
 		highlightActivityId: bigint('highlight_activity_id', { mode: 'number' }),
-
+		createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 		updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull()
 	},
 	(table) => [

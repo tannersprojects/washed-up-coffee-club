@@ -1,45 +1,17 @@
 <script lang="ts">
-	import { initDashboardUI, getDashboardUI } from './_logic/DashboardUI.svelte.js';
-	import { onDestroy } from 'svelte';
-	import { enhance } from '$app/forms';
-	import { invalidateAll } from '$app/navigation';
 	import DashboardNav from './_components/DashboardNav.svelte';
 	import ChallengeHero from './_components/ChallengeHero.svelte';
 	import LeaderboardSection from './_components/LeaderboardSection.svelte';
 	import ChallengesList from './_components/ChallengesList.svelte';
 	import EmptyState from './_components/EmptyState.svelte';
+	import { untrack } from 'svelte';
+	import { setDashboardContext } from './_logic/context.js';
 
 	// --- DATA FROM SERVER ---
 	let { data } = $props();
 
 	// Initialize Dashboard context
-	const dashboard = initDashboardUI({
-		challenges: data.challenges || [],
-		leaderboards: data.leaderboards || {}
-	});
-
-	// Form submission handler
-	const handleJoinChallenge = () => {
-		return async ({
-			result,
-			update
-		}: {
-			result: { type: 'success' | 'failure' | 'redirect' | 'error' };
-			update: (options?: { reset?: boolean }) => Promise<void>;
-		}) => {
-			await dashboard.handleJoinChallenge(async () => {
-				await update();
-				if (result.type === 'success') {
-					await invalidateAll();
-				}
-			});
-		};
-	};
-
-	// Cleanup on unmount
-	onDestroy(() => {
-		dashboard.cleanup();
-	});
+	const dashboard = untrack(() => setDashboardContext(data));
 </script>
 
 <!-- GLOBAL WRAPPER -->
@@ -56,28 +28,15 @@
 				message="Check back later for the next event."
 				variant="no-challenge"
 			/>
-		{:else if dashboard.challenges.length === 1}
+		{:else}
+			{#if dashboard.challenges.length > 1}
+				<!-- Multiple challenges view -->
+				<ChallengesList />
+			{/if}
 			<!-- Single challenge view -->
 			{#if dashboard.selectedChallenge && dashboard.selectedLeaderboard}
-				<form method="POST" action="?/joinChallenge" use:enhance={handleJoinChallenge}>
-					<input type="hidden" name="challengeId" value={dashboard.selectedChallenge.id} />
-					<ChallengeHero />
-				</form>
+				<ChallengeHero />
 				<LeaderboardSection />
-			{/if}
-		{:else}
-			<!-- Multiple challenges view -->
-			<ChallengesList />
-
-			<!-- Selected challenge detail view -->
-			{#if dashboard.selectedChallenge && dashboard.selectedLeaderboard}
-				<div class="mt-12">
-					<form method="POST" action="?/joinChallenge" use:enhance={handleJoinChallenge}>
-						<input type="hidden" name="challengeId" value={dashboard.selectedChallenge.id} />
-						<ChallengeHero />
-					</form>
-					<LeaderboardSection />
-				</div>
 			{/if}
 		{/if}
 	</main>

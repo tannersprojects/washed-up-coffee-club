@@ -2,7 +2,7 @@
 	import { formatDate } from '$lib/utils/date-utils.js';
 	import { fly } from 'svelte/transition';
 	import type { LeaderboardRow } from '$lib/types/dashboard.js';
-	import { getDashboardUI } from '../_logic/DashboardUI.svelte.js';
+	import { getDashboardContext } from '../_logic/context.js';
 
 	type Props = {
 		row: LeaderboardRow;
@@ -11,7 +11,7 @@
 
 	let { row, index }: Props = $props();
 
-	const dashboard = getDashboardUI();
+	const dashboard = getDashboardContext();
 	const challenge = $derived(dashboard.selectedChallenge);
 
 	// Helper function for status color

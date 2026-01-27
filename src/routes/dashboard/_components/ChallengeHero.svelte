@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { formatDate } from '$lib/utils/date-utils.js';
-	import { getDashboardUI } from '../_logic/DashboardUI.svelte.js';
+	import { getDashboardContext } from '../_logic/context.js';
 	import CountdownTimer from './CountdownTimer.svelte';
 	import ChallengeStatsGrid from './ChallengeStatsGrid.svelte';
 	import JoinChallengeButton from './JoinChallengeButton.svelte';
 
-	const dashboard = getDashboardUI();
+	const dashboard = getDashboardContext();
 	const challenge = $derived(dashboard.selectedChallenge);
 </script>
 

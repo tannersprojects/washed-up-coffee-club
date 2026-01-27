@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { getDashboardUI } from '../_logic/DashboardUI.svelte.js';
+	import { getDashboardContext } from '../_logic/context.js';
 	import ChallengeCard from './ChallengeCard.svelte';
 
-	let dashboard = getDashboardUI();
+	let dashboard = getDashboardContext();
 	let challenges = $derived(dashboard.challenges);
 	let leaderboards = $derived(dashboard.leaderboards);
 	let selectedChallengeId = $derived(dashboard.selectedChallengeId);

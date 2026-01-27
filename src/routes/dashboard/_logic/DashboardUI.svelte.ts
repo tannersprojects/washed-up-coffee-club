@@ -1,17 +1,7 @@
-import { setContext, getContext } from 'svelte';
 import { ChallengeUI } from './ChallengeUI.svelte.js';
 import { LeaderboardUI } from './LeaderboardUI.svelte.js';
-import type { ChallengeWithParticipation, LeaderboardRow } from '$lib/types/dashboard.js';
-
-const KEY = Symbol('DASHBOARD_CTX');
-
-/**
- * Server data structure for initializing DashboardUI
- */
-export type DashboardServerData = {
-	challenges: ChallengeWithParticipation[];
-	leaderboards: Record<string, LeaderboardRow[]>;
-};
+import type { ChallengeParticipant } from '$lib/db/schema.js';
+import type { DashboardServerData } from './context.js';
 
 /**
  * DashboardUI class - Parent manager for dashboard state
@@ -77,6 +67,41 @@ export class DashboardUI {
 		}
 	}
 
+	syncWithServer(data: DashboardServerData) {
+		// Stop countdowns on old challenges
+		this.challenges.forEach((c) => c.stopCountdown());
+
+		// Preserve the currently selected challenge ID
+		const preservedSelectedId = this.selectedChallengeId;
+
+		// Create new ChallengeUI instances with updated data
+		this.challenges = data.challenges.map((c) => new ChallengeUI(c));
+
+		// Create new LeaderboardUI instances
+		this.leaderboards = Object.fromEntries(
+			Object.entries(data.leaderboards).map(([id, rows]) => {
+				const challenge = this.challenges.find((c) => c.id === id);
+				return [id, new LeaderboardUI(rows, challenge?.goalValue ?? null)];
+			})
+		);
+
+		// Restore selected challenge if it still exists, otherwise select first
+		if (preservedSelectedId && this.challenges.find((c) => c.id === preservedSelectedId)) {
+			this.selectedChallengeId = preservedSelectedId;
+			// Restart countdown on selected challenge
+			const selected = this.challenges.find((c) => c.id === preservedSelectedId);
+			if (selected) {
+				selected.startCountdown();
+			}
+		} else if (this.challenges.length > 0) {
+			// Select first challenge if previous selection no longer exists
+			this.selectedChallengeId = this.challenges[0].id;
+			this.challenges[0].startCountdown();
+		} else {
+			this.selectedChallengeId = null;
+		}
+	}
+
 	/**
 	 * Select a different challenge
 	 * Stops countdown on previous, starts on new
@@ -103,17 +128,28 @@ export class DashboardUI {
 		this.activeTab = tab;
 	}
 
-	/**
-	 * Handle join challenge form submission
-	 * Manages isSubmitting state around async callback
-	 */
-	async handleJoinChallenge(callback: () => Promise<void>) {
-		this.isSubmitting = true;
-		try {
-			await callback();
-		} finally {
-			this.isSubmitting = false;
+	joinChallenge(challengeId: string, challengeParticipant: ChallengeParticipant) {
+		const challenge = this.challenges.find((c) => c.id === challengeId);
+		if (!challenge) {
+			// TODO: Handle error
+			return;
 		}
+
+		challenge.isParticipating = true;
+		challenge.participant = challengeParticipant;
+		this.isSubmitting = false;
+	}
+
+	leaveChallenge(challengeId: string) {
+		const challenge = this.challenges.find((c) => c.id === challengeId);
+		if (!challenge) {
+			// TODO: Handle error
+			return;
+		}
+
+		challenge.isParticipating = false;
+		challenge.participant = null;
+		this.isSubmitting = false;
 	}
 
 	/**
@@ -123,22 +159,4 @@ export class DashboardUI {
 	cleanup() {
 		this.challenges.forEach((c) => c.stopCountdown());
 	}
-}
-
-/**
- * Initialize DashboardUI context with server data
- * Call this once in +page.svelte
- */
-export function initDashboardUI(data: DashboardServerData): DashboardUI {
-	const dashboard = new DashboardUI(data);
-	setContext(KEY, dashboard);
-	return dashboard;
-}
-
-/**
- * Get DashboardUI context
- * Call this in components that need dashboard state
- */
-export function getDashboardUI(): DashboardUI {
-	return getContext<DashboardUI>(KEY);
 }
