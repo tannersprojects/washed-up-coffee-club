@@ -5,14 +5,18 @@
 	import ChallengesList from './_components/ChallengesList.svelte';
 	import EmptyState from './_components/EmptyState.svelte';
 	import { untrack } from 'svelte';
-	import { setDashboardContext } from './_logic/context.js';
+	import { setDashboardContext, getDashboardContext } from './_logic/context.js';
 
 	// --- DATA FROM SERVER ---
 	let { data } = $props();
 
-	// Initialize Dashboard context
+	// Initialize Dashboard context - only set once
 	const dashboard = untrack(() => setDashboardContext(data));
-	// const dashboard = $derived(setDashboardContext(data));
+
+	// Sync dashboard when server data changes (e.g., after form submission)
+	$effect(() => {
+		dashboard.updateFromServerData(data);
+	});
 </script>
 
 <!-- GLOBAL WRAPPER -->

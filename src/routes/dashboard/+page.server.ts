@@ -11,7 +11,6 @@ import {
 import type { PageServerLoad } from './$types.js';
 
 export const load: PageServerLoad = async ({ locals }: { locals: App.Locals }) => {
-	console.log('Loading dashboard...');
 	const { session, user } = await locals.safeGetSession();
 	const profile = locals.profile;
 
@@ -33,8 +32,6 @@ export const load: PageServerLoad = async ({ locals }: { locals: App.Locals }) =
 
 export const actions = {
 	joinChallenge: async ({ request, locals }) => {
-		console.log('Joining challenge...');
-
 		const { session, user } = await locals.safeGetSession();
 		const profile = locals.profile;
 
@@ -85,8 +82,6 @@ export const actions = {
 		}
 	},
 	leaveChallenge: async ({ request, locals }) => {
-		console.log('Leaving challenge...');
-
 		const { session, user } = await locals.safeGetSession();
 		const profile = locals.profile;
 

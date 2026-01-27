@@ -28,13 +28,12 @@ export class ChallengeUI {
 	participant: ChallengeParticipant | null;
 
 	// Reactive state
-	timeLeft: string;
-	private countdownInterval: ReturnType<typeof setInterval> | null;
-
 	leaderboard: LeaderboardUI;
 	activeTab: 'leaderboard' | 'details';
 	joinable: boolean;
 	isSubmitting: boolean;
+	timeLeft: string;
+	private countdownInterval: ReturnType<typeof setInterval> | null;
 
 	constructor(
 		challengeWithParticipation: ChallengeWithParticipation,
@@ -107,6 +106,22 @@ export class ChallengeUI {
 
 	setActiveTab(tab: 'leaderboard' | 'details') {
 		this.activeTab = tab;
+	}
+
+	/**
+	 * Update challenge from fresh server data
+	 * Syncs participation state and leaderboard participants
+	 */
+	updateFromServerData(
+		challengeWithParticipation: ChallengeWithParticipation,
+		challengeParticipantsWithRelations: ChallengeParticipantWithRelations[]
+	) {
+		// Update participation state from server
+		this.isParticipating = challengeWithParticipation.isParticipating;
+		this.participant = challengeWithParticipation.participant;
+
+		// Update leaderboard with fresh participant data
+		this.leaderboard.updateChallengeParticipantsWithRelations(challengeParticipantsWithRelations);
 	}
 
 	toJSON() {

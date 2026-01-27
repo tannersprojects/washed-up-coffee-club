@@ -6,16 +6,8 @@ import type {
 } from '$lib/types/dashboard.js';
 
 export class DashboardUI {
-	// Challenge and leaderboard collections
 	challenges: ChallengeUI[];
-
-	// Selection state
 	selectedChallengeId: string | null;
-
-	// UI state
-	isSubmitting: boolean;
-
-	// Derived selected challenge and leaderboard
 	selectedChallenge: ChallengeUI | null;
 
 	constructor(
@@ -33,7 +25,6 @@ export class DashboardUI {
 
 		// Initialize UI state
 		this.selectedChallengeId = $state(challengesWithParticipation[0]?.id || null);
-		this.isSubmitting = $state(false);
 
 		// Initialize derived values
 		this.selectedChallenge = $derived.by(() => {
@@ -41,6 +32,7 @@ export class DashboardUI {
 			return this.challenges.find((c) => c.id === this.selectedChallengeId) || null;
 		});
 
+		// TODO: Should this be done when the selected challenge is changed?
 		// Select first challenge by default
 		if (this.challenges.length > 0) {
 			// Start countdown for first challenge
@@ -78,40 +70,23 @@ export class DashboardUI {
 	}
 
 	/**
-	 * Handle tab change
+	 * Update dashboard from fresh server data
+	 * Syncs all challenges with their latest participation and leaderboard data
 	 */
-	// handleTabChange(tab: 'leaderboard' | 'details') {
-	// 	this.activeTab = tab;
-	// }
+	updateFromServerData({
+		challengesWithParticipation,
+		challengeParticipantsWithRelationsByChallenge
+	}: DashboardServerData) {
+		// Update each existing challenge
+		challengesWithParticipation.forEach((challengeData) => {
+			const existingChallenge = this.challenges.find((c) => c.id === challengeData.id);
+			if (existingChallenge) {
+				const participants = challengeParticipantsWithRelationsByChallenge[challengeData.id] || [];
+				existingChallenge.updateFromServerData(challengeData, participants);
+			}
+		});
+	}
 
-	// joinChallenge(challengeId: string, challengeParticipant: ChallengeParticipant) {
-	// 	const challenge = this.challenges.find((c) => c.id === challengeId);
-	// 	if (!challenge) {
-	// 		// TODO: Handle error
-	// 		return;
-	// 	}
-
-	// 	challenge.isParticipating = true;
-	// 	challenge.participant = challengeParticipant;
-	// 	this.isSubmitting = false;
-	// }
-
-	// leaveChallenge(challengeId: string) {
-	// 	const challenge = this.challenges.find((c) => c.id === challengeId);
-	// 	if (!challenge) {
-	// 		// TODO: Handle error
-	// 		return;
-	// 	}
-
-	// 	challenge.isParticipating = false;
-	// 	challenge.participant = null;
-	// 	this.isSubmitting = false;
-	// }
-
-	/**
-	 * Cleanup - stop all countdowns
-	 * Call this when dashboard is unmounted
-	 */
 	cleanup() {
 		this.challenges.forEach((c) => c.stopCountdown());
 	}

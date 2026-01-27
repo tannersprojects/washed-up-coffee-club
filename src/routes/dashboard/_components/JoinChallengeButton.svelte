@@ -8,7 +8,6 @@
 
 	type JoinChallengeResultData = {
 		success: boolean;
-		challengeId: string;
 		challengeParticipantWithRelations: ChallengeParticipantWithRelations;
 	};
 </script>
@@ -26,9 +25,15 @@
 				action="?/leaveChallenge"
 				use:enhance={() => {
 					challenge.isSubmitting = true;
-					return async ({ result }) => {
+					return async ({ result, update }) => {
 						if (result.type === 'success') {
+							// Optimistic update: immediate UI feedback
 							challenge.leave();
+							// Background sync: ensure server state is reflected
+							await update();
+						} else {
+							// Reset submitting state on error
+							challenge.isSubmitting = false;
 						}
 					};
 				}}
@@ -48,10 +53,16 @@
 				action="?/joinChallenge"
 				use:enhance={() => {
 					challenge.isSubmitting = true;
-					return async ({ result }) => {
+					return async ({ result, update }) => {
 						if (result.type === 'success') {
+							// Optimistic update: immediate UI feedback
 							const { challengeParticipantWithRelations } = result.data as JoinChallengeResultData;
 							challenge.join(challengeParticipantWithRelations);
+							// Background sync: ensure server state is reflected
+							await update();
+						} else {
+							// Reset submitting state on error
+							challenge.isSubmitting = false;
 						}
 					};
 				}}
