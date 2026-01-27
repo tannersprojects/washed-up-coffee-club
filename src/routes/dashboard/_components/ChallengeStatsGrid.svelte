@@ -2,7 +2,9 @@
 	import { getDashboardContext } from '../_logic/context.js';
 
 	let dashboard = getDashboardContext();
-	let stats = $derived(dashboard.selectedLeaderboard?.stats);
+	let challenge = $derived(dashboard.selectedChallenge);
+	let leaderboard = $derived(challenge?.leaderboard);
+	let stats = $derived(leaderboard?.stats);
 
 	const statItems = $derived([
 		{ label: 'Runners', value: stats?.totalRunners },

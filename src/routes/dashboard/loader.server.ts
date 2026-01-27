@@ -42,7 +42,7 @@ export async function leaveChallenge(challengeParticipantId: string) {
 
 // Challenge Participant Queries
 
-export async function loadChallengeParticipant(challengeParticipantId: string) {
+export async function loadChallengeParticipantWithRelations(challengeParticipantId: string) {
 	return await db.query.challengeParticipantsTable.findFirst({
 		where: eq(challengeParticipantsTable.id, challengeParticipantId),
 		with: {
@@ -105,25 +105,18 @@ export function buildLeaderboard(
 	return leaderboard;
 }
 
-/**
- * Load dashboard data for a user
- * Optimized to batch-load all participants in a single query
- *
- * @param profileId - The user's profile ID
- * @returns Object containing challenges with participation status and leaderboards
- */
-export async function loadDashboardData(profileId: string): Promise<{
-	challenges: ChallengeWithParticipation[];
-	leaderboards: Record<string, LeaderboardRow[]>;
-}> {
-	// Load all active challenges
-	const challenges = await loadActiveChallenges();
+export async function loadDashboardData(profileId: string) {
+	const challengeParticipantsWithRelationsByChallenge: Record<
+		string,
+		ChallengeParticipantWithRelations[]
+	> = {};
+	const challengesWithParticipation: ChallengeWithParticipation[] = [];
 
+	const challenges = await loadActiveChallenges();
 	if (challenges.length === 0) {
-		return { challenges: [], leaderboards: {} };
+		return { challengesWithParticipation, challengeParticipantsWithRelationsByChallenge };
 	}
 
-	// Batch load ALL participants for ALL challenges in a single query
 	const challengeIds = challenges.map((c) => c.id);
 	const allParticipants = await db.query.challengeParticipantsTable.findMany({
 		where: inArray(challengeParticipantsTable.challengeId, challengeIds),
@@ -134,39 +127,27 @@ export async function loadDashboardData(profileId: string): Promise<{
 		orderBy: [desc(challengeParticipantsTable.status), asc(challengeParticipantsTable.resultValue)]
 	});
 
-	// Group participants by challenge ID
-	const participantsByChallenge = new Map<string, ChallengeParticipantWithRelations[]>();
 	for (const participant of allParticipants) {
 		const challengeId = participant.challengeId;
-		if (!participantsByChallenge.has(challengeId)) {
-			participantsByChallenge.set(challengeId, []);
+		if (!challengeParticipantsWithRelationsByChallenge[challengeId]) {
+			challengeParticipantsWithRelationsByChallenge[challengeId] = [];
 		}
-		participantsByChallenge.get(challengeId)!.push(participant);
+		challengeParticipantsWithRelationsByChallenge[challengeId]!.push(participant);
 	}
 
-	const leaderboards: Record<string, LeaderboardRow[]> = {};
-	const challengesWithParticipation: ChallengeWithParticipation[] = [];
-
-	// Build challenges with participation and leaderboards from pre-loaded data
 	for (const challenge of challenges) {
-		const participants = participantsByChallenge.get(challenge.id) || [];
+		const challengeParticipants = challengeParticipantsWithRelationsByChallenge[challenge.id] || [];
+		const userParticipant = challengeParticipants.find((p) => p.profileId === profileId);
 
-		// Find user's participation from the loaded data
-		const userParticipant = participants.find((p) => p.profileId === profileId);
-
-		// Build challenge with participation status
 		challengesWithParticipation.push({
 			...challenge,
 			isParticipating: userParticipant !== undefined,
 			participant: userParticipant || null
 		});
-
-		// Build leaderboard from same participant data
-		leaderboards[challenge.id] = buildLeaderboard(participants);
 	}
 
 	return {
-		challenges: challengesWithParticipation,
-		leaderboards
+		challengesWithParticipation,
+		challengeParticipantsWithRelationsByChallenge
 	};
 }

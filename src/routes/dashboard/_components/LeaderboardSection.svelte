@@ -5,7 +5,8 @@
 	import ChallengeDetails from './ChallengeDetails.svelte';
 
 	const dashboard = getDashboardContext();
-	const activeTab = $derived(dashboard.activeTab);
+	const challenge = $derived(dashboard.selectedChallenge);
+	const activeTab = $derived(challenge?.activeTab);
 </script>
 
 <section class="mx-auto max-w-5xl px-6">

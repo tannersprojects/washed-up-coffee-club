@@ -1,4 +1,9 @@
-import type { LeaderboardRow, ChallengeStats } from '$lib/types/dashboard.js';
+import { PARTICIPANT_STATUS } from '$lib/constants/participant_status';
+import type {
+	LeaderboardRow,
+	ChallengeStats,
+	ChallengeParticipantWithRelations
+} from '$lib/types/dashboard.js';
 import { calculateTotalDistanceKm } from '$lib/utils/challenge-utils.js';
 
 /**
@@ -11,54 +16,82 @@ import { calculateTotalDistanceKm } from '$lib/utils/challenge-utils.js';
  * - Challenge stats object for components
  */
 export class LeaderboardUI {
-	// Reactive state
-	rows: LeaderboardRow[];
+	private challengeParticipantsWithRelations: ChallengeParticipantWithRelations[];
 	private goalValue: number | null;
 
-	// Derived statistics
-	get totalRunners(): number {
-		return this.rows.length;
-	}
+	leaderboardRows: LeaderboardRow[];
 
-	get finishers(): number {
-		return this.rows.filter((row) => row.participant.status === 'completed').length;
-	}
+	totalRunners: number;
+	finishers: number;
+	activeRunners: number;
+	totalDistanceKm: string;
+	stats: ChallengeStats;
 
-	get activeRunners(): number {
-		return this.rows.filter((row) => row.participant.status === 'in_progress').length;
-	}
+	constructor(
+		challengeParticipantsWithRelations: ChallengeParticipantWithRelations[],
+		goalValue: number | null
+	) {
+		this.challengeParticipantsWithRelations = $state(challengeParticipantsWithRelations);
+		this.goalValue = $state(goalValue);
+		// this.leaderboardRows = $state(this.buildLeaderboardRows());
+		this.leaderboardRows = $derived.by(() => {
+			let currentRank = 1;
+			return this.challengeParticipantsWithRelations.map((participant) => {
+				const isFinished = participant.status === PARTICIPANT_STATUS.COMPLETED;
 
-	get totalDistanceKm(): string {
-		return calculateTotalDistanceKm(this.rows, this.goalValue);
-	}
+				const row: LeaderboardRow = {
+					participant,
+					profile: participant.profile,
+					// We grab the first contribution to display the activity name (e.g. "Morning Run")
+					contribution: participant.contributions?.[0] || null,
+					rank: isFinished ? currentRank++ : null
+				};
 
-	get stats(): ChallengeStats {
-		return {
+				return row;
+			});
+		});
+
+		this.totalRunners = $derived(this.challengeParticipantsWithRelations.length);
+		this.finishers = $derived(
+			this.challengeParticipantsWithRelations.filter(
+				(p) => p.status === PARTICIPANT_STATUS.COMPLETED
+			).length
+		);
+		this.activeRunners = $derived(
+			this.challengeParticipantsWithRelations.filter(
+				(p) => p.status === PARTICIPANT_STATUS.IN_PROGRESS
+			).length
+		);
+		this.totalDistanceKm = $derived(
+			calculateTotalDistanceKm(this.challengeParticipantsWithRelations, this.goalValue)
+		);
+		this.stats = $derived({
 			totalRunners: this.totalRunners,
 			finishers: this.finishers,
 			activeRunners: this.activeRunners,
 			totalDistanceKm: this.totalDistanceKm
-		};
+		});
 	}
 
-	constructor(rows: LeaderboardRow[], goalValue: number | null) {
-		this.rows = $state(rows);
-		this.goalValue = $state(goalValue);
+	updateChallengeParticipantsWithRelations(
+		challengeParticipantsWithRelations: ChallengeParticipantWithRelations[]
+	) {
+		this.challengeParticipantsWithRelations = challengeParticipantsWithRelations;
 	}
 
-	/**
-	 * Update leaderboard rows
-	 * Used when data refreshes from server
-	 */
-	updateRows(rows: LeaderboardRow[]) {
-		this.rows = rows;
-	}
-
-	/**
-	 * Update goal value
-	 * Used when challenge data changes
-	 */
 	updateGoalValue(goalValue: number | null) {
 		this.goalValue = goalValue;
+	}
+
+	addChallengeParticipantWithRelations(
+		challengeParticipantWithRelations: ChallengeParticipantWithRelations
+	) {
+		this.challengeParticipantsWithRelations.push(challengeParticipantWithRelations);
+	}
+
+	removeChallengeParticipantWithRelations(challengeParticipantWithRelationsId: string) {
+		this.challengeParticipantsWithRelations = this.challengeParticipantsWithRelations.filter(
+			(p) => p.id !== challengeParticipantWithRelationsId
+		);
 	}
 }

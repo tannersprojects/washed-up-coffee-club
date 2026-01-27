@@ -6,11 +6,12 @@ import {
 	joinChallenge,
 	loadChallenge,
 	leaveChallenge,
-	loadChallengeParticipant
+	loadChallengeParticipantWithRelations
 } from './loader.server.js';
 import type { PageServerLoad } from './$types.js';
 
 export const load: PageServerLoad = async ({ locals }: { locals: App.Locals }) => {
+	console.log('Loading dashboard...');
 	const { session, user } = await locals.safeGetSession();
 	const profile = locals.profile;
 
@@ -19,13 +20,14 @@ export const load: PageServerLoad = async ({ locals }: { locals: App.Locals }) =
 	}
 
 	// Load dashboard data (challenges + leaderboards) in optimized way
-	const { challenges, leaderboards } = await loadDashboardData(profile.id);
+	const { challengesWithParticipation, challengeParticipantsWithRelationsByChallenge } =
+		await loadDashboardData(profile.id);
 
 	return {
 		user,
 		profile,
-		challenges,
-		leaderboards
+		challengesWithParticipation,
+		challengeParticipantsWithRelationsByChallenge
 	};
 };
 
@@ -70,13 +72,13 @@ export const actions = {
 		// Insert participant record
 		try {
 			const { id } = await joinChallenge(challengeId, profile.id);
-			const challengeParticipant = await loadChallengeParticipant(id);
+			const challengeParticipantWithRelations = await loadChallengeParticipantWithRelations(id);
 
-			if (!challengeParticipant) {
+			if (!challengeParticipantWithRelations) {
 				throw new Error('Failed to load participant after joining challenge. Please try again.');
 			}
 
-			return { success: true, challengeId, challengeParticipant };
+			return { success: true, challengeParticipantWithRelations };
 		} catch (error) {
 			console.error('Error joining challenge:', error);
 			return fail(500, { error: 'Failed to join challenge. Please try again.' });

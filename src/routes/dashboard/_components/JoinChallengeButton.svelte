@@ -1,18 +1,15 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import type { ChallengeParticipant } from '$lib/db/schema.js';
-	import { isChallengeJoinable } from '$lib/utils/challenge-utils.js';
+	import type { ChallengeParticipantWithRelations } from '$lib/types/dashboard.js';
 	import { getDashboardContext } from '../_logic/context.js';
 
 	let dashboard = getDashboardContext();
 	let challenge = $derived(dashboard.selectedChallenge);
-	let isSubmitting = $derived(dashboard.isSubmitting);
-	let joinable = $derived(isChallengeJoinable(challenge));
 
 	type JoinChallengeResultData = {
 		success: boolean;
 		challengeId: string;
-		challengeParticipant: ChallengeParticipant;
+		challengeParticipantWithRelations: ChallengeParticipantWithRelations;
 	};
 </script>
 
@@ -28,44 +25,44 @@
 				method="POST"
 				action="?/leaveChallenge"
 				use:enhance={() => {
-					dashboard.isSubmitting = true;
+					challenge.isSubmitting = true;
 					return async ({ result }) => {
 						if (result.type === 'success') {
-							dashboard.leaveChallenge(challenge.id);
+							challenge.leave();
 						}
 					};
 				}}
 			>
-				<input type="hidden" name="challengeId" value={challenge?.id} />
+				<input type="hidden" name="challengeId" value={challenge.id} />
 				<button
 					type="submit"
-					disabled={isSubmitting}
+					disabled={challenge.isSubmitting}
 					class="flex cursor-pointer rounded-full border border-(--accent-lime)/30 bg-(--accent-lime)/10 px-4 py-2 text-sm font-bold tracking-widest text-(--accent-lime) uppercase"
 				>
 					Leave Challenge
 				</button>
 			</form>
-		{:else if joinable}
+		{:else if challenge.joinable}
 			<form
 				method="POST"
 				action="?/joinChallenge"
 				use:enhance={() => {
-					dashboard.isSubmitting = true;
+					challenge.isSubmitting = true;
 					return async ({ result }) => {
 						if (result.type === 'success') {
-							const { challengeId, challengeParticipant } = result.data as JoinChallengeResultData;
-							dashboard.joinChallenge(challengeId, challengeParticipant);
+							const { challengeParticipantWithRelations } = result.data as JoinChallengeResultData;
+							challenge.join(challengeParticipantWithRelations);
 						}
 					};
 				}}
 			>
-				<input type="hidden" name="challengeId" value={challenge?.id} />
+				<input type="hidden" name="challengeId" value={challenge.id} />
 				<button
 					type="submit"
-					disabled={isSubmitting}
+					disabled={challenge.isSubmitting}
 					class="flex rounded-full border border-(--accent-lime) bg-(--accent-lime) px-6 py-3 text-sm font-bold tracking-widest text-black uppercase transition-colors hover:bg-(--accent-lime)/90 disabled:cursor-not-allowed disabled:opacity-50"
 				>
-					{isSubmitting ? 'Joining...' : 'Join Challenge'}
+					{challenge.isSubmitting ? 'Joining...' : 'Join Challenge'}
 				</button>
 			</form>
 		{:else}

@@ -4,7 +4,9 @@
 	import EmptyState from './EmptyState.svelte';
 
 	const dashboard = getDashboardContext();
-	const leaderboard = $derived(dashboard.selectedLeaderboard?.rows || []);
+	let challenge = $derived(dashboard.selectedChallenge);
+	let leaderboard = $derived(challenge?.leaderboard);
+	let rows = $derived(leaderboard?.leaderboardRows || []);
 </script>
 
 <!-- List Header -->
@@ -21,12 +23,12 @@
 
 <!-- List Rows -->
 <div class="flex flex-col">
-	{#each leaderboard as row, i}
+	{#each rows as row, i}
 		<LeaderboardRowComponent {row} index={i} />
 	{/each}
 
 	<!-- Empty State if no runners -->
-	{#if leaderboard.length === 0}
+	{#if rows.length === 0}
 		<EmptyState
 			title="No participants yet."
 			message="Be the first to toe the line."

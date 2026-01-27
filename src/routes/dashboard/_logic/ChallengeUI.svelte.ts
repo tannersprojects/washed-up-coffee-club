@@ -1,27 +1,25 @@
 import { formatTimeRemaining } from '$lib/utils/timer-utils.js';
-import type { ChallengeWithParticipation } from '$lib/types/dashboard.js';
+import type {
+	ChallengeParticipantWithRelations,
+	ChallengeWithParticipation
+} from '$lib/types/dashboard.js';
 import type { ChallengeParticipant } from '$lib/db/schema.js';
+import { LeaderboardUI } from './LeaderboardUI.svelte';
+import { isChallengeJoinable } from '$lib/utils/challenge-utils';
+import type { ChallengeType } from '$lib/constants/challenge_type';
+import type { ChallengeStatus } from '$lib/constants/challenge_status';
 
-/**
- * ChallengeUI class - Manages individual challenge state and countdown logic
- *
- * This class transforms raw challenge data into a reactive instance with:
- * - All challenge properties from the database
- * - Participation status (isParticipating, participant)
- * - Live countdown timer (timeLeft)
- * - Timer lifecycle management (start/stop)
- */
 export class ChallengeUI {
 	// Challenge fields from database
 	id: string;
 	title: string;
 	description: string;
-	type: string;
+	type: ChallengeType;
 	startDate: Date;
 	endDate: Date;
 	goalValue: number | null;
 	segmentId: number | null;
-	status: string;
+	status: ChallengeStatus;
 	isActive: boolean;
 	createdAt: Date;
 
@@ -33,33 +31,38 @@ export class ChallengeUI {
 	timeLeft: string;
 	private countdownInterval: ReturnType<typeof setInterval> | null;
 
-	constructor(data: ChallengeWithParticipation) {
-		// Initialize all challenge fields
-		this.id = data.id;
-		this.title = data.title;
-		this.description = data.description;
-		this.type = data.type;
-		this.startDate = data.startDate;
-		this.endDate = data.endDate;
-		this.goalValue = data.goalValue;
-		this.segmentId = data.segmentId;
-		this.status = data.status;
-		this.isActive = data.isActive;
-		this.createdAt = data.createdAt;
+	leaderboard: LeaderboardUI;
+	activeTab: 'leaderboard' | 'details';
+	joinable: boolean;
+	isSubmitting: boolean;
 
-		// Initialize participation fields
-		this.isParticipating = $state(data.isParticipating);
-		this.participant = $state(data.participant);
+	constructor(
+		challengeWithParticipation: ChallengeWithParticipation,
+		challengeParticipantsWithRelations: ChallengeParticipantWithRelations[]
+	) {
+		this.id = challengeWithParticipation.id;
+		this.title = challengeWithParticipation.title;
+		this.description = challengeWithParticipation.description;
+		this.type = challengeWithParticipation.type;
+		this.startDate = challengeWithParticipation.startDate;
+		this.endDate = challengeWithParticipation.endDate;
+		this.goalValue = challengeWithParticipation.goalValue;
+		this.segmentId = challengeWithParticipation.segmentId;
+		this.status = challengeWithParticipation.status;
+		this.isActive = challengeWithParticipation.isActive;
+		this.createdAt = challengeWithParticipation.createdAt;
 
-		// Initialize reactive state
+		this.isParticipating = $state(challengeWithParticipation.isParticipating);
+		this.participant = $state(challengeWithParticipation.participant);
+
 		this.timeLeft = $state(formatTimeRemaining(this.endDate));
 		this.countdownInterval = null;
+		this.leaderboard = new LeaderboardUI(challengeParticipantsWithRelations, this.goalValue);
+		this.activeTab = $state('leaderboard');
+		this.joinable = $derived(isChallengeJoinable(this));
+		this.isSubmitting = $state(false);
 	}
 
-	/**
-	 * Start the countdown timer
-	 * Updates timeLeft every second until challenge ends
-	 */
 	startCountdown() {
 		// Don't start if already running
 		if (this.countdownInterval) return;
@@ -79,10 +82,6 @@ export class ChallengeUI {
 		}, 1000);
 	}
 
-	/**
-	 * Stop the countdown timer
-	 * Cleans up interval to prevent memory leaks
-	 */
 	stopCountdown() {
 		if (this.countdownInterval) {
 			clearInterval(this.countdownInterval);
@@ -90,10 +89,26 @@ export class ChallengeUI {
 		}
 	}
 
-	/**
-	 * Serialize to JSON (exclude interval reference)
-	 * Useful for debugging and logging
-	 */
+	join(challengeParticipantWithRelations: ChallengeParticipantWithRelations) {
+		this.isParticipating = true;
+		this.participant = challengeParticipantWithRelations;
+		this.leaderboard.addChallengeParticipantWithRelations(challengeParticipantWithRelations);
+		this.isSubmitting = false;
+	}
+
+	leave() {
+		if (!this.participant) return;
+
+		this.leaderboard.removeChallengeParticipantWithRelations(this.participant.id);
+		this.isParticipating = false;
+		this.participant = null;
+		this.isSubmitting = false;
+	}
+
+	setActiveTab(tab: 'leaderboard' | 'details') {
+		this.activeTab = tab;
+	}
+
 	toJSON() {
 		return {
 			id: this.id,

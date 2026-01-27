@@ -12,6 +12,7 @@
 
 	// Initialize Dashboard context
 	const dashboard = untrack(() => setDashboardContext(data));
+	// const dashboard = $derived(setDashboardContext(data));
 </script>
 
 <!-- GLOBAL WRAPPER -->
@@ -34,7 +35,7 @@
 				<ChallengesList />
 			{/if}
 			<!-- Single challenge view -->
-			{#if dashboard.selectedChallenge && dashboard.selectedLeaderboard}
+			{#if dashboard.selectedChallenge}
 				<ChallengeHero />
 				<LeaderboardSection />
 			{/if}

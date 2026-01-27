@@ -1,40 +1,38 @@
 <script lang="ts">
 	import type { ChallengeUI } from '../_logic/ChallengeUI.svelte.js';
-	import type { LeaderboardUI } from '../_logic/LeaderboardUI.svelte.js';
 
 	interface Props {
 		challenge: ChallengeUI;
-		leaderboard: LeaderboardUI;
 		isSelected: boolean;
 		onSelect: (id: string) => void;
 	}
 
-	let { challenge, leaderboard, isSelected, onSelect }: Props = $props();
+	let { challenge, isSelected, onSelect }: Props = $props();
 </script>
 
 <button
 	type="button"
-	class="w-full text-left p-6 rounded-lg border-2 transition-all hover:border-[--accent-lime] {isSelected
+	class="w-full rounded-lg border-2 p-6 text-left transition-all hover:border-[--accent-lime] {isSelected
 		? 'border-[--accent-lime] bg-[--accent-lime]/10'
 		: 'border-neutral-800 bg-neutral-900/50'}"
 	onclick={() => onSelect(challenge.id)}
 >
 	<!-- Challenge Title and Status -->
-	<div class="flex items-start justify-between gap-4 mb-3">
-		<h3 class="text-xl font-bold text-white uppercase tracking-tight">
+	<div class="mb-3 flex items-start justify-between gap-4">
+		<h3 class="text-xl font-bold tracking-tight text-white uppercase">
 			{challenge.title}
 		</h3>
 
 		<!-- Participation Badge -->
 		{#if challenge.isParticipating}
 			<span
-				class="px-3 py-1 bg-green-500/20 text-green-400 text-xs font-semibold uppercase tracking-wider rounded-full border border-green-500/30"
+				class="rounded-full border border-green-500/30 bg-green-500/20 px-3 py-1 text-xs font-semibold tracking-wider text-green-400 uppercase"
 			>
 				You're In!
 			</span>
 		{:else}
 			<span
-				class="px-3 py-1 bg-yellow-500/20 text-yellow-400 text-xs font-semibold uppercase tracking-wider rounded-full border border-yellow-500/30"
+				class="rounded-full border border-yellow-500/30 bg-yellow-500/20 px-3 py-1 text-xs font-semibold tracking-wider text-yellow-400 uppercase"
 			>
 				Join Now
 			</span>
@@ -43,8 +41,8 @@
 
 	<!-- Countdown Timer (Compact) -->
 	<div class="mb-4">
-		<p class="text-sm text-neutral-400 mb-1">Time Remaining</p>
-		<p class="text-2xl font-mono font-bold text-[--accent-lime]">
+		<p class="mb-1 text-sm text-neutral-400">Time Remaining</p>
+		<p class="font-mono text-2xl font-bold text-[--accent-lime]">
 			{challenge.timeLeft}
 		</p>
 	</div>
@@ -52,16 +50,16 @@
 	<!-- Quick Stats -->
 	<div class="grid grid-cols-3 gap-4 text-center">
 		<div>
-			<p class="text-xs text-neutral-400 mb-1">Runners</p>
-			<p class="text-lg font-bold text-white">{leaderboard.totalRunners}</p>
+			<p class="mb-1 text-xs text-neutral-400">Runners</p>
+			<p class="text-lg font-bold text-white">{challenge.leaderboard.totalRunners}</p>
 		</div>
 		<div>
-			<p class="text-xs text-neutral-400 mb-1">Finished</p>
-			<p class="text-lg font-bold text-white">{leaderboard.finishers}</p>
+			<p class="mb-1 text-xs text-neutral-400">Finished</p>
+			<p class="text-lg font-bold text-white">{challenge.leaderboard.finishers}</p>
 		</div>
 		<div>
-			<p class="text-xs text-neutral-400 mb-1">Distance</p>
-			<p class="text-lg font-bold text-white">{leaderboard.totalDistanceKm}</p>
+			<p class="mb-1 text-xs text-neutral-400">Distance</p>
+			<p class="text-lg font-bold text-white">{challenge.leaderboard.totalDistanceKm}</p>
 		</div>
 	</div>
 </button>

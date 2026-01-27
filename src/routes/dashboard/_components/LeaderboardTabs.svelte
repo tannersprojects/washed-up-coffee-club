@@ -2,7 +2,8 @@
 	import { getDashboardContext } from '../_logic/context.js';
 
 	let dashboard = getDashboardContext();
-	let activeTab = $derived(dashboard.activeTab);
+	let challenge = $derived(dashboard.selectedChallenge);
+	let activeTab = $derived(challenge?.activeTab);
 </script>
 
 <div class="mb-8 flex border-b border-white/10">
@@ -11,7 +12,7 @@
 		'leaderboard'
 			? 'border-(--accent-lime) text-white'
 			: 'border-transparent text-gray-500 hover:text-white'}"
-		onclick={() => dashboard.handleTabChange('leaderboard')}
+		onclick={() => challenge?.setActiveTab('leaderboard')}
 	>
 		Leaderboard
 	</button>
@@ -20,7 +21,7 @@
 		'details'
 			? 'border-(--accent-lime) text-white'
 			: 'border-transparent text-gray-500 hover:text-white'}"
-		onclick={() => dashboard.handleTabChange('details')}
+		onclick={() => challenge?.setActiveTab('details')}
 	>
 		Details
 	</button>

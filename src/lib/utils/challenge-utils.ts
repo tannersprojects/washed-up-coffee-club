@@ -1,4 +1,4 @@
-import type { LeaderboardRow } from '$lib/types/dashboard.js';
+import type { ChallengeParticipantWithRelations } from '$lib/types/dashboard.js';
 import { CHALLENGE_STATUS } from '$lib/constants/challenge_status.js';
 import type { ChallengeUI } from '../../routes/dashboard/_logic/ChallengeUI.svelte';
 import type { Challenge } from '$lib/db/schema';
@@ -10,15 +10,15 @@ import type { Challenge } from '$lib/db/schema';
  * @returns Formatted string with total distance in KM (1 decimal place)
  */
 export function calculateTotalDistanceKm(
-	leaderboard: LeaderboardRow[],
+	challengeParticipantsWithRelations: ChallengeParticipantWithRelations[],
 	goalValueMeters: number | null
 ): string {
 	if (!goalValueMeters) {
 		return '0.0';
 	}
 
-	const totalKm = leaderboard.reduce((acc, row) => {
-		if (row.participant.status === 'completed' && goalValueMeters) {
+	const totalKm = challengeParticipantsWithRelations.reduce((acc, participant) => {
+		if (participant.status === 'completed' && goalValueMeters) {
 			return acc + goalValueMeters / 1000;
 		}
 		// If they are in progress, we ideally use their current progress,

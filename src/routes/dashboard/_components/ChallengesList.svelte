@@ -4,7 +4,6 @@
 
 	let dashboard = getDashboardContext();
 	let challenges = $derived(dashboard.challenges);
-	let leaderboards = $derived(dashboard.leaderboards);
 	let selectedChallengeId = $derived(dashboard.selectedChallengeId);
 
 	function onSelectChallenge(id: string) {
@@ -17,15 +16,11 @@
 
 	<div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
 		{#each challenges as challenge (challenge.id)}
-			{@const leaderboard = leaderboards[challenge.id]}
-			{#if leaderboard}
-				<ChallengeCard
-					{challenge}
-					{leaderboard}
-					isSelected={challenge.id === selectedChallengeId}
-					onSelect={onSelectChallenge}
-				/>
-			{/if}
+			<ChallengeCard
+				{challenge}
+				isSelected={challenge.id === selectedChallengeId}
+				onSelect={onSelectChallenge}
+			/>
 		{/each}
 	</div>
 </div>
