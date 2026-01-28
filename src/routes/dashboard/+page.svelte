@@ -4,6 +4,7 @@
 	import LeaderboardSection from './_components/LeaderboardSection.svelte';
 	import ChallengesList from './_components/ChallengesList.svelte';
 	import EmptyState from './_components/EmptyState.svelte';
+	import DashboardFooter from './_components/DashboardFooter.svelte';
 	import { untrack } from 'svelte';
 	import { setDashboardContext, getDashboardContext } from './_logic/context.js';
 
@@ -45,4 +46,6 @@
 			{/if}
 		{/if}
 	</main>
+
+	<DashboardFooter />
 </div>

@@ -11,7 +11,7 @@
 
 <!-- List Header -->
 <div
-	class="grid grid-cols-[30px_1fr_1fr_auto] gap-4 border-b border-white/20 px-4 py-3 font-mono text-[10px] tracking-widest text-gray-500 uppercase md:grid-cols-[50px_2fr_1fr_1fr_1fr_1fr]"
+	class="grid grid-cols-[30px_1fr_1fr_auto] gap-4 border-b border-white/10 bg-black/20 px-4 py-3 backdrop-blur-sm font-mono text-[10px] tracking-widest text-gray-500 uppercase md:grid-cols-[50px_2fr_1fr_1fr_1fr_1fr]"
 >
 	<div class="text-center">#</div>
 	<div>Athlete</div>

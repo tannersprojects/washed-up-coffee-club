@@ -30,13 +30,20 @@
 </script>
 
 <div
-	class="group grid grid-cols-[30px_1fr_1fr_auto] items-center gap-4 border-b border-white/5 px-4 py-6 transition-colors hover:bg-white/5 md:grid-cols-[50px_2fr_1fr_1fr_1fr_1fr]"
+	class="group relative overflow-hidden rounded-lg border border-white/5 bg-black/20 px-4 py-6 backdrop-blur-sm transition-all duration-300 hover:border-white/20 hover:bg-white/10 hover:shadow-[0_0_20px_rgba(255,255,255,0.1)] grid grid-cols-[30px_1fr_1fr_auto] items-center gap-4 md:grid-cols-[50px_2fr_1fr_1fr_1fr_1fr]"
 	in:fly={{ y: 20, delay: index * 50 }}
 >
-	<!-- Rank -->
+	<!-- Rank Badge with Glow for Top 3 -->
+	{#if row.rank && row.rank <= 3}
+		<div
+			class="absolute top-0 left-0 h-full w-1 bg-(--accent-lime) shadow-[0_0_10px_var(--accent-lime)]"
+		></div>
+	{/if}
+
+	<!-- Enhanced Rank Display -->
 	<div
-		class="text-center font-mono text-lg font-bold {row.rank === 1
-			? 'text-(--accent-lime)'
+		class="text-center font-mono text-lg font-black {row.rank === 1
+			? 'text-(--accent-lime) drop-shadow-[0_0_10px_var(--accent-lime)]'
 			: 'text-gray-600'}"
 	>
 		{row.rank || '-'}
@@ -44,23 +51,26 @@
 
 	<!-- Athlete Info -->
 	<div class="flex items-center gap-4">
+		<!-- Enhanced Avatar with Glow -->
 		<div
-			class="relative h-10 w-10 shrink-0 overflow-hidden rounded-full border border-white/10 bg-gray-800"
+			class="relative h-12 w-12 shrink-0 overflow-hidden rounded-full border-2 border-white/20 bg-gray-800 shadow-lg transition-all group-hover:border-(--accent-lime)/50 group-hover:shadow-[0_0_20px_rgba(0,255,0,0.3)]"
 		>
 			<img
 				src={`https://ui-avatars.com/api/?name=${row.profile.firstname}+${row.profile.lastname}&background=random&color=fff`}
 				alt={row.profile.firstname}
 				class="h-full w-full object-cover"
 			/>
+			<!-- Status Ring with Pulse Animation -->
 			{#if row.participant.status === 'in_progress'}
 				<div
-					class="absolute right-0 bottom-0 h-2.5 w-2.5 animate-pulse rounded-full border border-black bg-blue-500"
+					class="absolute inset-0 animate-pulse rounded-full border-2 border-blue-500/50 shadow-[0_0_10px_rgba(59,130,246,0.8)]"
 				></div>
 			{/if}
 		</div>
 		<div class="flex flex-col">
+			<!-- Enhanced Name with Gradient on Hover -->
 			<span
-				class="max-w-[120px] truncate text-base font-bold tracking-tight text-white transition-colors group-hover:text-(--accent-lime) md:max-w-none"
+				class="max-w-[120px] truncate text-base font-bold tracking-tight text-white transition-all group-hover:bg-linear-to-r group-hover:from-(--accent-lime) group-hover:to-white group-hover:bg-clip-text group-hover:text-transparent md:max-w-none"
 			>
 				{row.profile.firstname}
 				{row.profile.lastname}

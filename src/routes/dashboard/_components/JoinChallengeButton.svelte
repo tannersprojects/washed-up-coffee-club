@@ -16,7 +16,7 @@
 	<div class="flex">
 		{#if challenge.isParticipating}
 			<div
-				class="flex rounded-full border border-(--accent-lime)/30 bg-(--accent-lime)/10 px-4 py-2 text-sm font-bold tracking-widest text-(--accent-lime) uppercase"
+				class="group relative flex rounded-full border border-(--accent-lime)/30 bg-(--accent-lime)/10 px-4 py-2 text-sm font-bold tracking-widest text-(--accent-lime) uppercase backdrop-blur-sm shadow-[0_0_20px_rgba(0,255,0,0.2)]"
 			>
 				You're In!
 			</div>
@@ -42,9 +42,12 @@
 				<button
 					type="submit"
 					disabled={challenge.isSubmitting}
-					class="flex cursor-pointer rounded-full border border-(--accent-lime)/30 bg-(--accent-lime)/10 px-4 py-2 text-sm font-bold tracking-widest text-(--accent-lime) uppercase"
+					class="group relative overflow-hidden rounded-full border-2 border-(--accent-lime)/30 bg-(--accent-lime)/10 px-4 py-2 text-sm font-bold tracking-widest text-(--accent-lime) uppercase backdrop-blur-sm transition-all hover:bg-(--accent-lime)/20 hover:shadow-[0_0_30px_-10px_var(--accent-lime)] disabled:cursor-not-allowed disabled:opacity-50"
 				>
-					Leave Challenge
+					<span class="relative z-10">Leave Challenge</span>
+					<div
+						class="absolute inset-0 bg-(--accent-lime)/20 opacity-0 transition-opacity group-hover:opacity-100"
+					></div>
 				</button>
 			</form>
 		{:else if challenge.joinable}
@@ -71,9 +74,13 @@
 				<button
 					type="submit"
 					disabled={challenge.isSubmitting}
-					class="flex rounded-full border border-(--accent-lime) bg-(--accent-lime) px-6 py-3 text-sm font-bold tracking-widest text-black uppercase transition-colors hover:bg-(--accent-lime)/90 disabled:cursor-not-allowed disabled:opacity-50"
+					class="group relative overflow-hidden rounded-full border-2 border-(--accent-lime) bg-(--accent-lime)/10 px-6 py-3 text-sm font-bold tracking-widest text-(--accent-lime) uppercase backdrop-blur-sm transition-all hover:bg-(--accent-lime)/20 hover:shadow-[0_0_30px_-10px_var(--accent-lime)] disabled:cursor-not-allowed disabled:opacity-50"
 				>
-					{challenge.isSubmitting ? 'Joining...' : 'Join Challenge'}
+					<span class="relative z-10">{challenge.isSubmitting ? 'Joining...' : 'Join Challenge'}</span>
+					<!-- Hover Glow Effect -->
+					<div
+						class="absolute inset-0 bg-(--accent-lime)/20 opacity-0 transition-opacity group-hover:opacity-100"
+					></div>
 				</button>
 			</form>
 		{:else}
