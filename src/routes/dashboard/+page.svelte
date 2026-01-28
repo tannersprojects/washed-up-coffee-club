@@ -6,7 +6,7 @@
 	import EmptyState from './_components/EmptyState.svelte';
 	import DashboardFooter from './_components/DashboardFooter.svelte';
 	import { untrack } from 'svelte';
-	import { setDashboardContext, getDashboardContext } from './_logic/context.js';
+	import { setDashboardContext } from './_logic/context.js';
 
 	// --- DATA FROM SERVER ---
 	let { data } = $props();

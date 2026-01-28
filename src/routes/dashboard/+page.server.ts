@@ -82,6 +82,7 @@ export const actions = {
 		}
 	},
 	leaveChallenge: async ({ request, locals }) => {
+		console.log('Leaving challenge...');
 		const { session, user } = await locals.safeGetSession();
 		const profile = locals.profile;
 
@@ -121,7 +122,7 @@ export const actions = {
 
 			return { success: true, challengeId };
 		} catch (error) {
-			return fail(500, { error: 'Failed to leave challenge. Please try again.' });
+			return fail(500, { error: `Failed to leave challenge: ${error}. \nPlease try again.` });
 		}
 	}
 };

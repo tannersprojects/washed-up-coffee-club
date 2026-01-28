@@ -35,14 +35,14 @@ This document outlines the requirements for Strava API compliance as outlined in
 ```svelte
 <footer class="border-t border-white/10 bg-[#050505]/80 px-6 py-8 backdrop-blur-md">
 	<div class="mx-auto flex max-w-5xl items-center justify-between">
-		<div class="flex flex-col gap-2 font-mono text-[10px] tracking-widest text-white/30 uppercase">
+		<div class="flex flex-col gap-2 text-[10px] tracking-widest text-white/30 uppercase">
 			<span>EST. 2024</span>
 			<span>Charleston, SC</span>
 		</div>
 
 		<!-- Powered by Strava Logo - REQUIRED -->
 		<div class="flex items-center gap-2">
-			<span class="font-mono text-[10px] tracking-widest text-white/40 uppercase">Powered by</span>
+			<span class="text-[10px] tracking-widest text-white/40 uppercase">Powered by</span>
 			<a
 				href="https://www.strava.com"
 				target="_blank"
@@ -134,14 +134,14 @@ This document outlines the requirements for Strava API compliance as outlined in
 			href={`https://strava.com/activities/${row.contribution.stravaActivityId}`}
 			target="_blank"
 			rel="noopener noreferrer"
-			class="truncate font-mono text-xs text-white/80 uppercase underline decoration-orange-500 decoration-2 underline-offset-2 transition-colors hover:text-white"
+			class="truncate text-xs text-white/80 uppercase underline decoration-orange-500 decoration-2 underline-offset-2 transition-colors hover:text-white"
 			style="color: #FC5200;"
 		>
 			{row.contribution.activityName || 'View on Strava'}
 		</a>
 		<span class="mt-1 text-[10px] text-gray-600">{formatDate(row.contribution.occurredAt)}</span>
 	{:else}
-		<span class="truncate font-mono text-xs text-white/80 uppercase">No Data</span>
+		<span class="truncate text-xs text-white/80 uppercase">No Data</span>
 	{/if}
 </div>
 ```
@@ -151,20 +151,20 @@ This document outlines the requirements for Strava API compliance as outlined in
 ```svelte
 <div class="hidden flex-col justify-center md:flex">
 	{#if row.contribution?.stravaActivityId}
-		<span class="truncate font-mono text-xs text-white/80 uppercase">
+		<span class="truncate text-xs text-white/80 uppercase">
 			{row.contribution.activityName || 'No Data'}
 		</span>
 		<a
 			href={`https://strava.com/activities/${row.contribution.stravaActivityId}`}
 			target="_blank"
 			rel="noopener noreferrer"
-			class="mt-1 font-mono text-[10px] font-bold uppercase underline decoration-orange-500 decoration-2 underline-offset-2 transition-colors hover:text-white"
+			class="mt-1 text-[10px] font-bold uppercase underline decoration-orange-500 decoration-2 underline-offset-2 transition-colors hover:text-white"
 			style="color: #FC5200;"
 		>
 			View on Strava
 		</a>
 	{:else}
-		<span class="truncate font-mono text-xs text-white/80 uppercase">No Data</span>
+		<span class="truncate text-xs text-white/80 uppercase">No Data</span>
 	{/if}
 </div>
 ```

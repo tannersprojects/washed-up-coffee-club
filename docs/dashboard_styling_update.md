@@ -127,7 +127,7 @@ This document outlines the design improvements needed to bring the dashboard in 
 
 			<div class="relative z-10">
 				<span
-					class="mb-2 block font-mono text-[10px] tracking-widest text-gray-500 uppercase transition-colors group-hover:text-white"
+					class="mb-2 block text-[10px] tracking-widest text-gray-500 uppercase transition-colors group-hover:text-white"
 				>
 					{stat.label}
 				</span>
@@ -181,7 +181,7 @@ This document outlines the design improvements needed to bring the dashboard in 
 
 	<!-- Enhanced rank display -->
 	<div
-		class="text-center font-mono text-lg font-black {row.rank === 1
+		class="text-center text-lg font-black {row.rank === 1
 			? 'text-(--accent-lime) drop-shadow-[0_0_10px_var(--accent-lime)]'
 			: 'text-gray-600'}"
 	>
