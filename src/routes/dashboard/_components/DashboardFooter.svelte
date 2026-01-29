@@ -35,6 +35,7 @@
 
 		<!-- Powered by Strava Logo - REQUIRED for compliance -->
 		<div class="flex items-center gap-2">
+			<span class="font-mono text-[10px] tracking-widest text-white/40 uppercase">Powered by</span>
 			<a
 				href="https://www.strava.com"
 				target="_blank"

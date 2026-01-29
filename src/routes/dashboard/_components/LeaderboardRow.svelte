@@ -30,7 +30,7 @@
 </script>
 
 <div
-	class="group relative overflow-hidden rounded-lg border border-white/5 bg-black/20 px-4 py-6 backdrop-blur-sm transition-all duration-300 hover:border-white/20 hover:bg-white/10 hover:shadow-[0_0_20px_rgba(255,255,255,0.1)] grid grid-cols-[30px_1fr_1fr_auto] items-center gap-4 md:grid-cols-[50px_2fr_1fr_1fr_1fr_1fr]"
+	class="group relative grid grid-cols-[30px_1fr_1fr_auto] items-center gap-4 overflow-hidden rounded-lg border border-white/5 bg-black/20 px-4 py-6 backdrop-blur-sm transition-all duration-300 hover:border-white/20 hover:bg-white/10 hover:shadow-[0_0_20px_rgba(255,255,255,0.1)] md:grid-cols-[50px_2fr_1fr_1fr_1fr_1fr]"
 	in:fly={{ y: 20, delay: index * 50 }}
 >
 	<!-- Rank Badge with Glow for Top 3 -->
@@ -68,13 +68,26 @@
 			{/if}
 		</div>
 		<div class="flex flex-col">
-			<!-- Enhanced Name with Gradient on Hover -->
-			<span
-				class="max-w-[120px] truncate text-base font-bold tracking-tight text-white transition-all group-hover:bg-linear-to-r group-hover:from-(--accent-lime) group-hover:to-white group-hover:bg-clip-text group-hover:text-transparent md:max-w-none"
-			>
-				{row.profile.firstname}
-				{row.profile.lastname}
-			</span>
+			<!-- Athlete Name - MUST link to Strava -->
+			{#if row.profile.stravaAthleteId}
+				<a
+					href={`https://strava.com/athletes/${row.profile.stravaAthleteId}`}
+					target="_blank"
+					rel="noopener noreferrer"
+					class="max-w-[120px] truncate text-base font-bold tracking-tight text-white underline decoration-orange-500 decoration-2 underline-offset-2 transition-colors hover:text-(--accent-lime) md:max-w-none"
+					style="color: #FC5200;"
+				>
+					{row.profile.firstname}
+					{row.profile.lastname}
+				</a>
+			{:else}
+				<span
+					class="max-w-[120px] truncate text-base font-bold tracking-tight text-white md:max-w-none"
+				>
+					{row.profile.firstname}
+					{row.profile.lastname}
+				</span>
+			{/if}
 			<!-- Mobile Only: Result Display -->
 			<span class="font-mono text-[10px] text-gray-500 uppercase md:hidden"
 				>{row.participant.resultDisplay || '--'}</span
@@ -82,13 +95,26 @@
 		</div>
 	</div>
 
-	<!-- Activity Name (Desktop) -->
+	<!-- Activity Name (Desktop) - MUST link to Strava with "View on Strava" text -->
 	<div class="hidden flex-col justify-center md:flex">
-		<span class="truncate font-mono text-xs text-white/80 uppercase">
-			{row.contribution?.activityName || 'No Data'}
-		</span>
-		{#if row.contribution}
-			<span class="text-[10px] text-gray-600">{formatDate(row.contribution.occurredAt)}</span>
+		{#if row.contribution?.stravaActivityId}
+			<span class="truncate font-mono text-xs text-white/80 uppercase">
+				{row.contribution.activityName || 'No Data'}
+			</span>
+			<a
+				href={`https://strava.com/activities/${row.contribution.stravaActivityId}`}
+				target="_blank"
+				rel="noopener noreferrer"
+				class="mt-1 font-mono text-[10px] font-bold uppercase underline decoration-orange-500 decoration-2 underline-offset-2 transition-colors hover:text-white"
+				style="color: #FC5200;"
+			>
+				View on Strava
+			</a>
+			<span class="mt-0.5 text-[10px] text-gray-600">
+				{formatDate(row.contribution.occurredAt)}
+			</span>
+		{:else}
+			<span class="truncate font-mono text-xs text-white/80 uppercase">No Data</span>
 		{/if}
 	</div>
 
