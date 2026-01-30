@@ -32,7 +32,7 @@ export async function findOrCreateShadowUser(
 		.limit(1);
 
 	if (existingConnection.length > 0) {
-		const userId = existingConnection[0].userId;
+		const userId = existingConnection[0].profileId;
 
 		// Update existing connection with new tokens
 		await db
@@ -90,7 +90,7 @@ export async function findOrCreateShadowUser(
 
 	// Insert Strava connection record
 	await db.insert(stravaConnectionsTable).values({
-		userId: user.user.id,
+		profileId: user.user.id,
 		stravaAthleteId: athleteData.id,
 		accessToken: tokens.access_token,
 		refreshToken: tokens.refresh_token,
@@ -134,7 +134,7 @@ export async function getStravaConnection(userId: string) {
 	const connection = await db
 		.select()
 		.from(stravaConnectionsTable)
-		.where(eq(stravaConnectionsTable.userId, userId))
+		.where(eq(stravaConnectionsTable.profileId, userId))
 		.limit(1);
 
 	return connection[0] || null;

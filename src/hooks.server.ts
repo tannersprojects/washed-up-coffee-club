@@ -46,6 +46,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 			try {
 				event.locals.profile = await getUserProfile(user.id);
 			} catch (err) {
+				// TODO: This should never happen.
 				console.error('Error loading user profile:', err);
 				event.locals.profile = null;
 			}
@@ -76,7 +77,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 									expiresAt: new Date(newTokens.expires_at * 1000),
 									updatedAt: new Date()
 								})
-								.where(eq(stravaConnectionsTable.userId, user.id));
+								.where(eq(stravaConnectionsTable.profileId, user.id));
 						} catch (refreshError) {
 							// Token refresh failed - user may need to re-authenticate
 							console.error('Failed to refresh Strava token:', refreshError);

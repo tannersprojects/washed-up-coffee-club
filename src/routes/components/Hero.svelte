@@ -82,7 +82,7 @@
 	});
 </script>
 
-<section class="relative h-dvh min-h-[600px] w-full overflow-hidden bg-[#050505]">
+<section class="relative h-dvh min-h-150 w-full overflow-hidden bg-[#050505]">
 	<div
 		class="pointer-events-none absolute top-0 left-0 z-20 h-40 w-full bg-linear-to-b from-[#050505] to-transparent"
 	></div>
@@ -92,7 +92,7 @@
 		class="pointer-events-none absolute inset-0 z-0 flex items-center justify-center overflow-hidden opacity-[0.12] mix-blend-screen select-none"
 	>
 		<div class="flex w-[200%] -rotate-12 flex-col gap-0 md:w-[150%]">
-			{#each Array(10) as _, i}
+			{#each Array(10), i (i)}
 				<div
 					class="text-[15vh] leading-[0.85] font-black tracking-tighter whitespace-nowrap text-white uppercase will-change-transform md:text-[10vw]"
 					style="transform: translateX({(i % 2 === 0 ? -1 : 1) * smoothScroll * 0.08}px);"

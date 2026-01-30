@@ -1,5 +1,5 @@
 <script lang="ts">
-	let { memories, innerHeight, innerWidth } = $props();
+	let { memories, innerHeight } = $props();
 
 	let cameraRollSection: HTMLElement | null = $state(null);
 	let cameraRollProgress = $state(0);
@@ -44,21 +44,12 @@
 			class="pointer-events-none absolute bottom-0 left-0 z-30 h-32 w-full bg-linear-to-t from-[#050505] to-transparent"
 		></div>
 
-		<!-- Background Lines -->
-		<!-- <div
-			class="pointer-events-none absolute inset-0 flex h-full w-full flex-col justify-between opacity-20"
-		>
-			{#each Array(5) as _}
-				<div class="h-px w-full bg-white/20"></div>
-			{/each}
-		</div> -->
-
 		<!-- TITLE SECTION -->
 		<!-- Always top, full width -->
 		<div
 			class="relative z-20 flex w-full shrink-0 flex-col justify-center px-6 pt-16 md:pt-24 md:pl-20"
 		>
-			<h3 class="mb-2 font-mono text-xs font-bold tracking-widest text-(--accent-lime) uppercase">
+			<h3 class="mb-2 text-xs font-bold tracking-widest text-(--accent-lime) uppercase">
 				// Evidence
 			</h3>
 			<h2
@@ -84,7 +75,7 @@
 				<!-- Spacer for visual breathing room on start -->
 				<div class="w-4 shrink-0 md:w-20"></div>
 
-				{#each memories as memory, i}
+				{#each memories as memory, i (memory.id)}
 					<div
 						class="group relative flex shrink-0 rotate-(--angle) flex-col bg-white p-2 shadow-xl transition-all duration-500 hover:z-50 hover:scale-105 hover:rotate-0 md:p-3"
 						style="--angle: {(i % 2 === 0 ? 1 : -1) * (((i * 3) % 4) + 1)}deg;"
@@ -102,7 +93,7 @@
 
 						<div class="mt-3 flex items-end justify-between">
 							<p
-								class="max-w-[120px] truncate font-mono text-[10px] font-bold tracking-widest text-black uppercase lg:max-w-[200px]"
+								class="max-w-30 truncate text-[10px] font-bold tracking-widest text-black uppercase lg:max-w-50"
 							>
 								{memory.caption}
 							</p>

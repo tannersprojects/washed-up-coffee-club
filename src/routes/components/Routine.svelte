@@ -43,6 +43,11 @@
 	<!-- <div class="absolute top-0 bottom-0 left-4 w-px bg-white/5 md:left-10 md:bg-white/10"></div>
 	<div class="absolute top-0 right-4 bottom-0 w-px bg-white/5 md:right-10 md:bg-white/10"></div> -->
 
+	<!-- Top gradient fade -->
+	<div
+		class="pointer-events-none absolute top-0 left-0 z-20 h-32 w-full bg-linear-to-b from-[#050505] to-transparent"
+	></div>
+
 	<div class="relative z-30 mx-auto max-w-6xl">
 		<div class="mb-16 flex flex-col justify-between gap-2 pb-4 md:mb-24 md:flex-row md:items-end">
 			<h2

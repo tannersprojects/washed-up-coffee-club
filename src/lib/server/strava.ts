@@ -49,8 +49,6 @@ export async function exchangeCodeForToken(code: string): Promise<StravaTokenRes
 
 	const data = await response.json();
 
-	console.log(data);
-
 	return data;
 }
 
