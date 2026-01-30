@@ -30,7 +30,7 @@
 </script>
 
 <div
-	class="group relative grid grid-cols-[30px_1fr_1fr_auto] items-center gap-4 overflow-hidden rounded-lg border border-white/5 bg-black/20 px-4 py-6 backdrop-blur-sm transition-all duration-300 hover:border-white/20 hover:bg-white/10 hover:shadow-[0_0_20px_rgba(255,255,255,0.1)] md:grid-cols-[50px_2fr_1fr_1fr_1fr_1fr]"
+	class="group relative grid grid-cols-[30px_1fr_auto] grid-rows-[auto_auto] items-center gap-3 overflow-hidden rounded-lg border border-white/5 bg-black/20 px-4 py-4 backdrop-blur-sm transition-all duration-300 [grid-template-areas:'rank_athlete_time'_'distance_distance_distance'] hover:border-white/20 hover:bg-white/10 hover:shadow-[0_0_20px_rgba(255,255,255,0.1)] md:grid-cols-[50px_2fr_1fr_1fr_1fr_1fr] md:grid-rows-1 md:gap-4 md:py-6 md:[grid-template-areas:'rank_athlete_activity_distance_pace_time']"
 	in:fly={{ y: 20, delay: index * 50 }}
 >
 	<!-- Rank Badge with Glow for Top 3 -->
@@ -42,7 +42,7 @@
 
 	<!-- Enhanced Rank Display -->
 	<div
-		class="text-center font-mono text-lg font-black {row.rank === 1
+		class="text-center font-mono text-lg font-black [grid-area:rank] {row.rank === 1
 			? 'text-(--accent-lime) drop-shadow-[0_0_10px_var(--accent-lime)]'
 			: 'text-gray-600'}"
 	>
@@ -50,7 +50,7 @@
 	</div>
 
 	<!-- Athlete Info -->
-	<div class="flex items-center gap-4">
+	<div class="flex items-center gap-4 [grid-area:athlete]">
 		<!-- Enhanced Avatar with Glow -->
 		<div
 			class="relative h-12 w-12 shrink-0 overflow-hidden rounded-full border-2 border-white/20 bg-gray-800 shadow-lg transition-all group-hover:border-(--accent-lime)/50 group-hover:shadow-[0_0_20px_rgba(0,255,0,0.3)]"
@@ -96,7 +96,7 @@
 	</div>
 
 	<!-- Activity Name (Desktop) - MUST link to Strava with "View on Strava" text -->
-	<div class="hidden flex-col justify-center md:flex">
+	<div class="hidden flex-col justify-center [grid-area:activity] md:flex">
 		{#if row.contribution?.stravaActivityId}
 			<span class="truncate font-mono text-xs text-white/80 uppercase">
 				{row.contribution.activityName || 'No Data'}
@@ -119,7 +119,7 @@
 	</div>
 
 	<!-- Distance -->
-	<div class="flex flex-col items-end justify-center">
+	<div class="flex flex-col items-end justify-center [grid-area:distance]">
 		<span class="font-mono font-bold text-white">
 			{#if challenge?.goalValue}
 				{(challenge.goalValue / 1000).toFixed(1)}
@@ -138,12 +138,12 @@
 	</div>
 
 	<!-- Pace (Placeholder / Calc) -->
-	<div class="hidden flex-col items-end justify-center md:flex">
+	<div class="hidden flex-col items-end justify-center [grid-area:pace] md:flex">
 		<span class="font-mono text-sm text-gray-300">-- /km</span>
 	</div>
 
 	<!-- Time/Status -->
-	<div class="flex flex-col items-end justify-center text-right">
+	<div class="flex flex-col items-end justify-center text-right [grid-area:time]">
 		{#if row.participant.status === 'completed'}
 			<span class="font-mono text-xl font-bold text-white">{row.participant.resultDisplay}</span>
 			<span class="font-mono text-[10px] tracking-wider text-(--accent-lime) uppercase"

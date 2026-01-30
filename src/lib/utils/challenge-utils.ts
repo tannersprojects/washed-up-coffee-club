@@ -1,5 +1,5 @@
 import type { ChallengeParticipantWithRelations } from '$lib/types/dashboard.js';
-import { CHALLENGE_STATUS } from '$lib/constants/challenge_status.js';
+import { CHALLENGE_STATUS } from '$lib/constants';
 import type { ChallengeUI } from '../../routes/dashboard/_logic/ChallengeUI.svelte';
 import type { Challenge } from '$lib/db/schema';
 

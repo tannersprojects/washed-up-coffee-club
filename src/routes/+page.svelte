@@ -4,7 +4,7 @@
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { AUTH_ERROR_MESSAGES } from '$lib/constants/auth';
+	import { AUTH_ERROR_MESSAGES } from '$lib/constants';
 
 	// Component Imports
 	import { Navigation, Hero, Manifesto, CameraRoll, Routine, Footer } from './components';

@@ -6,8 +6,7 @@ import type {
 import type { ChallengeParticipant } from '$lib/db/schema.js';
 import { LeaderboardUI } from './LeaderboardUI.svelte';
 import { isChallengeJoinable } from '$lib/utils/challenge-utils';
-import type { ChallengeType } from '$lib/constants/challenge_type';
-import type { ChallengeStatus } from '$lib/constants/challenge_status';
+import type { ChallengeType, ChallengeStatus } from '$lib/constants';
 
 export class ChallengeUI {
 	// Challenge fields from database

@@ -1,4 +1,4 @@
-import { PARTICIPANT_STATUS } from '$lib/constants/participant_status';
+import { PARTICIPANT_STATUS } from '$lib/constants';
 import type {
 	LeaderboardRow,
 	ChallengeStats,

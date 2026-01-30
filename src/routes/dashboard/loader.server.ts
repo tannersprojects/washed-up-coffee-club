@@ -3,7 +3,7 @@ import { challengeParticipantsTable, challengesTable } from '$lib/db/schema';
 import { asc, desc, eq, and, inArray } from 'drizzle-orm';
 import type { ChallengeWithParticipation, LeaderboardRow } from '$lib/types/dashboard.js';
 import type { ChallengeParticipantWithRelations } from '$lib/types/dashboard.js';
-import { PARTICIPANT_STATUS } from '$lib';
+import { PARTICIPANT_STATUS } from '$lib/constants';
 
 // Challenge Queries
 
