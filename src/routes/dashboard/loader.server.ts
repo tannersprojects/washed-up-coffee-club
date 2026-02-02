@@ -1,7 +1,7 @@
 import { db } from '$lib/db';
 import { challengeParticipantsTable, challengesTable } from '$lib/db/schema';
 import { asc, desc, eq, and, inArray } from 'drizzle-orm';
-import type { ChallengeWithParticipation, LeaderboardRow } from '$lib/types/dashboard.js';
+import type { ChallengeWithParticipation, LeaderboardRowData } from '$lib/types/dashboard.js';
 import type { ChallengeParticipantWithRelations } from '$lib/types/dashboard.js';
 import { PARTICIPANT_STATUS } from '$lib/constants';
 
@@ -88,7 +88,7 @@ export async function checkUserParticipation(
  */
 export function buildLeaderboard(
 	challengeParticipants: ChallengeParticipantWithRelations[]
-): LeaderboardRow[] {
+): LeaderboardRowData[] {
 	let currentRank = 1;
 	const leaderboard = challengeParticipants.map((participant) => {
 		const isFinished = participant.status === 'completed';

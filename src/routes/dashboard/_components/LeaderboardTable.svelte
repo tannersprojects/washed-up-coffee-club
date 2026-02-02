@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { getDashboardContext } from '../_logic/context.js';
-	import LeaderboardRowComponent from './LeaderboardRow.svelte';
+	import LeaderboardRow from './LeaderboardRow.svelte';
 	import EmptyState from './EmptyState.svelte';
 
 	const dashboard = getDashboardContext();
@@ -25,7 +25,7 @@
 	<!-- List Rows -->
 	<div class="flex flex-col">
 		{#each rows as row, i}
-			<LeaderboardRowComponent {row} index={i} />
+			<LeaderboardRow {row} index={i} />
 		{/each}
 
 		<!-- Empty State if no runners -->

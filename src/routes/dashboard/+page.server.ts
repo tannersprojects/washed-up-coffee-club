@@ -82,7 +82,6 @@ export const actions = {
 		}
 	},
 	leaveChallenge: async ({ request, locals }) => {
-		console.log('Leaving challenge...');
 		const { session, user } = await locals.safeGetSession();
 		const profile = locals.profile;
 

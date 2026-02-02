@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { formatDate } from '$lib/utils/date-utils.js';
 	import { fly } from 'svelte/transition';
-	import type { LeaderboardRow } from '$lib/types/dashboard.js';
+	import type { LeaderboardRowData } from '$lib/types/dashboard.js';
 	import { getDashboardContext } from '../_logic/context.js';
 
 	type Props = {
-		row: LeaderboardRow;
+		row: LeaderboardRowData;
 		index: number;
 	};
 

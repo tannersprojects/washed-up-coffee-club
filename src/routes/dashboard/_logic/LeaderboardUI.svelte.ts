@@ -1,6 +1,6 @@
 import { PARTICIPANT_STATUS } from '$lib/constants';
 import type {
-	LeaderboardRow,
+	LeaderboardRowData,
 	ChallengeStats,
 	ChallengeParticipantWithRelations
 } from '$lib/types/dashboard.js';
@@ -19,7 +19,7 @@ export class LeaderboardUI {
 	private challengeParticipantsWithRelations: ChallengeParticipantWithRelations[];
 	private goalValue: number | null;
 
-	leaderboardRows: LeaderboardRow[];
+	leaderboardRows: LeaderboardRowData[];
 
 	totalRunners: number;
 	finishers: number;
@@ -39,7 +39,7 @@ export class LeaderboardUI {
 			return this.challengeParticipantsWithRelations.map((participant) => {
 				const isFinished = participant.status === PARTICIPANT_STATUS.COMPLETED;
 
-				const row: LeaderboardRow = {
+				const row: LeaderboardRowData = {
 					participant,
 					profile: participant.profile,
 					// We grab the first contribution to display the activity name (e.g. "Morning Run")

@@ -16,7 +16,7 @@ export type ChallengeParticipantWithRelations = ChallengeParticipant & {
 /**
  * Leaderboard row structure matching buildLeaderboard() function
  */
-export type LeaderboardRow = {
+export type LeaderboardRowData = {
 	participant: ChallengeParticipantWithRelations;
 	profile: Profile;
 	contribution: ChallengeContribution | null;
