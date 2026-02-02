@@ -13,6 +13,7 @@
 		"format": "prettier --write .",
 		"lint": "prettier --check . && eslint .",
 		"db:generate": "tsx node_modules/drizzle-kit/bin.cjs generate",
+		"db:generate:name": "tsx node_modules/drizzle-kit/bin.cjs generate --name",
 		"db:migrate": "tsx node_modules/drizzle-kit/bin.cjs migrate",
 		"db:push": "tsx node_modules/drizzle-kit/bin.cjs push",
 		"db:studio": "drizzle-kit studio"
