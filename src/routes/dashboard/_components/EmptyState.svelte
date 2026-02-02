@@ -9,7 +9,7 @@
 
 	const containerClass = $derived(
 		variant === 'no-challenge'
-			? 'flex h-[50vh] w-full items-center justify-center'
+			? 'flex min-h-0 flex-1 w-full items-center justify-center'
 			: 'border-b border-white/5 py-20 text-center'
 	);
 </script>

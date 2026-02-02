@@ -25,7 +25,7 @@
 
 <footer
 	use:reveal
-	class="reveal relative border-t border-white/10 bg-[#050505]/80 px-6 py-8 backdrop-blur-md"
+	class="reveal border-t border-white/10 bg-[#050505]/80 px-6 py-8 backdrop-blur-md"
 >
 	<div class="mx-auto flex max-w-5xl flex-col items-center justify-between gap-4 md:flex-row">
 		<div

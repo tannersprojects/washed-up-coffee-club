@@ -20,13 +20,13 @@
 	});
 </script>
 
-<!-- GLOBAL WRAPPER -->
+<!-- GLOBAL WRAPPER: flex column so main grows and footer stays at bottom -->
 <div
-	class="min-h-screen w-full bg-[#050505] font-sans text-white selection:bg-(--accent-lime) selection:text-black"
+	class="flex min-h-screen w-full flex-col bg-[#050505] font-sans text-white selection:bg-(--accent-lime) selection:text-black"
 >
 	<DashboardNav profile={data.profile} />
 
-	<main class="relative pt-24 pb-20">
+	<main class="relative flex flex-1 flex-col pt-24 pb-20">
 		{#if dashboard.challenges.length === 0}
 			<!-- Empty state - no challenges -->
 			<EmptyState
