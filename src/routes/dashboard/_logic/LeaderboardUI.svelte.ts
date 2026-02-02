@@ -33,7 +33,6 @@ export class LeaderboardUI {
 	) {
 		this.challengeParticipantsWithRelations = $state(challengeParticipantsWithRelations);
 		this.goalValue = $state(goalValue);
-		// this.leaderboardRows = $state(this.buildLeaderboardRows());
 		this.leaderboardRows = $derived.by(() => {
 			let currentRank = 1;
 			return this.challengeParticipantsWithRelations.map((participant) => {

@@ -82,29 +82,6 @@ export async function checkUserParticipation(
 	return participant ?? null;
 }
 
-/**
- * Build leaderboard from challenge participants
- * Transforms participant data into LeaderboardRow format with ranking
- */
-export function buildLeaderboard(
-	challengeParticipants: ChallengeParticipantWithRelations[]
-): LeaderboardRowData[] {
-	let currentRank = 1;
-	const leaderboard = challengeParticipants.map((participant) => {
-		const isFinished = participant.status === 'completed';
-
-		return {
-			participant,
-			profile: participant.profile,
-			// We grab the first contribution to display the activity name (e.g. "Morning Run")
-			contribution: participant.contributions?.[0] || null,
-			rank: isFinished ? currentRank++ : null
-		};
-	});
-
-	return leaderboard;
-}
-
 export async function loadDashboardData(profileId: string) {
 	const challengeParticipantsWithRelationsByChallenge: Record<
 		string,

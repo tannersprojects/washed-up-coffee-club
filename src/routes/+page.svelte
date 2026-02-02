@@ -31,7 +31,7 @@
 			});
 
 			const destination = resolve('/');
-			goto(destination);
+			goto(destination, { replaceState: true });
 		}
 	});
 

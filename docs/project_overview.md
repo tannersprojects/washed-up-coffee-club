@@ -27,3 +27,10 @@ The **Washed Up Coffee Club** app is a community hub for a run club. It serves a
 *   Club announcements/blog.
 *   Photo sharing from runs.
 
+## Current Implementation (dashboard branch)
+
+- **Frontend & Server**: SvelteKit with Svelte 5 runes.
+- **Persistence**: Supabase Postgres with Drizzle ORM; Strava connections and challenge data modeled in `src/lib/db/schema.ts`.
+- **Auth**: Strava‑only login using a shadow‑user pattern; user profile is exposed as `App.Locals.profile` and surfaced in the dashboard UI.
+- **Dashboard Architecture**: A `DashboardUI` class (via context) manages challenges, while each `ChallengeUI` owns its own `LeaderboardUI`. The leaderboard rows are built client‑side from participants/contributions, and Strava compliance (logo + links) is implemented per `docs/strava_compliance.md` and `docs/strava_compliance_implementation.md`.
+

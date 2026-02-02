@@ -213,3 +213,31 @@ Components should receive Class Instances as props, not raw data.
 <!-- Fine-grained reactivity: modifying task.title here only updates this DOM node -->
 <input bind:value={task.title} />
 ```
+
+## 6. Dashboard Feature Example
+
+The `dashboard` route in this project follows the same feature‑oriented pattern:
+
+```text
+src/routes/dashboard/
+  +page.svelte          # Initializes context and renders the dashboard shell
+  +page.server.ts       # Loads challenges and participants from the database
+  loader.server.ts      # Shared loader logic
+  _logic/
+    context.ts          # setDashboardContext / getDashboardContext
+    DashboardUI.svelte.ts
+    ChallengeUI.svelte.ts
+    LeaderboardUI.svelte.ts
+  _components/
+    DashboardNav.svelte
+    ChallengeHero.svelte
+    LeaderboardSection.svelte
+    LeaderboardTabs.svelte
+    LeaderboardTable.svelte
+    LeaderboardRow.svelte
+    ChallengeDetails.svelte
+    ChallengeStatsGrid.svelte
+    DashboardFooter.svelte
+```
+
+Page‑level components (`+page.svelte`, `+page.server.ts`) are thin: they delegate all interactive behavior to the `_logic` classes via context, while `_components` focus purely on rendering and user interaction.

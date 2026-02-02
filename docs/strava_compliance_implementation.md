@@ -6,20 +6,14 @@ This document outlines the concrete code changes needed to achieve full Strava A
 
 ## Current Status
 
-### Already Compliant
+### Implemented on this branch
 
-- ✅ "Connect with Strava" button used correctly on login page
-- ✅ Button links to correct OAuth endpoint (`https://www.strava.com/oauth/authorize`)
-- ✅ Button uses official Strava assets
-- ✅ Dashboard footer component created (`DashboardFooter.svelte`)
-- ✅ Footer includes "Powered by Strava" logo
-
-### Still Needs Implementation
-
-- ❌ Athlete names in leaderboard must link to Strava athlete pages
-- ❌ Activity entries must link to Strava activity pages with "View on Strava" text
-- ❌ Link styling must be compliant (bold, underline, or orange #FC5200)
-- ⚠️ Footer logo placement needs verification (ensure proper separation and prominence)
+- ✅ "Connect with Strava" button used correctly on login page, linking to the official OAuth endpoint (`https://www.strava.com/oauth/authorize`) with official assets.
+- ✅ Dashboard footer component created (`DashboardFooter.svelte`) and rendered on the dashboard page.
+- ✅ "Powered by Strava" logo added to the dashboard footer, linking to `https://www.strava.com` and kept visually separate from app branding.
+- ✅ Athlete names in the leaderboard link to Strava athlete pages using `row.profile.stravaAthleteId`.
+- ✅ Activity entries link to Strava activity pages using `row.contribution.stravaActivityId` and the required **"View on Strava"** text.
+- ✅ All Strava links use compliant styling (orange `#FC5200` + underline) and open in a new tab with `target="_blank" rel="noopener noreferrer"`.
 
 ---
 
@@ -139,7 +133,7 @@ With compliant Strava link:
 
 **Data Verification**:
 
-- Verify `row.profile.stravaAthleteId` is available in the `LeaderboardRow` type
+- Verify `row.profile.stravaAthleteId` is available in the `LeaderboardRowData` type
 - Check that `Profile` schema includes `stravaAthleteId` field (should be `bigint` from schema)
 
 ---
@@ -424,10 +418,10 @@ Strava requires that links be **identifiable** using at least one of:
 
 ### Data Type Verification
 
-Before implementing, verify these fields exist in your types:
+Before implementing, verify these fields exist in your types (see `src/lib/types/dashboard.ts` and `src/lib/db/schema.ts`):
 
-- `row.profile.stravaAthleteId` - Should be `number | null` (from `Profile` schema)
-- `row.contribution.stravaActivityId` - Should be `number | null` (from `ChallengeContribution` schema)
+- `row.profile.stravaAthleteId` - `number | null` (from `Profile` schema)
+- `row.contribution.stravaActivityId` - `number | null` (from `ChallengeContribution` schema)
 
 ### Accessibility
 
@@ -513,6 +507,22 @@ When ready to submit for Community Application approval:
 - [Strava API Brand Guidelines](https://www.strava.com/api/v3/oauth#branding)
 - [Strava API Agreement](https://www.strava.com/legal/api)
 - [Strava Developer Support](mailto:developers@strava.com)
+
+---
+
+## Verification on this branch
+
+On this dashboard branch, the above changes are implemented in:
+
+- `src/routes/dashboard/_components/LeaderboardRow.svelte` (athlete and activity links with orange `#FC5200` + underline styling, `target="_blank" rel="noopener noreferrer"`).
+- `src/routes/dashboard/_components/DashboardFooter.svelte` (\"Powered by Strava\" logo linking to `https://www.strava.com`, visually separated from app branding).
+
+Visual proof used for Community Application review is stored in:
+
+- `docs/strava_compliance_proof/BeforeClick.png`
+- `docs/strava_compliance_proof/AfterClickOnProfile.png`
+- `docs/strava_compliance_proof/DashboardWithLinksToStrava.png`
+- `docs/strava_compliance_proof/LandingPageWithStravaConnectionButton.png`
 
 ---
 

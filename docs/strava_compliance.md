@@ -224,37 +224,35 @@ This document outlines the requirements for Strava API compliance as outlined in
 
 ## Current Compliance Status
 
-### ✅ Already Compliant
+### ✅ Implemented on the dashboard branch
 
-- [x] "Connect with Strava" button used correctly on login page
-- [x] Button links to correct OAuth endpoint
-- [x] Button uses official Strava assets
+- [x] "Connect with Strava" button used correctly on the landing page, linking to the official OAuth endpoint with official assets.
+- [x] "Powered by Strava" logo rendered in the dashboard footer via `DashboardFooter.svelte`, linking to `https://www.strava.com` and kept visually separate from app branding.
+- [x] Athlete names in `LeaderboardRow.svelte` link to `https://strava.com/athletes/{stravaAthleteId}` with compliant orange + underline styling.
+- [x] Activity entries in `LeaderboardRow.svelte` link to `https://strava.com/activities/{stravaActivityId}` using the required **\"View on Strava\"** text.
+- [x] All Strava links are clearly identifiable (underline + orange `#FC5200`) and open in a new tab with `target="_blank" rel="noopener noreferrer"`.
 
-### ❌ Missing Requirements
+For the step‑by‑step implementation details, see `docs/strava_compliance_implementation.md`. For visual proof used in the Community Application review, see the screenshots under `docs/strava_compliance_proof/`.
 
-- [ ] "Powered by Strava" logo in dashboard footer
-- [ ] Athlete names link to Strava athlete pages
-- [ ] Activity names link to Strava activity pages
-- [ ] "View on Strava" text format for activity links
-- [ ] Link styling (bold/underline/orange) applied
+## Historical Implementation Checklist
 
-## Implementation Checklist
+The following checklist describes how compliance was originally implemented. All items are **complete** on this branch but are kept here as a reference.
 
 ### Phase 1: Critical Compliance (Required for Approval)
 
-- [ ] **Add "Powered by Strava" logo to dashboard footer**
-  - File: `src/routes/dashboard/+page.svelte` or new `DashboardFooter.svelte`
+- [x] **Add "Powered by Strava" logo to dashboard footer**
+  - File: `src/routes/dashboard/_components/DashboardFooter.svelte`
   - Use white horizontal logo for dark background
   - Ensure proper separation from app branding
   - Link to `https://www.strava.com`
 
-- [ ] **Link athlete names to Strava**
+- [x] **Link athlete names to Strava**
   - File: `src/routes/dashboard/_components/LeaderboardRow.svelte`
   - Use `row.profile.stravaAthleteId` for link
   - Format: `https://strava.com/athletes/{id}`
   - Apply link styling (bold/underline/orange)
 
-- [ ] **Link activities to Strava**
+- [x] **Link activities to Strava**
   - File: `src/routes/dashboard/_components/LeaderboardRow.svelte`
   - Use `row.contribution.stravaActivityId` for link
   - Format: `https://strava.com/activities/{id}`
@@ -263,19 +261,19 @@ This document outlines the requirements for Strava API compliance as outlined in
 
 ### Phase 2: Verification
 
-- [ ] **Verify logo placement**
+- [x] **Verify logo placement**
   - Logo is separate from app name
   - Logo is not more prominent than app name
   - Logo is not modified or animated
   - Logo links to Strava website
 
-- [ ] **Verify link styling**
+- [x] **Verify link styling**
   - All Strava links are identifiable
   - Links use bold, underline, or orange (#FC5200)
   - Links are legible
   - "View on Strava" text format used for activities
 
-- [ ] **Verify data linking**
+- [x] **Verify data linking**
   - All athlete names with `stravaAthleteId` are linked
   - All activities with `stravaActivityId` are linked
   - Links open in new tab with `target="_blank" rel="noopener noreferrer"`

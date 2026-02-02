@@ -28,109 +28,103 @@
   - **Links:** Athlete names and Activities must link back to Strava.com.
 - **Terminology:** Do NOT use "Strava" in the app name or challenge title.
 
-## 3. Database Schema (Supabase)
+## 3. Database Schema (Supabase / Drizzle)
 
-### 1. profiles (Public Info)
+The current schema is defined in detail in [`src/lib/db/schema.ts`](../src/lib/db/schema.ts). This section summarizes the parts most relevant to the dashboard and leaderboard.
 
-- `id` (UUID, PK): References auth.users.id.
-- `strava_athlete_id` (BigInt, Unique): Immutable ID from Strava.
-- `first_name` (Text).
-- `last_name` (Text).
-- `avatar_url` (Text).
-- `is_admin` (Boolean): New. Defaults to false. Set to true manually for the Owner.
-- `created_at` (Timestamp).
+### 1. `profile` (Public Info)
 
-### 2. strava_connections (Private - RLS Protected)
+- `id` (UUID, PK): Mirrors `auth.users.id`.
+- `firstname` (text).
+- `lastname` (text).
+- `username` (text).
+- `stravaAthleteId` (bigint, unique): Immutable Strava athlete ID.
+- `role` (enum): `'admin' | 'user'`.
+- `createdAt`, `updatedAt` (timestamps).
 
-- `user_id` (UUID, PK, FK -> profiles.id): 1-to-1 relationship.
-- `refresh_token` (Text): Critical for offline background fetching.
-- `access_token` (Text): Short-lived token.
-- `expires_at` (BigInt): Unix timestamp.
-
-### 3. challenges (Game Config)
+### 2. `strava_connections` (Private – RLS Protected)
 
 - `id` (UUID, PK).
-- `title` (Text): e.g., "February Flash Halfy".
-- `start_timestamp` (Timestamp): Window open.
-- `end_timestamp` (Timestamp): Window close.
-- `goal_distance_meters` (Float): e.g., 21097.5.
-- `status` (Enum): 'upcoming', 'active', 'completed'.
+- `profileId` (UUID, FK → `profile.id`): 1‑to‑1 relationship.
+- `stravaAthleteId` (bigint, unique).
+- `accessToken` (text).
+- `refreshToken` (text).
+- `expiresAt` (timestamp with time zone).
+- `scope` (text).
 
-### 4. challenge_results (Leaderboard Cache)
+### 3. `challenges`
 
 - `id` (UUID, PK).
-- `challenge_id` (UUID, FK -> challenges.id).
-- `user_id` (UUID, FK -> profiles.id).
-- `is_completed` (Boolean): True if valid run found.
-- `activity_data` (JSONB): Snapshot of stats { time: "1:45", pace: "8:02" }.
-- `completed_at` (Timestamp).
+- `title` (text).
+- `description` (text).
+- `type` (enum): see `CHALLENGE_TYPE` in `src/lib/constants/challenge-constants.ts`.
+- `goalValue` (integer, nullable): goal value in meters for distance‑based challenges.
+- `segmentId` (bigint, nullable) for segment‑based events.
+- `startDate`, `endDate` (timestamps with time zone).
+- `status` (enum): `upcoming`, `active`, `completed`.
+- `isActive` (boolean).
+- `createdAt`, `updatedAt` (timestamps).
+
+### 4. `challenge_participants`
+
+- `id` (UUID, PK).
+- `challengeId` (UUID, FK → `challenges.id`).
+- `profileId` (UUID, FK → `profile.id`).
+- `status` (enum): see `PARTICIPANT_STATUS` in `src/lib/constants/participant-constants.ts`.
+- `joinedAt` (timestamp).
+- `resultValue` (integer): cached value used for sorting.
+- `resultDisplay` (text): formatted time/distance for UI.
+- `highlightActivityId` (bigint, nullable): ties a participant to a specific Strava activity.
+- `createdAt`, `updatedAt` (timestamps).
+
+### 5. `challenge_contributions`
+
+- `id` (UUID, PK).
+- `participantId` (UUID, FK → `challenge_participants.id`).
+- `stravaActivityId` (bigint): Strava activity identifier.
+- `activityName` (text, nullable).
+- `value` (integer): contribution value in meters or other units depending on challenge type.
+- `isValid` (boolean): allows invalidating a specific run without deleting it.
+- `occurredAt` (timestamp with time zone).
+- `createdAt` (timestamp with time zone).
+
+These tables together power the dashboard: `challenges` define the events, `challenge_participants` track who is in each challenge and their aggregate result, and `challenge_contributions` store the individual Strava activities that feed into the leaderboard.
 
 ## 4. Data Models (TypeScript)
 
-### Core Strava Types (API Responses)
+The main dashboard‑level types are defined in [`src/lib/types/dashboard.ts`](../src/lib/types/dashboard.ts). Key types:
 
-```typescript
-// Strava OAuth Token Exchange Response
-export interface StravaTokenResponse {
-  token_type: string;
-  expires_at: number; // Unix timestamp
-  expires_in: number; // Seconds until expiration
-  access_token: string;
-  refresh_token: string;
-  athlete: StravaSummaryAthlete;
-}
+```ts
+import type {
+  Profile,
+  Challenge,
+  ChallengeParticipant,
+  ChallengeContribution
+} from '$lib/db/schema';
 
-// Strava Summary Athlete
-export interface StravaSummaryAthlete {
-  id: number;
-  username: string | null;
-  resource_state: number;
-  firstname: string;
-  lastname: string;
-  bio: string | null;
-  city: string | null;
-  state: string | null;
-  country: string | null;
-  sex: 'M' | 'F' | null;
-  premium: boolean;
-  summit: boolean;
-  created_at: string;
-  updated_at: string;
-  badge_type_id: number;
-  weight: number;
-  profile_medium: string;
-  profile: string;
-  friend: null;
-  follower: null;
-}
+export type ChallengeParticipantWithRelations = ChallengeParticipant & {
+  profile: Profile;
+  contributions: ChallengeContribution[];
+};
+
+export type LeaderboardRowData = {
+  participant: ChallengeParticipantWithRelations;
+  profile: Profile;
+  contribution: ChallengeContribution | null;
+  rank: number | null;
+};
+
+export type ChallengeWithParticipation = Challenge & {
+  isParticipating: boolean;
+  participant: ChallengeParticipant | null;
+};
 ```
 
-### Application Types (Supabase/Local)
+These types are hydrated into smart classes in the dashboard logic:
 
-```typescript
-// Represents the "Flash Challenge" Configuration
-export interface ChallengeConfig {
-  id: string;
-  title: string;           // "February Flash Halfy"
-  start_timestamp: number; // Unix Epoch
-  end_timestamp: number;   // Unix Epoch
-  goal_distance_meters: number; // 21097.5 for Half Marathon
-  is_active: boolean;
-}
-
-// The Leaderboard Row (Computed)
-export interface LeaderboardEntry {
-  rank: number;
-  athlete: StravaSummaryAthlete; 
-  status: "Completed" | "Pending";
-  stats?: {
-    distance_miles: number;
-    elapsed_time_formatted: string; 
-    pace_per_mile: string;
-    activity_id: number;
-  };
-}
-```
+- `DashboardUI` (manages the list of challenges and the selected challenge).
+- `ChallengeUI` (wraps a single challenge and owns its `LeaderboardUI`).
+- `LeaderboardUI` (builds `leaderboardRows: LeaderboardRowData[]` and derived stats for display).
 
 ## 5. Authentication Flow
 
