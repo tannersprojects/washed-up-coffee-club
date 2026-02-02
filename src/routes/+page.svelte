@@ -3,7 +3,8 @@
 	import { toast } from 'svelte-sonner';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
-	import { AUTH_ERROR_MESSAGES } from '$lib/constants/auth';
+	import { resolve } from '$app/paths';
+	import { AUTH_ERROR_MESSAGES } from '$lib/constants';
 
 	// Component Imports
 	import { Navigation, Hero, Manifesto, CameraRoll, Routine, Footer } from './components';
@@ -28,7 +29,9 @@
 				description: message,
 				duration: 5000
 			});
-			goto('/', { replaceState: true });
+
+			const destination = resolve('/');
+			goto(destination, { replaceState: true });
 		}
 	});
 
@@ -52,7 +55,7 @@
 	<Navigation {scrollY} {isLoggedIn} />
 	<Hero smoothScroll={smoothScroll.current} {scrollY} {innerHeight} {innerWidth} />
 	<Manifesto />
-	<CameraRoll {memories} {innerHeight} {innerWidth} />
+	<CameraRoll {memories} {innerHeight} />
 	<Routine {routineSchedule} smoothScroll={smoothScroll.current} />
 	<Footer {isLoggedIn} />
 </div>

@@ -1,0 +1,161 @@
+<script lang="ts">
+	import { formatDate } from '$lib/utils/date-utils.js';
+	import { fly } from 'svelte/transition';
+	import type { LeaderboardRowData } from '$lib/types/dashboard.js';
+	import { getDashboardContext } from '../_logic/context.js';
+
+	type Props = {
+		row: LeaderboardRowData;
+		index: number;
+	};
+
+	let { row, index }: Props = $props();
+
+	const dashboard = getDashboardContext();
+	const challenge = $derived(dashboard.selectedChallenge);
+
+	// Helper function for status color
+	const getStatusColor = (status: string | null) => {
+		switch (status) {
+			case 'completed':
+				return 'text-(--accent-lime)';
+			case 'in_progress':
+				return 'text-blue-400 animate-pulse';
+			case 'dnf':
+				return 'text-red-500 line-through opacity-50';
+			default:
+				return 'text-gray-500';
+		}
+	};
+</script>
+
+<div
+	class="group relative grid grid-cols-[30px_1fr_auto] grid-rows-[auto_auto] items-center gap-3 overflow-hidden rounded-lg border border-white/5 bg-black/20 px-4 py-4 backdrop-blur-sm transition-all duration-300 [grid-template-areas:'rank_athlete_time'_'distance_distance_distance'] hover:border-white/20 hover:bg-white/10 hover:shadow-[0_0_20px_rgba(255,255,255,0.1)] md:grid-cols-[50px_2fr_1fr_1fr_1fr_1fr] md:grid-rows-1 md:gap-4 md:py-6 md:[grid-template-areas:'rank_athlete_activity_distance_pace_time']"
+	in:fly={{ y: 20, delay: index * 50 }}
+>
+	<!-- Rank Badge with Glow for Top 3 -->
+	{#if row.rank && row.rank <= 3}
+		<div
+			class="absolute top-0 left-0 h-full w-1 bg-(--accent-lime) shadow-[0_0_10px_var(--accent-lime)]"
+		></div>
+	{/if}
+
+	<!-- Enhanced Rank Display -->
+	<div
+		class="text-center font-mono text-lg font-black [grid-area:rank] {row.rank === 1
+			? 'text-(--accent-lime) drop-shadow-[0_0_10px_var(--accent-lime)]'
+			: 'text-gray-600'}"
+	>
+		{row.rank || '-'}
+	</div>
+
+	<!-- Athlete Info -->
+	<div class="flex items-center gap-4 [grid-area:athlete]">
+		<!-- Enhanced Avatar with Glow -->
+		<div
+			class="relative h-12 w-12 shrink-0 overflow-hidden rounded-full border-2 border-white/20 bg-gray-800 shadow-lg transition-all group-hover:border-(--accent-lime)/50 group-hover:shadow-[0_0_20px_rgba(0,255,0,0.3)]"
+		>
+			<img
+				src={`https://ui-avatars.com/api/?name=${row.profile.firstname}+${row.profile.lastname}&background=random&color=fff`}
+				alt={row.profile.firstname}
+				class="h-full w-full object-cover"
+			/>
+			<!-- Status Ring with Pulse Animation -->
+			{#if row.participant.status === 'in_progress'}
+				<div
+					class="absolute inset-0 animate-pulse rounded-full border-2 border-blue-500/50 shadow-[0_0_10px_rgba(59,130,246,0.8)]"
+				></div>
+			{/if}
+		</div>
+		<div class="flex flex-col">
+			<!-- Athlete Name - MUST link to Strava -->
+			{#if row.profile.stravaAthleteId}
+				<a
+					href={`https://strava.com/athletes/${row.profile.stravaAthleteId}`}
+					target="_blank"
+					rel="noopener noreferrer"
+					class="max-w-[120px] truncate text-base font-bold tracking-tight text-white underline decoration-orange-500 decoration-2 underline-offset-2 transition-colors hover:text-(--accent-lime) md:max-w-none"
+					style="color: #FC5200;"
+				>
+					{row.profile.firstname}
+					{row.profile.lastname}
+				</a>
+			{:else}
+				<span
+					class="max-w-[120px] truncate text-base font-bold tracking-tight text-white md:max-w-none"
+				>
+					{row.profile.firstname}
+					{row.profile.lastname}
+				</span>
+			{/if}
+			<!-- Mobile Only: Result Display -->
+			<span class="font-mono text-[10px] text-gray-500 uppercase md:hidden"
+				>{row.participant.resultDisplay || '--'}</span
+			>
+		</div>
+	</div>
+
+	<!-- Activity Name (Desktop) - MUST link to Strava with "View on Strava" text -->
+	<div class="hidden flex-col justify-center [grid-area:activity] md:flex">
+		{#if row.contribution?.stravaActivityId}
+			<span class="truncate font-mono text-xs text-white/80 uppercase">
+				{row.contribution.activityName || 'No Data'}
+			</span>
+			<a
+				href={`https://strava.com/activities/${row.contribution.stravaActivityId}`}
+				target="_blank"
+				rel="noopener noreferrer"
+				class="mt-1 font-mono text-[10px] font-bold uppercase underline decoration-orange-500 decoration-2 underline-offset-2 transition-colors hover:text-white"
+				style="color: #FC5200;"
+			>
+				View on Strava
+			</a>
+			<span class="mt-0.5 text-[10px] text-gray-600">
+				{formatDate(row.contribution.occurredAt)}
+			</span>
+		{:else}
+			<span class="truncate font-mono text-xs text-white/80 uppercase">No Data</span>
+		{/if}
+	</div>
+
+	<!-- Distance -->
+	<div class="flex flex-col items-end justify-center [grid-area:distance]">
+		<span class="font-mono font-bold text-white">
+			{#if challenge?.goalValue}
+				{(challenge.goalValue / 1000).toFixed(1)}
+				<span class="text-[10px] text-gray-500">KM</span>
+			{:else}
+				--
+			{/if}
+		</span>
+		<!-- Simple Progress Bar -->
+		<div class="mt-2 h-1 w-full max-w-[80px] overflow-hidden rounded-full bg-gray-800">
+			<div
+				class="h-full bg-(--accent-lime) transition-all duration-1000"
+				style="width: {row.participant.status === 'completed' ? '100%' : '0%'}"
+			></div>
+		</div>
+	</div>
+
+	<!-- Pace (Placeholder / Calc) -->
+	<div class="hidden flex-col items-end justify-center [grid-area:pace] md:flex">
+		<span class="font-mono text-sm text-gray-300">-- /km</span>
+	</div>
+
+	<!-- Time/Status -->
+	<div class="flex flex-col items-end justify-center text-right [grid-area:time]">
+		{#if row.participant.status === 'completed'}
+			<span class="font-mono text-xl font-bold text-white">{row.participant.resultDisplay}</span>
+			<span class="font-mono text-[10px] tracking-wider text-(--accent-lime) uppercase"
+				>Official</span
+			>
+		{:else}
+			<span class="font-mono text-sm font-bold uppercase {getStatusColor(row.participant.status)}"
+				>{row.participant.status}</span
+			>
+			<span class="font-mono text-[10px] tracking-wider text-gray-500 uppercase">
+				{row.participant.resultDisplay || '--'}
+			</span>
+		{/if}
+	</div>
+</div>

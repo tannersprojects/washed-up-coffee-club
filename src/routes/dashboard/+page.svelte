@@ -1,26 +1,51 @@
 <script lang="ts">
+	import DashboardNav from './_components/DashboardNav.svelte';
+	import ChallengeHero from './_components/ChallengeHero.svelte';
+	import LeaderboardSection from './_components/LeaderboardSection.svelte';
+	import ChallengesList from './_components/ChallengesList.svelte';
+	import EmptyState from './_components/EmptyState.svelte';
+	import DashboardFooter from './_components/DashboardFooter.svelte';
+	import { untrack } from 'svelte';
+	import { setDashboardContext } from './_logic/context.js';
+
+	// --- DATA FROM SERVER ---
 	let { data } = $props();
+
+	// Initialize Dashboard context - only set once
+	const dashboard = untrack(() => setDashboardContext(data));
+
+	// Sync dashboard when server data changes (e.g., after form submission)
+	$effect(() => {
+		dashboard.updateFromServerData(data);
+	});
 </script>
 
-<div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-	<h1 class="mb-6 text-3xl font-bold text-gray-900">Dashboard</h1>
+<!-- GLOBAL WRAPPER -->
+<div
+	class="min-h-screen w-full bg-[#050505] font-sans text-white selection:bg-(--accent-lime) selection:text-black"
+>
+	<DashboardNav profile={data.profile} />
 
-	<div class="rounded-lg bg-white p-6 shadow">
-		<h2 class="mb-4 text-xl font-semibold text-gray-800">Welcome back!</h2>
-		<p class="mb-4 text-gray-600">You're successfully authenticated with Strava.</p>
-
-		{#if data.profile}
-			<div class="space-y-2">
-				<p class="text-sm text-gray-600">
-					<strong>Name:</strong>
-					{data.profile.firstname}
-					{data.profile.lastname}
-				</p>
-				<p class="text-sm text-gray-600">
-					<strong>Strava Username:</strong>
-					{data.profile.username}
-				</p>
-			</div>
+	<main class="relative pt-24 pb-20">
+		{#if dashboard.challenges.length === 0}
+			<!-- Empty state - no challenges -->
+			<EmptyState
+				title="No Active Challenge"
+				message="Check back later for the next event."
+				variant="no-challenge"
+			/>
+		{:else}
+			{#if dashboard.challenges.length > 1}
+				<!-- Multiple challenges view -->
+				<ChallengesList />
+			{/if}
+			<!-- Single challenge view -->
+			{#if dashboard.selectedChallenge}
+				<ChallengeHero />
+				<LeaderboardSection />
+			{/if}
 		{/if}
-	</div>
+	</main>
+
+	<DashboardFooter />
 </div>

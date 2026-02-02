@@ -38,23 +38,39 @@ STRAVA_REDIRECT_URI=http://localhost:5173/auth/strava/callback
 
 ## Database Schema
 
-We use Drizzle ORM to manage the `strava_connections` table.
+We use Drizzle ORM to manage the `profile` and `strava_connections` tables. See the full definitions in `src/lib/db/schema.ts`. The parts relevant to auth and Strava are:
 
-```typescript
-// src/lib/db/schema.ts
+```ts
+export const profileTable = pgTable(
+  'profile',
+  {
+    id: uuid('id').primaryKey(),
+    firstname: text('firstname').notNull(),
+    lastname: text('lastname').notNull(),
+    username: text('username').notNull(),
+    stravaAthleteId: bigint('strava_athlete_id', { mode: 'number' }).unique(),
+    role: profileRoleEnum('role').notNull().default(PROFILE_ROLE.USER),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull()
+  }
+);
 
-export const stravaConnectionsTable = pgTable('strava_connections', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  userId: uuid('user_id')
-    .notNull()
-    .references(() => authUsers.id, { onDelete: 'cascade' }), // Links to auth.users
-  stravaAthleteId: bigint('strava_athlete_id', { mode: 'number' }).notNull().unique(),
-  accessToken: text('access_token').notNull(),
-  refreshToken: text('refresh_token').notNull(),
-  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
-  scope: text('scope').notNull(),
-  // ... timestamps
-});
+export const stravaConnectionsTable = pgTable(
+  'strava_connections',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    profileId: uuid('profile_id')
+      .notNull()
+      .references(() => profileTable.id, { onDelete: 'cascade' }),
+    stravaAthleteId: bigint('strava_athlete_id', { mode: 'number' }).notNull().unique(),
+    accessToken: text('access_token').notNull(),
+    refreshToken: text('refresh_token').notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    scope: text('scope').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull()
+  }
+);
 ```
 
 ## Implementation Steps
@@ -109,14 +125,15 @@ export const stravaConnectionsTable = pgTable('strava_connections', {
 
 *   **RLS Policies:**
     *   `strava_connections`:
-        *   `SELECT`: `auth.uid() = user_id` (User can see their own tokens).
+        *   `SELECT`: `auth.uid() = profile_id` (user can see their own tokens via their profile row).
         *   `INSERT/UPDATE`: Service Role only (handled by the callback route).
 *   **Cookies:** Use `httpOnly` and `secure` flags for the state cookie.
 
-## Next Actions
+## Current State on this branch
 
-1.  Create `src/lib/server/strava.ts` (Helpers for URL generation, Token Exchange).
-2.  Create `src/lib/server/auth.ts` (Helpers for Shadow User creation/lookup).
-3.  Implement `/auth/strava/login` (+server.ts).
-4.  Implement `/auth/strava/callback` (+server.ts).
+*   `src/lib/server/strava.ts` contains helpers for URL generation, token exchange and refresh.
+*   `src/lib/server/auth.ts` implements the shadow‑user creation/lookup and uses `profileId` for `strava_connections`.
+*   `/auth/strava/login` and `/auth/strava/callback` are implemented as SvelteKit server routes under `src/routes/auth/strava/`.
+*   `src/hooks.server.ts` populates `event.locals.profile` from the `profile` table on each request and keeps Strava tokens fresh via `strava_connections`.
+*   Logout is implemented as a POST to `/auth/logout` (`src/routes/auth/logout/+server.ts`) and exposed via the dropdown in `src/routes/dashboard/_components/DashboardNav.svelte`.
 
