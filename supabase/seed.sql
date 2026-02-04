@@ -1,14 +1,15 @@
--- Seed initial memories
+-- Seed initial memories (Storage URLs for local dev - matches production pattern)
+TRUNCATE memories RESTART IDENTITY CASCADE;
 INSERT INTO memories (src, caption, sort_order, is_active) VALUES
-('/src/lib/assets/images/running1.jpg', 'Insert Description Here', 1, true),
-('/src/lib/assets/images/running2.jpg', 'Insert Description Here', 2, true),
-('/src/lib/assets/images/running3.jpg', 'Insert Description Here', 3, true),
-('/src/lib/assets/images/running4.jpg', 'Insert Description Here', 4, true),
-('/src/lib/assets/images/running5.jpg', 'Insert Description Here', 5, true),
-('/src/lib/assets/images/running6.jpg', 'Insert Description Here', 6, true),
-('/src/lib/assets/images/running7.jpg', 'Insert Description Here', 7, true),
-('/src/lib/assets/images/running8.jpg', 'Insert Description Here', 8, true),
-('/src/lib/assets/images/running9.jpg', 'Insert Description Here', 9, true);
+('http://127.0.0.1:54321/storage/v1/object/public/memories/running1.jpg', 'Insert Description Here', 1, true),
+('http://127.0.0.1:54321/storage/v1/object/public/memories/running2.jpg', 'Insert Description Here', 2, true),
+('http://127.0.0.1:54321/storage/v1/object/public/memories/running3.jpg', 'Insert Description Here', 3, true),
+('http://127.0.0.1:54321/storage/v1/object/public/memories/running4.jpg', 'Insert Description Here', 4, true),
+('http://127.0.0.1:54321/storage/v1/object/public/memories/running5.jpg', 'Insert Description Here', 5, true),
+('http://127.0.0.1:54321/storage/v1/object/public/memories/running6.jpg', 'Insert Description Here', 6, true),
+('http://127.0.0.1:54321/storage/v1/object/public/memories/running7.jpg', 'Insert Description Here', 7, true),
+('http://127.0.0.1:54321/storage/v1/object/public/memories/running8.jpg', 'Insert Description Here', 8, true),
+('http://127.0.0.1:54321/storage/v1/object/public/memories/running9.jpg', 'Insert Description Here', 9, true);
 
 -- Seed initial routine schedules
 INSERT INTO routine_schedules (day, time, location, accent_color, description, sort_order, is_active) VALUES
