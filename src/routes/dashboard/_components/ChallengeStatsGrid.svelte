@@ -6,13 +6,6 @@
 	let leaderboard = $derived(challenge?.leaderboard);
 	let stats = $derived(leaderboard?.stats);
 
-	const statItems = $derived([
-		{ label: 'Runners', value: stats?.totalRunners },
-		{ label: 'Finished', value: stats?.finishers },
-		{ label: 'On Course', value: stats?.activeRunners },
-		{ label: 'Total KM', value: stats?.totalDistanceKm }
-	]);
-
 	// Reveal Animation Action
 	function reveal(node: HTMLElement) {
 		const observer = new IntersectionObserver(
@@ -37,7 +30,7 @@
 
 {#if stats}
 	<div use:reveal class="reveal mt-12 grid grid-cols-2 gap-4 md:grid-cols-4">
-		{#each statItems as stat (stat.value)}
+		{#each stats as stat (stat.id)}
 			<div
 				class="group relative overflow-hidden rounded-xl border border-white/10 bg-black/40 p-6 backdrop-blur-md transition-all duration-500 hover:-translate-y-2 hover:border-(--accent-lime)/50 hover:shadow-[0_0_30px_-10px_var(--accent-lime)]"
 			>

@@ -146,7 +146,9 @@ export async function getStravaConnection(userId: string) {
  * @returns Profile record or null
  */
 export async function getUserProfile(userId: string) {
-	const profile = await db.select().from(profileTable).where(eq(profileTable.id, userId)).limit(1);
+	const profile = await db.query.profileTable.findFirst({
+		where: eq(profileTable.id, userId)
+	});
 
-	return profile[0] || null;
+	return profile || null;
 }

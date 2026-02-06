@@ -22,6 +22,12 @@ export const load: PageServerLoad = async ({ locals }: { locals: App.Locals }) =
 	const { challengesWithParticipation, challengeParticipantsWithRelationsByChallenge } =
 		await loadDashboardData(profile.id);
 
+	console.log('challengesWithParticipation', challengesWithParticipation);
+	console.log(
+		'challengeParticipantsWithRelationsByChallenge',
+		challengeParticipantsWithRelationsByChallenge
+	);
+
 	return {
 		user,
 		profile,

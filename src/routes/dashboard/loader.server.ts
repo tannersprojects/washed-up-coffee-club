@@ -1,7 +1,11 @@
 import { db } from '$lib/db';
 import { challengeParticipantsTable, challengesTable } from '$lib/db/schema';
 import { asc, desc, eq, and, inArray } from 'drizzle-orm';
-import type { ChallengeWithParticipation, LeaderboardRowData } from '$lib/types/dashboard.js';
+import type {
+	ChallengeWithParticipation,
+	DashboardContextData,
+	LeaderboardRowData
+} from '$lib/types/dashboard.js';
 import type { ChallengeParticipantWithRelations } from '$lib/types/dashboard.js';
 import { PARTICIPANT_STATUS } from '$lib/constants';
 
@@ -82,7 +86,7 @@ export async function checkUserParticipation(
 	return participant ?? null;
 }
 
-export async function loadDashboardData(profileId: string) {
+export async function loadDashboardData(profileId: string): Promise<DashboardContextData> {
 	const challengeParticipantsWithRelationsByChallenge: Record<
 		string,
 		ChallengeParticipantWithRelations[]
@@ -95,6 +99,12 @@ export async function loadDashboardData(profileId: string) {
 	}
 
 	const challengeIds = challenges.map((c) => c.id);
+
+	// Ensure every challenge has an array (empty if no participants)
+	for (const challenge of challenges) {
+		challengeParticipantsWithRelationsByChallenge[challenge.id] = [];
+	}
+
 	const allParticipants = await db.query.challengeParticipantsTable.findMany({
 		where: inArray(challengeParticipantsTable.challengeId, challengeIds),
 		with: {
@@ -106,10 +116,7 @@ export async function loadDashboardData(profileId: string) {
 
 	for (const participant of allParticipants) {
 		const challengeId = participant.challengeId;
-		if (!challengeParticipantsWithRelationsByChallenge[challengeId]) {
-			challengeParticipantsWithRelationsByChallenge[challengeId] = [];
-		}
-		challengeParticipantsWithRelationsByChallenge[challengeId]!.push(participant);
+		challengeParticipantsWithRelationsByChallenge[challengeId].push(participant);
 	}
 
 	for (const challenge of challenges) {

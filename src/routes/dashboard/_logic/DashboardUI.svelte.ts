@@ -1,5 +1,5 @@
 import { ChallengeUI } from './ChallengeUI.svelte.js';
-import type { DashboardServerData } from './context.js';
+import type { DashboardContextData } from '$lib/types/dashboard.js';
 import type {
 	ChallengeParticipantWithRelations,
 	ChallengeWithParticipation
@@ -43,7 +43,7 @@ export class DashboardUI {
 	static fromServerData({
 		challengesWithParticipation,
 		challengeParticipantsWithRelationsByChallenge
-	}: DashboardServerData) {
+	}: DashboardContextData) {
 		return new DashboardUI(
 			challengesWithParticipation,
 			challengeParticipantsWithRelationsByChallenge
@@ -76,7 +76,7 @@ export class DashboardUI {
 	updateFromServerData({
 		challengesWithParticipation,
 		challengeParticipantsWithRelationsByChallenge
-	}: DashboardServerData) {
+	}: DashboardContextData) {
 		// Update each existing challenge
 		challengesWithParticipation.forEach((challengeData) => {
 			const existingChallenge = this.challenges.find((c) => c.id === challengeData.id);

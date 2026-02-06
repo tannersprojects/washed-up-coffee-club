@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Profile } from '$lib/db/schema';
-	import { PROFILE_ROLE } from '$lib/constants';
+	import { LayoutDashboard, LogOut } from 'lucide-svelte';
 
 	type Props = {
 		profile: Profile | null;
@@ -31,7 +31,6 @@
 			}
 		};
 	}
-	const isAdmin = $derived(profile?.role === PROFILE_ROLE.ADMIN);
 </script>
 
 <nav
@@ -47,20 +46,9 @@
 			</span>
 		</a>
 		<span class="mx-2 text-white/20">/</span>
-		<span class="font-mono text-xs tracking-widest text-white/60 uppercase">Dashboard</span>
+		<span class="font-mono text-xs tracking-widest text-white/60 uppercase">Admin</span>
 	</div>
 	<div class="flex items-center gap-4">
-		<div
-			class="hidden items-center gap-2 font-mono text-[10px] tracking-widest text-(--accent-lime) uppercase md:flex"
-		>
-			<span class="relative flex h-2 w-2">
-				<span
-					class="absolute inline-flex h-full w-full animate-ping rounded-full bg-(--accent-lime) opacity-75"
-				></span>
-				<span class="relative inline-flex h-2 w-2 rounded-full bg-(--accent-lime)"></span>
-			</span>
-			Live Feed
-		</div>
 		<div class="relative" use:handleClickOutside>
 			<button
 				type="button"
@@ -68,7 +56,7 @@
 				aria-expanded={dropdownOpen}
 				aria-label="User menu"
 				onclick={toggleDropdown}
-				class="flex h-8 w-8 overflow-hidden rounded-full border border-white/20 bg-gray-800 transition-opacity hover:border-white/40 hover:opacity-90 focus:ring-2 focus:ring-(--accent-lime) focus:ring-offset-2 focus:ring-offset-[#050505] focus:outline-none"
+				class="flex h-8 w-8 cursor-pointer overflow-hidden rounded-full border border-white/20 bg-gray-800 transition-opacity hover:border-white/40 hover:opacity-90 focus:ring-2 focus:ring-(--accent-lime) focus:ring-offset-2 focus:ring-offset-[#050505] focus:outline-none"
 			>
 				{#if profile}
 					<img
@@ -88,23 +76,23 @@
 							{profile.firstname}
 							{profile.lastname}
 						</div>
-						{#if isAdmin}
-							<a
-								href="/admin"
-								class="block px-4 py-2 font-mono text-xs font-medium text-white/90 transition-colors hover:bg-white/10 hover:text-white"
-								role="menuitem"
-							>
-								Admin dashboard
-							</a>
-						{/if}
+						<a
+							href="/dashboard"
+							role="menuitem"
+							class="flex items-center gap-2 px-4 py-2 font-mono text-xs font-medium text-white/90 transition-colors hover:bg-white/10 hover:text-white"
+						>
+							<LayoutDashboard class="h-3 w-3" />
+							<span>Dashboard</span>
+						</a>
 					{/if}
 					<form method="POST" action="/auth/logout" class="border-t border-white/10">
 						<button
 							type="submit"
 							role="menuitem"
-							class="w-full px-4 py-2 text-left font-mono text-xs font-medium text-white/90 transition-colors hover:bg-white/10 hover:text-white"
+							class="flex w-full items-center gap-2 px-4 py-2 text-left font-mono text-xs font-medium text-white/90 transition-colors hover:bg-white/10 hover:text-white"
 						>
-							Log out
+							<LogOut class="h-3 w-3" />
+							<span>Log out</span>
 						</button>
 					</form>
 				</div>

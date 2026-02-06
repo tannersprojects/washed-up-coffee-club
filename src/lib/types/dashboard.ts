@@ -42,3 +42,11 @@ export type ChallengeWithParticipation = Challenge & {
 	isParticipating: boolean;
 	participant: ChallengeParticipant | null;
 };
+
+export type DashboardContextData = {
+	challengesWithParticipation: ChallengeWithParticipation[];
+	challengeParticipantsWithRelationsByChallenge: Record<
+		string,
+		ChallengeParticipantWithRelations[]
+	>;
+};

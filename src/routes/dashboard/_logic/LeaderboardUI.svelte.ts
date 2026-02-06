@@ -1,10 +1,30 @@
 import { PARTICIPANT_STATUS } from '$lib/constants';
 import type {
 	LeaderboardRowData,
-	ChallengeStats,
 	ChallengeParticipantWithRelations
 } from '$lib/types/dashboard.js';
 import { calculateTotalDistanceKm } from '$lib/utils/challenge-utils.js';
+import type { UUID } from 'crypto';
+
+class ChallengeStatsUI {
+	id: UUID;
+	label: string;
+	value: number | string;
+
+	constructor(label: string, value: number | string) {
+		this.id = crypto.randomUUID();
+		this.label = label;
+		this.value = $state(value);
+	}
+
+	toJSON() {
+		return {
+			id: this.id,
+			label: this.label,
+			value: this.value
+		};
+	}
+}
 
 /**
  * LeaderboardUI class - Manages leaderboard data and statistics calculations
@@ -25,7 +45,7 @@ export class LeaderboardUI {
 	finishers: number;
 	activeRunners: number;
 	totalDistanceKm: string;
-	stats: ChallengeStats;
+	stats: ChallengeStatsUI[];
 
 	constructor(
 		challengeParticipantsWithRelations: ChallengeParticipantWithRelations[],
@@ -64,11 +84,13 @@ export class LeaderboardUI {
 		this.totalDistanceKm = $derived(
 			calculateTotalDistanceKm(this.challengeParticipantsWithRelations, this.goalValue)
 		);
-		this.stats = $derived({
-			totalRunners: this.totalRunners,
-			finishers: this.finishers,
-			activeRunners: this.activeRunners,
-			totalDistanceKm: this.totalDistanceKm
+		this.stats = $derived.by(() => {
+			return [
+				new ChallengeStatsUI('Runners', this.totalRunners),
+				new ChallengeStatsUI('Finished', this.finishers),
+				new ChallengeStatsUI('On Course', this.activeRunners),
+				new ChallengeStatsUI('Total KM', this.totalDistanceKm)
+			];
 		});
 	}
 
