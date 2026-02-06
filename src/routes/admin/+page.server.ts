@@ -304,7 +304,7 @@ export const actions: Actions = {
 			const [last] = await db
 				.select({ sortOrder: routineSchedulesTable.sortOrder })
 				.from(routineSchedulesTable)
-				.orderBy(asc(routineSchedulesTable.sortOrder))
+				.orderBy(desc(routineSchedulesTable.sortOrder))
 				.limit(1);
 			const nextSortOrder = (last?.sortOrder ?? -1) + 1;
 

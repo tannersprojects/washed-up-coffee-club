@@ -41,8 +41,6 @@
 		const id = crypto.randomUUID();
 		formData.set('id', id);
 
-		console.log(`Sort Order: ${admin.memories.length}`);
-
 		const optimistic = new MemoryAdmin({
 			id,
 			src: filePreview ?? '',
@@ -52,8 +50,10 @@
 			createdAt: new Date(),
 			updatedAt: new Date()
 		});
+
 		admin.addMemoryOptimistic(optimistic);
 		isSubmitting = true;
+
 		return async ({ result, update }) => {
 			if (result.type === 'success') {
 				await update();

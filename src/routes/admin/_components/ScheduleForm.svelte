@@ -8,7 +8,7 @@
 	let day = $state('');
 	let time = $state('');
 	let location = $state('');
-	let accentColor = $state('#22c55e');
+	let accentColor = $state('var(--accent-lime)');
 	let description = $state('');
 	let isSubmitting = $state(false);
 
@@ -16,7 +16,7 @@
 		day = '';
 		time = '';
 		location = '';
-		accentColor = '#22c55e';
+		accentColor = 'var(--accent-lime)';
 		description = '';
 		isSubmitting = false;
 	}
@@ -45,6 +45,7 @@
 		});
 		admin.addScheduleOptimistic(optimistic);
 		isSubmitting = true;
+
 		return async ({ result, update }) => {
 			if (result.type === 'success') {
 				await update();

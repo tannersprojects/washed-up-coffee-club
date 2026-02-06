@@ -44,7 +44,10 @@
 					);
 				}
 			}}
-		class="flex flex-col gap-3 rounded-lg border border-white/10 bg-white/5 p-4"
+		class="flex flex-col gap-3 rounded-lg border bg-white/5 p-4 {!schedule.isActive
+			? 'border-white/10 opacity-60'
+			: ''}"
+		style="border-color: {schedule.accentColor}40;"
 	>
 		<input type="hidden" name="id" value={schedule.id} />
 		<input
@@ -118,7 +121,7 @@
 		</div>
 		<p class="font-mono text-xs text-white/80">{schedule.time} · {schedule.location}</p>
 		<p class="mt-2 font-mono text-[10px] text-white/60">{schedule.description}</p>
-		<div class="mt-2 flex gap-2">
+		<div class="mt-2 flex items-center gap-2">
 			<button
 				onclick={() => (isEditing = true)}
 				class="font-mono text-[10px] text-(--accent-lime) hover:underline">Edit</button
@@ -142,7 +145,7 @@
 						}
 					};
 				}}
-				class="inline"
+				class="inline-flex"
 			>
 				<input type="hidden" name="id" value={schedule.id} />
 				<button type="submit" class="font-mono text-[10px] text-red-400 hover:underline"

@@ -11,15 +11,16 @@
 
 	let { challenge }: Props = $props();
 	let admin = getAdminContext();
+
 	let isEditing = $state(false);
-	let editTitle = $state(challenge.title);
-	let editDescription = $state(challenge.description);
-	let editType = $state(challenge.type);
-	let editGoalValue = $state(challenge.goalValue?.toString() ?? '');
-	let editSegmentId = $state(challenge.segmentId?.toString() ?? '');
-	let editStartDate = $state(formatDatetimeLocal(challenge.startDate));
-	let editEndDate = $state(formatDatetimeLocal(challenge.endDate));
-	let editStatus = $state(challenge.status);
+	let editTitle = $derived(challenge.title);
+	let editDescription = $derived(challenge.description);
+	let editType = $derived(challenge.type);
+	let editGoalValue = $derived(challenge.goalValue?.toString() ?? '');
+	let editSegmentId = $derived(challenge.segmentId?.toString() ?? '');
+	let editStartDate = $derived(formatDatetimeLocal(challenge.startDate));
+	let editEndDate = $derived(formatDatetimeLocal(challenge.endDate));
+	let editStatus = $derived(challenge.status);
 
 	$effect(() => {
 		if (!isEditing) {
@@ -163,7 +164,7 @@
 					{challenge.participantCount} participants
 				</p>
 			</div>
-			<div class="flex gap-2">
+			<div class="flex items-center gap-2">
 				<button
 					onclick={() => (isEditing = true)}
 					class="font-mono text-[10px] text-(--accent-lime) hover:underline">Edit</button
@@ -187,7 +188,7 @@
 							}
 						};
 					}}
-					class="inline"
+					class="inline-flex"
 				>
 					<input type="hidden" name="id" value={challenge.id} />
 					<button type="submit" class="font-mono text-[10px] text-red-400 hover:underline"

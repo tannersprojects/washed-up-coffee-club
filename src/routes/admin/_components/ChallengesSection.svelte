@@ -8,7 +8,7 @@
 </script>
 
 <section class="flex flex-col gap-6">
-	<h2 class="font-mono text-sm font-bold tracking-widest text-white uppercase">Challenges</h2>
+	<h2 class="font-mono text-2xl font-bold tracking-widest text-white uppercase">Challenges</h2>
 	<ChallengeForm />
 	<ChallengesList {challenges} />
 </section>

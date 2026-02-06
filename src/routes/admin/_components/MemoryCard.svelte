@@ -10,6 +10,7 @@
 
 	let { memory }: Props = $props();
 	let admin = getAdminContext();
+
 	let isEditing = $state(false);
 	let editCaption = $derived(memory.caption);
 	let editSortOrder = $derived(memory.sortOrder);
@@ -63,7 +64,7 @@
 			<input type="checkbox" bind:checked={editIsActive} />
 			Active
 		</label>
-		<div class="flex gap-2">
+		<div class="mt-auto flex gap-2">
 			<button
 				type="submit"
 				class="rounded bg-(--accent-lime) px-3 py-1 font-mono text-xs font-bold text-black uppercase"
@@ -89,7 +90,7 @@
 		<div class="flex flex-col gap-2 p-3">
 			<p class="line-clamp-2 font-mono text-xs text-white/80">{memory.caption}</p>
 			<p class="font-mono text-[10px] text-white/40">Order: {memory.sortOrder}</p>
-			<div class="flex gap-2">
+			<div class="flex items-center gap-2">
 				<button
 					type="button"
 					onclick={() => (isEditing = true)}
@@ -116,10 +117,10 @@
 							}
 						};
 					}}
-					class="inline"
+					class="inline-flex"
 				>
 					<input type="hidden" name="id" value={memory.id} />
-					<button type="submit" class="font-mono text-[10px] text-red-400 hover:underline">
+					<button type="submit" class=" font-mono text-[10px] text-red-400 hover:underline">
 						Delete
 					</button>
 				</form>
