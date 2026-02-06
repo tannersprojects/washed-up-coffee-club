@@ -49,10 +49,10 @@
 		!!title.trim() &&
 			!!startDate &&
 			!!endDate &&
-			(type !== CHALLENGE_TYPE.CUMULATIVE && type !== CHALLENGE_TYPE.BEST_EFFORT
+			(type === CHALLENGE_TYPE.CUMULATIVE || type === CHALLENGE_TYPE.BEST_EFFORT
 				? !!goalValue && parseInt(goalValue, 10) > 0
 				: true) &&
-			(type !== CHALLENGE_TYPE.SEGMENT_RACE ? true : !!segmentId && parseInt(segmentId, 10) > 0)
+			(type === CHALLENGE_TYPE.SEGMENT_RACE ? !!segmentId && parseInt(segmentId, 10) > 0 : true)
 	);
 </script>
 
