@@ -153,6 +153,7 @@
 							<a
 								href="/dashboard"
 								role="menuitem"
+								onclick={closeDropdown}
 								class="flex items-center gap-2 px-4 py-2 font-mono text-xs font-medium text-white/90 transition-colors hover:bg-white/10 hover:text-white"
 							>
 								<LayoutDashboard class="h-3 w-3" />
@@ -163,6 +164,7 @@
 							<a
 								href="/admin"
 								role="menuitem"
+								onclick={closeDropdown}
 								class="flex items-center gap-2 px-4 py-2 font-mono text-xs font-medium whitespace-nowrap text-white/90 transition-colors hover:bg-white/10 hover:text-white"
 							>
 								<Settings class="h-3 w-3" />
