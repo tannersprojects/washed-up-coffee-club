@@ -1,7 +1,5 @@
-import type { AdminServerData } from './context.js';
-import type { ChallengeParticipant } from '$lib/db/schema.js';
-
-type ChallengeRow = AdminServerData['challenges'][number];
+import type { ChallengeParticipant } from '$lib/db/schema';
+import type { ChallengeWithParticipants } from '$lib/types/admin';
 
 export class ChallengeAdmin {
 	id: string;
@@ -18,7 +16,7 @@ export class ChallengeAdmin {
 	updatedAt: Date;
 	participants: ChallengeParticipant[];
 
-	constructor(row: ChallengeRow) {
+	constructor(row: ChallengeWithParticipants) {
 		this.id = row.id;
 		this.title = row.title;
 		this.description = row.description;

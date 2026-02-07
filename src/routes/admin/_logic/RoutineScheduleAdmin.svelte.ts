@@ -1,6 +1,4 @@
-import type { AdminServerData } from './context.js';
-
-type ScheduleRow = AdminServerData['routineSchedules'][number];
+import type { RoutineScheduleRow } from '$lib/types/admin';
 
 export class RoutineScheduleAdmin {
 	id: string;
@@ -14,7 +12,7 @@ export class RoutineScheduleAdmin {
 	createdAt: Date;
 	updatedAt: Date;
 
-	constructor(row: ScheduleRow) {
+	constructor(row: RoutineScheduleRow) {
 		this.id = row.id;
 		this.day = row.day;
 		this.time = row.time;

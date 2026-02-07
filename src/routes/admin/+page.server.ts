@@ -1,10 +1,9 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { eq, asc, desc } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
 import { PROFILE_ROLE, CHALLENGE_TYPE, CHALLENGE_STATUS } from '$lib/constants';
 import { db } from '$lib/db';
 import { memoriesTable, routineSchedulesTable, challengesTable } from '$lib/db/schema';
 import { PUBLIC_SUPABASE_URL } from '$env/static/public';
-import type { AdminPageData } from '$lib/types/admin.js';
 import { loadAdminData } from './loader.server.js';
 import type { PageServerLoad, Actions } from './$types';
 
@@ -34,14 +33,12 @@ export const load: PageServerLoad = async ({ locals }: { locals: App.Locals }) =
 
 	const { memories, routineSchedules, challenges } = await loadAdminData();
 
-	const result: AdminPageData = {
+	return {
 		profile,
 		memories,
 		routineSchedules,
 		challenges
 	};
-
-	return result;
 };
 
 function requireAdmin(profile: App.Locals['profile']) {

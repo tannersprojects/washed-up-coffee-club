@@ -1,6 +1,4 @@
-import type { AdminServerData } from './context.js';
-
-type MemoryRow = AdminServerData['memories'][number];
+import type { MemoryRow } from '$lib/types/admin.js';
 
 export class MemoryAdmin {
 	id: string;

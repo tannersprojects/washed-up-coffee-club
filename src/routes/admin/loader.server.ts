@@ -1,10 +1,10 @@
 import { eq, asc } from 'drizzle-orm';
 import { db } from '$lib/db';
 import { memoriesTable, routineSchedulesTable, challengesTable } from '$lib/db/schema';
-import type { AdminLoadResult } from '$lib/types/admin.js';
+import type { AdminContextData } from '$lib/types/admin.js';
 
-export async function loadAdminData(): Promise<AdminLoadResult> {
-	const defaultResult: AdminLoadResult = {
+export async function loadAdminData(): Promise<AdminContextData> {
+	const defaultResult: AdminContextData = {
 		memories: [],
 		routineSchedules: [],
 		challenges: []

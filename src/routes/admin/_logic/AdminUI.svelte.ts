@@ -1,4 +1,4 @@
-import type { AdminServerData } from './context.js';
+import type { AdminContextData } from '$lib/types/admin.js';
 import { MemoryAdmin } from './MemoryAdmin.svelte.js';
 import { RoutineScheduleAdmin } from './RoutineScheduleAdmin.svelte.js';
 import { ChallengeAdmin } from './ChallengeAdmin.svelte.js';
@@ -11,18 +11,18 @@ export class AdminUI {
 	challenges: ChallengeAdmin[];
 	activeTab: AdminTab;
 
-	constructor(data: AdminServerData) {
+	constructor(data: AdminContextData) {
 		this.memories = $state(data.memories.map((m) => new MemoryAdmin(m)));
 		this.routineSchedules = $state(data.routineSchedules.map((s) => new RoutineScheduleAdmin(s)));
 		this.challenges = $state(data.challenges.map((c) => new ChallengeAdmin(c)));
 		this.activeTab = $state<AdminTab>('memories');
 	}
 
-	static fromServerData(data: AdminServerData): AdminUI {
+	static fromServerData(data: AdminContextData): AdminUI {
 		return new AdminUI(data);
 	}
 
-	updateFromServerData(data: AdminServerData) {
+	updateFromServerData(data: AdminContextData) {
 		this.memories = data.memories.map((m) => new MemoryAdmin(m));
 		this.routineSchedules = data.routineSchedules.map((s) => new RoutineScheduleAdmin(s));
 		this.challenges = data.challenges.map((c) => new ChallengeAdmin(c));
