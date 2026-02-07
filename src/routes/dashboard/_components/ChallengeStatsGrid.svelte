@@ -7,10 +7,10 @@
 	let stats = $derived(leaderboard?.stats);
 
 	const statItems = $derived([
-		{ label: 'Runners', value: stats?.totalRunners },
-		{ label: 'Finished', value: stats?.finishers },
-		{ label: 'On Course', value: stats?.activeRunners },
-		{ label: 'Total KM', value: stats?.totalDistanceKm }
+		{ id: 'totalRunners', label: 'Runners', value: stats?.totalRunners },
+		{ id: 'finishers', label: 'Finished', value: stats?.finishers },
+		{ id: 'activeRunners', label: 'On Course', value: stats?.activeRunners },
+		{ id: 'totalDistanceKm', label: 'Total KM', value: stats?.totalDistanceKm }
 	]);
 
 	// Reveal Animation Action
@@ -35,9 +35,9 @@
 	}
 </script>
 
-{#if stats}
+{#if stats && statItems}
 	<div use:reveal class="reveal mt-12 grid grid-cols-2 gap-4 md:grid-cols-4">
-		{#each statItems as stat (stat.value)}
+		{#each statItems as statItem (statItem.id)}
 			<div
 				class="group relative overflow-hidden rounded-xl border border-white/10 bg-black/40 p-6 backdrop-blur-md transition-all duration-500 hover:-translate-y-2 hover:border-(--accent-lime)/50 hover:shadow-[0_0_30px_-10px_var(--accent-lime)]"
 			>
@@ -50,12 +50,12 @@
 					<span
 						class="mb-2 block font-mono text-[10px] tracking-widest text-gray-500 uppercase transition-colors group-hover:text-white"
 					>
-						{stat.label}
+						{statItem.label}
 					</span>
 					<span
 						class="text-3xl font-black text-white transition-colors group-hover:text-(--accent-lime)"
 					>
-						{stat.value}
+						{statItem.value}
 					</span>
 				</div>
 			</div>

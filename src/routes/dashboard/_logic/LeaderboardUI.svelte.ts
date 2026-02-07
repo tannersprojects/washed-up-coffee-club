@@ -1,10 +1,30 @@
 import { PARTICIPANT_STATUS } from '$lib/constants';
 import type {
 	LeaderboardRowData,
-	ChallengeStats,
-	ChallengeParticipantWithRelations
+	ChallengeParticipantWithRelations,
+	ChallengeStats
 } from '$lib/types/dashboard.js';
 import { calculateTotalDistanceKm } from '$lib/utils/challenge-utils.js';
+
+class ChallengeStatsUI {
+	id: string;
+	label: string;
+	value: number | string;
+
+	constructor(id: string, label: string, value: number | string) {
+		this.id = id;
+		this.label = label;
+		this.value = $state(value);
+	}
+
+	toJSON() {
+		return {
+			id: this.id,
+			label: this.label,
+			value: this.value
+		};
+	}
+}
 
 /**
  * LeaderboardUI class - Manages leaderboard data and statistics calculations
@@ -15,6 +35,7 @@ import { calculateTotalDistanceKm } from '$lib/utils/challenge-utils.js';
  * - Total distance calculations
  * - Challenge stats object for components
  */
+
 export class LeaderboardUI {
 	private challengeParticipantsWithRelations: ChallengeParticipantWithRelations[];
 	private goalValue: number | null;
