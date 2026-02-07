@@ -35,7 +35,7 @@
 	}
 </script>
 
-{#if statItems}
+{#if stats && statItems}
 	<div use:reveal class="reveal mt-12 grid grid-cols-2 gap-4 md:grid-cols-4">
 		{#each statItems as statItem (statItem.id)}
 			<div
