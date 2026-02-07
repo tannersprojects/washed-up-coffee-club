@@ -21,14 +21,14 @@ function isValidUuid(s: string): boolean {
 export const load: PageServerLoad = async ({ locals }: { locals: App.Locals }) => {
 	const profile = locals.profile;
 
+	// Profile is guaranteed to exist by (app)/+layout.server.ts
 	if (!profile) {
-		console.error('Profile not found');
 		throw redirect(302, '/');
 	}
 
+	// Admin-only guard: redirect non-admin users to dashboard
 	if (profile.role !== PROFILE_ROLE.ADMIN) {
-		console.error('Profile is not an admin');
-		throw redirect(302, '/');
+		throw redirect(302, '/dashboard');
 	}
 
 	const { memories, routineSchedules, challenges } = await loadAdminData();
