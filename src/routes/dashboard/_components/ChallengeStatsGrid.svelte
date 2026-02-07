@@ -50,12 +50,12 @@
 					<span
 						class="mb-2 block font-mono text-[10px] tracking-widest text-gray-500 uppercase transition-colors group-hover:text-white"
 					>
-						{stat.label}
+						{statItem.label}
 					</span>
 					<span
 						class="text-3xl font-black text-white transition-colors group-hover:text-(--accent-lime)"
 					>
-						{stat.value}
+						{statItem.value}
 					</span>
 				</div>
 			</div>
