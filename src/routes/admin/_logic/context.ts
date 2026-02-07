@@ -6,8 +6,7 @@ const KEY = Symbol('ADMIN_CTX');
 
 export function setAdminContext(data: AdminContextData): AdminUI {
 	const admin = AdminUI.fromServerData(data);
-	setContext<AdminUI>(KEY, admin);
-	return admin;
+	return setContext<AdminUI>(KEY, admin);
 }
 
 export function getAdminContext(): AdminUI {
