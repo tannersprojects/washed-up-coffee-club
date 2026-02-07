@@ -1,7 +1,8 @@
 import { PARTICIPANT_STATUS } from '$lib/constants';
 import type {
 	LeaderboardRowData,
-	ChallengeParticipantWithRelations
+	ChallengeParticipantWithRelations,
+	ChallengeStats
 } from '$lib/types/dashboard.js';
 import { calculateTotalDistanceKm } from '$lib/utils/challenge-utils.js';
 
@@ -34,13 +35,6 @@ class ChallengeStatsUI {
  * - Total distance calculations
  * - Challenge stats object for components
  */
-/** Stable IDs for the four stats so keyed each blocks don't destroy/recreate DOM on updates. */
-const STAT_IDS = [
-	crypto.randomUUID(),
-	crypto.randomUUID(),
-	crypto.randomUUID(),
-	crypto.randomUUID()
-] as const;
 
 export class LeaderboardUI {
 	private challengeParticipantsWithRelations: ChallengeParticipantWithRelations[];
@@ -52,7 +46,7 @@ export class LeaderboardUI {
 	finishers: number;
 	activeRunners: number;
 	totalDistanceKm: string;
-	stats: ChallengeStatsUI[];
+	stats: ChallengeStats;
 
 	constructor(
 		challengeParticipantsWithRelations: ChallengeParticipantWithRelations[],
@@ -91,13 +85,11 @@ export class LeaderboardUI {
 		this.totalDistanceKm = $derived(
 			calculateTotalDistanceKm(this.challengeParticipantsWithRelations, this.goalValue)
 		);
-		this.stats = $derived.by(() => {
-			return [
-				new ChallengeStatsUI(STAT_IDS[0], 'Runners', this.totalRunners),
-				new ChallengeStatsUI(STAT_IDS[1], 'Finished', this.finishers),
-				new ChallengeStatsUI(STAT_IDS[2], 'On Course', this.activeRunners),
-				new ChallengeStatsUI(STAT_IDS[3], 'Total KM', this.totalDistanceKm)
-			];
+		this.stats = $derived({
+			totalRunners: this.totalRunners,
+			finishers: this.finishers,
+			activeRunners: this.activeRunners,
+			totalDistanceKm: this.totalDistanceKm
 		});
 	}
 
