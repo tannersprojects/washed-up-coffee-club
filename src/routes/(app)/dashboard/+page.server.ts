@@ -11,10 +11,10 @@ import {
 import type { PageServerLoad } from './$types.js';
 
 export const load: PageServerLoad = async ({ locals }: { locals: App.Locals }) => {
-	const { session, user } = await locals.safeGetSession();
 	const profile = locals.profile;
 
-	if (!session || !user || !profile) {
+	// Profile is guaranteed to exist by (app)/+layout.server.ts
+	if (!profile) {
 		throw redirect(302, '/');
 	}
 
@@ -23,7 +23,6 @@ export const load: PageServerLoad = async ({ locals }: { locals: App.Locals }) =
 		await loadDashboardData(profile.id);
 
 	return {
-		user,
 		profile,
 		challengesWithParticipation,
 		challengeParticipantsWithRelationsByChallenge
