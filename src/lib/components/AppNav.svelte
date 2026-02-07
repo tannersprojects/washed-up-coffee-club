@@ -85,9 +85,10 @@
 			<div
 				class="h-3 w-3 rounded-full bg-(--accent-lime) transition-transform group-hover:scale-110"
 			></div>
-			<span class="text-sm font-bold tracking-tight text-white uppercase">
-				Washed Up Coffee Club
-			</span>
+			<span class="text-sm font-bold tracking-tight text-white uppercase md:hidden">WUCC</span>
+			<span class="hidden text-sm font-bold tracking-tight text-white uppercase md:inline"
+				>Washed Up Coffee Club</span
+			>
 		</a>
 		<span class="mx-2 text-white/20">/</span>
 		<span class="font-mono text-xs tracking-widest text-white/60 uppercase"
@@ -162,7 +163,7 @@
 							<a
 								href="/admin"
 								role="menuitem"
-								class="flex items-center gap-2 whitespace-nowrap px-4 py-2 font-mono text-xs font-medium text-white/90 transition-colors hover:bg-white/10 hover:text-white"
+								class="flex items-center gap-2 px-4 py-2 font-mono text-xs font-medium whitespace-nowrap text-white/90 transition-colors hover:bg-white/10 hover:text-white"
 							>
 								<Settings class="h-3 w-3" />
 								<span>Admin dashboard</span>
