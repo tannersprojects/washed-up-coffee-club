@@ -235,6 +235,8 @@ export const challengeContributionsRelations = relations(
 // Export inferred types from Drizzle schema for use throughout the application
 
 export type Profile = InferSelectModel<typeof profileTable>;
+export type Memory = InferSelectModel<typeof memoriesTable>;
+export type RoutineSchedule = InferSelectModel<typeof routineSchedulesTable>;
 export type Challenge = InferSelectModel<typeof challengesTable>;
 export type ChallengeParticipant = InferSelectModel<typeof challengeParticipantsTable>;
 export type ChallengeContribution = InferSelectModel<typeof challengeContributionsTable>;

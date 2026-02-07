@@ -1,4 +1,4 @@
-import type { MemoryRow } from '$lib/types/admin.js';
+import type { Memory } from '$lib/db/schema';
 
 export class MemoryAdmin {
 	id: string;
@@ -9,14 +9,14 @@ export class MemoryAdmin {
 	createdAt: Date;
 	updatedAt: Date;
 
-	constructor(row: MemoryRow) {
-		this.id = row.id;
-		this.src = row.src;
-		this.caption = row.caption;
-		this.sortOrder = row.sortOrder;
-		this.isActive = row.isActive;
-		this.createdAt = row.createdAt;
-		this.updatedAt = row.updatedAt;
+	constructor(memory: Memory) {
+		this.id = memory.id;
+		this.src = memory.src;
+		this.caption = memory.caption;
+		this.sortOrder = memory.sortOrder;
+		this.isActive = memory.isActive;
+		this.createdAt = memory.createdAt;
+		this.updatedAt = memory.updatedAt;
 	}
 
 	toJSON() {

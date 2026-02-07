@@ -1,4 +1,4 @@
-import type { RoutineScheduleRow } from '$lib/types/admin';
+import type { RoutineSchedule } from '$lib/db/schema';
 
 export class RoutineScheduleAdmin {
 	id: string;
@@ -12,17 +12,17 @@ export class RoutineScheduleAdmin {
 	createdAt: Date;
 	updatedAt: Date;
 
-	constructor(row: RoutineScheduleRow) {
-		this.id = row.id;
-		this.day = row.day;
-		this.time = row.time;
-		this.location = row.location;
-		this.accentColor = row.accentColor;
-		this.description = row.description;
-		this.sortOrder = row.sortOrder;
-		this.isActive = row.isActive;
-		this.createdAt = row.createdAt;
-		this.updatedAt = row.updatedAt;
+	constructor(routineSchedule: RoutineSchedule) {
+		this.id = routineSchedule.id;
+		this.day = routineSchedule.day;
+		this.time = routineSchedule.time;
+		this.location = routineSchedule.location;
+		this.accentColor = routineSchedule.accentColor;
+		this.description = routineSchedule.description;
+		this.sortOrder = routineSchedule.sortOrder;
+		this.isActive = routineSchedule.isActive;
+		this.createdAt = routineSchedule.createdAt;
+		this.updatedAt = routineSchedule.updatedAt;
 	}
 
 	toJSON() {
