@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import AppNav from '$lib/components/AppNav.svelte';
-	import type { PageName } from '$lib/types/pages.js';
+	import { getPageName, type PageName } from '$lib/types/pages.js';
 
 	let { data, children } = $props();
 
-	let pageName: PageName = $derived(page.url.pathname.startsWith('/admin') ? 'admin' : 'dashboard');
+	let pageName: PageName = $derived(getPageName(page.url.pathname));
 </script>
 
 <div
