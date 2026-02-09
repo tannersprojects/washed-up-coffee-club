@@ -32,7 +32,7 @@
 </script>
 
 {#if challenge}
-	<header class="mx-auto mb-16 max-w-5xl px-6">
+	<header class="mb-16 w-full max-w-3xl px-6">
 		<!-- Glassmorphic Container with Reveal Animation -->
 		<div
 			use:reveal

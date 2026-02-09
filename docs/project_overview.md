@@ -1,36 +1,50 @@
 # Project Overview: Washed Up Coffee Club
 
-## Vision
-The **Washed Up Coffee Club** app is a community hub for a run club. It serves as a central place for members to see what is happening, track events, and engage in friendly competition.
+**Use this first** when starting a new chat or onboarding. For schema, compliance, and implementation details, see [`project_context.md`](./project_context.md).
 
-## Core Goals
-1.  **Community Hub:** A single destination for all club-related information.
-2.  **Live Leaderboard:** A real-time ranking of members based on ongoing challenges, powered by Strava data.
-3.  **Event Tracking:** Visibility into future runs and social events.
-4.  **Seamless Access:** Authentication is handled exclusively via Strava to reduce friction and ensure all members are verified athletes.
+---
 
-## Key Features (Phase 1)
-*   **Strava-Only Login:** Users sign in with their existing Strava accounts. No separate email/password required.
-*   **Automated Data Sync:** The app automatically pulls activity data from Strava to update leaderboards.
-*   **Leaderboard UI:** Display rankings based on distance, elevation, or time for specific periods.
+## What It Is
 
-## Architecture Decisions
-*   **Framework:** SvelteKit (SSR).
-*   **Database:** Supabase (PostgreSQL) with Drizzle ORM.
-*   **Authentication:** "Shadow User" pattern.
-    *   Users authenticate via Strava OAuth.
-    *   A corresponding "shadow" user is created/linked in Supabase Auth to handle sessions and security (RLS).
-    *   The user experience is strictly "Connect with Strava".
+Web app for a **local running club**: community hub, live leaderboards from Strava, and event visibility. Auth is **Strava-only** (no email/password). Goal: one place for members to see what’s happening and compete in time-bound challenges (e.g. “Flash Challenge” — complete a half marathon in 24 hours).
 
-## Future Considerations
-*   Event RSVP system.
-*   Club announcements/blog.
-*   Photo sharing from runs.
+## Tech Stack
 
-## Current Implementation (dashboard branch)
+| Layer        | Choice                          |
+|-------------|----------------------------------|
+| Frontend    | SvelteKit, **Svelte 5 (Runes)**  |
+| Backend     | SvelteKit (API routes, loaders)  |
+| Database    | Supabase (PostgreSQL)            |
+| ORM         | Drizzle                          |
+| Auth        | Strava OAuth → “shadow” user in Supabase for sessions + RLS |
+| Data source | Strava API (read profile + activities) |
 
-- **Frontend & Server**: SvelteKit with Svelte 5 runes.
-- **Persistence**: Supabase Postgres with Drizzle ORM; Strava connections and challenge data modeled in `src/lib/db/schema.ts`.
-- **Auth**: Strava‑only login using a shadow‑user pattern; user profile is exposed as `App.Locals.profile` and surfaced in the dashboard UI.
-- **Dashboard Architecture**: A `DashboardUI` class (via context) manages challenges, while each `ChallengeUI` owns its own `LeaderboardUI`. The leaderboard rows are built client‑side from participants/contributions, and Strava compliance (logo + links) is implemented per `docs/strava_compliance.md` and `docs/strava_compliance_implementation.md`.
+## Architecture Highlights
 
+- **Strava-only login:** “Connect with Strava” only; Supabase user is created/linked for session and RLS.
+- **Feature colocation:** Route-scoped logic in `src/routes/[feature]/_logic/`, components in `_components/`. Shared/generic code in `src/lib/`.
+- **Smart objects:** Data is hydrated into TypeScript classes (e.g. `DashboardUI`, `ChallengeUI`, `LeaderboardUI`); components receive class instances, not raw DB rows.
+- **State:** Svelte 5 runes (`$state`, `$derived`, `$effect`) and Context API within a route; no legacy stores.
+
+## Main Routes
+
+- **`/`** — Public landing; “Connect with Strava” CTA.
+- **`/dashboard`** — Protected; challenge list, countdown, leaderboard (completed vs pending).
+- **`/admin`** — Protected, admin-only; create challenges, manage content, force sync.
+
+## Critical Constraint: Strava Compliance
+
+The app targets Strava “Community Application” status. Rules that must stay correct:
+
+- **User scale:** Local club only (<100 users).
+- **Data:** Only shown to users who authenticated via Strava; no public leaderboard links.
+- **Attribution:** Official orange “Connect with Strava” on login; “Powered by Strava” in leaderboard footer; athlete names and activities must link to Strava.
+
+Details: [`strava_compliance.md`](./strava_compliance.md), [`strava_compliance_implementation.md`](./strava_compliance_implementation.md).
+
+## Other Docs (by topic)
+
+- **Full context for AI/other chats:** [`project_context.md`](./project_context.md) — schema summary, auth flow, webhooks, admin workflow, file map.
+- **Svelte 5 + patterns:** `.cursor/rules/Svelte-5-Standards.mdc` in repo root.
+- **Admin UI / dashboard:** [`admin_dashboard_plan.md`](./admin_dashboard_plan.md), [`dashboard_data_structure_refactor.md`](./dashboard_data_structure_refactor.md).
+- **Auth design:** [`auth_plan.md`](./auth_plan.md).

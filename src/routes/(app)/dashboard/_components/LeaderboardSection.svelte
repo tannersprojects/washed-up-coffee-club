@@ -30,7 +30,7 @@
 	}
 </script>
 
-<section use:reveal class="reveal mx-auto max-w-5xl px-6">
+<section use:reveal class="reveal w-full max-w-2xl px-6">
 	<LeaderboardTabs />
 
 	{#if activeTab === 'leaderboard'}

@@ -13,7 +13,7 @@
 >
 	<AppNav profile={data.profile} {pageName} />
 
-	<main class="relative flex flex-1 flex-col pt-24 pb-20">
+	<main class="relative flex flex-1 flex-col items-center pt-24 pb-20">
 		{@render children()}
 	</main>
 </div>

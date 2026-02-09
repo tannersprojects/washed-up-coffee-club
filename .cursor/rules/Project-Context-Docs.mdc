@@ -1,0 +1,30 @@
+---
+description: Use project docs for app context (overview, schema, compliance)
+alwaysApply: true
+---
+
+# Project Context Documentation
+
+When answering questions about this app, making architectural decisions, or implementing features, **reference these docs** for accurate context:
+
+## Primary Docs
+
+1. **`docs/project_overview.md`** — Start here for:
+   - What the app is (running club leaderboard, Strava-only auth)
+   - Tech stack (SvelteKit, Svelte 5, Supabase, Drizzle)
+   - Architecture (colocation, smart objects, runes)
+   - Main routes and Strava compliance constraints
+
+2. **`docs/project_context.md`** — Use for:
+   - Dense reference: schema summary, auth flow, webhooks
+   - Database tables (profile, strava_connections, challenges, challenge_participants)
+   - Admin workflow, file map, implementation details
+   - Compliance rules (attribution, terminology, data privacy)
+
+## When to Use
+
+- **Onboarding / “what is this app?”** → Read `project_overview.md` first.
+- **Schema, API, or implementation details** → Use `project_context.md`.
+- **Compliance (Strava, attribution, user limits)** → Both docs; see also `strava_compliance.md` if needed.
+
+Do not guess app purpose, schema, or constraints—pull from these files or suggest the user open them with `@docs/project_context.md` or `@docs/project_overview.md`.

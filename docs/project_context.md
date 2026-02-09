@@ -1,5 +1,9 @@
 # Project Context: Washed Up Coffee Club Leaderboard
 
+**Purpose:** Dense reference for AI assistants or other chats. For a short “what is this app” summary, use [`project_overview.md`](./project_overview.md) first.
+
+---
+
 ## 1. Application Overview
 
 **Goal:** Build a web-based leaderboard for a local running club to track monthly challenges.
@@ -14,9 +18,7 @@
 
 ## 2. Compliance & Strategy (CRITICAL)
 
-**Current Status:** "Single Player Mode" (Restricted to Owner only).
-
-**Target Status:** "Community Application" (Allows data display to club members).
+**Current Status:** "Community Application" — permission obtained; data may be displayed to authenticated club members.
 
 ### Strictly Enforced Rules:
 
@@ -92,39 +94,35 @@ These tables together power the dashboard: `challenges` define the events, `chal
 
 ## 4. Data Models (TypeScript)
 
-The main dashboard‑level types are defined in [`src/lib/types/dashboard.ts`](../src/lib/types/dashboard.ts). Key types:
+Types are colocated by feature in `src/lib/types/`. UI classes live in each route’s `_logic/` and consume these types.
 
-```ts
-import type {
-  Profile,
-  Challenge,
-  ChallengeParticipant,
-  ChallengeContribution
-} from '$lib/db/schema';
+### Dashboard (`src/lib/types/dashboard.ts`)
 
-export type ChallengeParticipantWithRelations = ChallengeParticipant & {
-  profile: Profile;
-  contributions: ChallengeContribution[];
-};
+- `ChallengeParticipantWithRelations`, `LeaderboardRowData`, `ChallengeStats`, `ChallengeWithParticipation`, `DashboardContextData`.
+- **UI classes:** `DashboardUI` (challenge list + selection), `ChallengeUI` (single challenge, owns `LeaderboardUI`), `LeaderboardUI` (builds `leaderboardRows`, derived stats).
 
-export type LeaderboardRowData = {
-  participant: ChallengeParticipantWithRelations;
-  profile: Profile;
-  contribution: ChallengeContribution | null;
-  rank: number | null;
-};
+### Admin (`src/lib/types/admin.ts`)
 
-export type ChallengeWithParticipation = Challenge & {
-  isParticipating: boolean;
-  participant: ChallengeParticipant | null;
-};
-```
+- `ChallengeWithParticipants` — challenge plus its participants (no profile/contributions).
+- `AdminContextData` — loader payload: `{ memories, routineSchedules, challenges }`.
+- **UI classes:** `AdminUI` (tab state, passes data to sections), `ChallengeAdmin`, `MemoryAdmin`, `RoutineScheduleAdmin` (each section’s CRUD state).
 
-These types are hydrated into smart classes in the dashboard logic:
+### Content / Landing (`src/lib/types/content.ts`)
 
-- `DashboardUI` (manages the list of challenges and the selected challenge).
-- `ChallengeUI` (wraps a single challenge and owns its `LeaderboardUI`).
-- `LeaderboardUI` (builds `leaderboardRows: LeaderboardRowData[]` and derived stats for display).
+- `Memory`, `RoutineSchedule` — shapes for landing-page content (memories carousel, routine schedule). Used by root `+page.server.ts` and admin content management.
+
+### Shared
+
+- **`src/lib/types/pages.ts`** — `PAGE_NAME`, `PageName`, `getPageName(pathname)` for app nav and layout.
+- **`src/lib/types/strava.ts`** — `StravaTokenResponse`, `StravaSummaryAthlete`, `StravaErrorResponse` (and other Strava API shapes); used by `src/lib/server/auth.ts` and `strava.ts`.
+
+### Codebase conventions (Svelte 5)
+
+- **Reactivity:** Use `$state`, `$derived`, `$effect` only; no legacy stores.
+- **Colocation:** Feature logic in `src/routes/[feature]/_logic/`, feature components in `_components/`. Use `src/lib/` for shared UI and utilities.
+- **State:** Context API (`setContext`/`getContext`) for feature-wide state; classes initialized in `+layout.svelte` or `+page.svelte`.
+- **Components:** Accept class instances as props; keep `.svelte` for rendering and use `.svelte.ts` for non-trivial logic. Item classes implement `toJSON()` for API payloads.
+- Full rules: `.cursor/rules/Svelte-5-Standards.mdc` in repo root.
 
 ## 5. Authentication Flow
 
@@ -150,6 +148,22 @@ These types are hydrated into smart classes in the dashboard logic:
 - **Route `/api/webhooks/strava` (Public Endpoint):**
   - GET: Handles Strava's subscription verification (echoing hub.challenge).
   - POST: Handles incoming activity events.
+
+### Key file locations
+
+| Purpose | Path |
+|--------|------|
+| DB schema, enums, relations | `src/lib/db/schema.ts` |
+| Dashboard types | `src/lib/types/dashboard.ts` |
+| Challenge/participant constants | `src/lib/constants/challenge-constants.ts`, `participant-constants.ts`, `profile-constants.ts` |
+| Dashboard UI classes | `src/routes/(app)/dashboard/_logic/` (`DashboardUI.svelte.ts`, `ChallengeUI.svelte.ts`, `LeaderboardUI.svelte.ts`) |
+| Dashboard context | `src/routes/(app)/dashboard/_logic/context.ts` |
+| Admin UI classes | `src/routes/(app)/admin/_logic/` |
+| Auth (session, Strava shadow user) | `src/lib/server/auth.ts` |
+| Strava API helpers | `src/lib/server/strava.ts` |
+| Strava OAuth routes | `src/routes/auth/strava/login/`, `auth/strava/callback/` |
+| Strava webhook (planned) | `src/routes/api/webhooks/strava/+server.ts` |
+| Strava assets (buttons, logos) | `src/lib/assets/` |
 
 ## 7. Asset Placement Guide
 
@@ -194,8 +208,8 @@ Since there is only one owner, we do not need to build an "Invite Admin" feature
 3. **Step 3:** Run this command to promote that specific user:
 
 ```sql
-UPDATE profiles 
-SET is_admin = true 
+UPDATE profile
+SET role = 'admin'
 WHERE strava_athlete_id = [OWNER_STRAVA_ID];
 ```
 
