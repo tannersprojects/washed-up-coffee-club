@@ -4,13 +4,13 @@ import type {
 	ChallengeParticipantWithRelations,
 	ChallengeWithParticipation
 } from '$lib/types/dashboard.js';
-import { DashboardTab } from '$lib/types/dashboard.js';
+import { DashboardTabValue } from '$lib/types/dashboard.js';
 
 export class DashboardUI {
 	challenges: ChallengeUI[];
 	selectedChallengeId: string | null;
 	selectedChallenge: ChallengeUI | null;
-	activeTab: DashboardTab;
+	activeTab: DashboardTabValue;
 	drawerOpen: boolean;
 	sidebarPinned: boolean;
 	sidebarHovered: boolean;
@@ -30,7 +30,7 @@ export class DashboardUI {
 
 		// Initialize UI state
 		this.selectedChallengeId = $state(challengesWithParticipation[0]?.id || null);
-		this.activeTab = $state(DashboardTab.Challenges);
+		this.activeTab = $state(DashboardTabValue.Challenges);
 		this.drawerOpen = $state(false);
 		this.sidebarPinned = $state(true);
 		this.sidebarHovered = $state(false);
@@ -62,7 +62,7 @@ export class DashboardUI {
 	/**
 	 * Set the active tab (Challenges or Club Leaderboard)
 	 */
-	setActiveTab(tab: DashboardTab) {
+	setActiveTab(tab: DashboardTabValue) {
 		this.activeTab = tab;
 	}
 

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import { DashboardTab } from '$lib/types/dashboard.js';
+	import { DashboardTabLabel, DashboardTabValue } from '$lib/types/dashboard.js';
 	import Tabs from '$lib/components/Tabs.svelte';
 	import ChallengeHero from './_components/ChallengeHero.svelte';
 	import LeaderboardSection from './_components/LeaderboardSection.svelte';
@@ -10,6 +10,7 @@
 	import DashboardFooter from './_components/DashboardFooter.svelte';
 	import { setDashboardContext } from './_logic/context.js';
 	import { Menu } from 'lucide-svelte';
+	import DashboardTabs from './_components/DashboardTabs.svelte';
 
 	let { data } = $props();
 
@@ -31,18 +32,11 @@
 	<nav class="flex shrink-0 flex-col px-6">
 		<!-- Row 1: Tabs -->
 		<div class="flex items-center justify-center py-3">
-			<Tabs
-				tabs={[
-					{ value: DashboardTab.Challenges, label: 'Challenges' },
-					{ value: DashboardTab.ClubLeaderboard, label: 'Club Leaderboard' }
-				]}
-				value={dashboard.activeTab}
-				onSelect={(v) => dashboard.setActiveTab(v as DashboardTab)}
-			/>
+			<DashboardTabs />
 		</div>
 
 		<!-- Row 2: Challenges drawer trigger (mobile only) -->
-		{#if dashboard.activeTab === DashboardTab.Challenges && dashboard.challenges.length > 1}
+		{#if dashboard.activeTab === DashboardTabValue.Challenges && dashboard.challenges.length > 1}
 			<div class="flex py-3 md:hidden">
 				<button
 					type="button"
@@ -58,7 +52,7 @@
 
 	<!-- Content area: flex-1 so it fills space; page scrolls when content is long -->
 	<div class="flex flex-1 flex-col">
-		{#if dashboard.activeTab === DashboardTab.ClubLeaderboard}
+		{#if dashboard.activeTab === DashboardTabValue.ClubLeaderboard}
 			<div class="flex min-h-0 flex-1 items-center justify-center">
 				<EmptyState title="Club Leaderboard" message="Coming soon." variant="no-challenge" />
 			</div>

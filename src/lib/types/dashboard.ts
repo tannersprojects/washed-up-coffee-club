@@ -8,9 +8,14 @@ import type {
 /**
  * Dashboard top-level tab (Challenges vs Club Leaderboard)
  */
-export enum DashboardTab {
+export enum DashboardTabValue {
 	Challenges = 'challenges',
 	ClubLeaderboard = 'club-leaderboard'
+}
+
+export enum DashboardTabLabel {
+	Challenges = 'Challenges',
+	ClubLeaderboard = 'Club Leaderboard'
 }
 
 /**
