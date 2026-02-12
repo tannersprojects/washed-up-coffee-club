@@ -1,38 +1,19 @@
 <script lang="ts">
 	import { getDashboardContext } from '../_logic/context.js';
+	import Tabs from '$lib/components/Tabs.svelte';
 
-	let dashboard = getDashboardContext();
-	let challenge = $derived(dashboard.selectedChallenge);
-	let activeTab = $derived(challenge?.activeTab);
+	const dashboard = getDashboardContext();
+	const challenge = $derived(dashboard.selectedChallenge);
+	const activeTab = $derived(challenge?.activeTab ?? 'leaderboard');
+
+	const tabs = [
+		{ value: 'leaderboard', label: 'Leaderboard' },
+		{ value: 'details', label: 'Details' }
+	];
+
+	function handleSelect(value: string) {
+		challenge?.setActiveTab(value as 'leaderboard' | 'details');
+	}
 </script>
 
-<div class="mb-8 flex gap-2 border-b border-white/10">
-	<button
-		class="relative border-b-2 px-6 py-3 text-sm font-bold tracking-wider uppercase transition-all {activeTab ===
-		'leaderboard'
-			? 'border-(--accent-lime) text-white'
-			: 'border-transparent text-gray-500 hover:border-white/30 hover:text-white'}"
-		onclick={() => challenge?.setActiveTab('leaderboard')}
-	>
-		Leaderboard
-		{#if activeTab === 'leaderboard'}
-			<div
-				class="absolute right-0 -bottom-0.5 left-0 h-0.5 bg-(--accent-lime) shadow-[0_0_10px_var(--accent-lime)]"
-			></div>
-		{/if}
-	</button>
-	<button
-		class="relative border-b-2 px-6 py-3 text-sm font-bold tracking-wider uppercase transition-all {activeTab ===
-		'details'
-			? 'border-(--accent-lime) text-white'
-			: 'border-transparent text-gray-500 hover:border-white/30 hover:text-white'}"
-		onclick={() => challenge?.setActiveTab('details')}
-	>
-		Details
-		{#if activeTab === 'details'}
-			<div
-				class="absolute right-0 -bottom-0.5 left-0 h-0.5 bg-(--accent-lime) shadow-[0_0_10px_var(--accent-lime)]"
-			></div>
-		{/if}
-	</button>
-</div>
+<Tabs tabs={tabs} value={activeTab} onSelect={handleSelect} class="mb-8" />

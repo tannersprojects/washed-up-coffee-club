@@ -1,24 +1,22 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { isChallengeJoinable } from '$lib/utils/challenge-utils.js';
 import {
-	loadDashboardData,
 	checkUserParticipation,
 	joinChallenge,
 	loadChallenge,
 	leaveChallenge,
-	loadChallengeParticipantWithRelations
+	loadChallengeParticipantWithRelations,
+	loadDashboardData
 } from './loader.server.js';
 import type { PageServerLoad } from './$types.js';
 
-export const load: PageServerLoad = async ({ locals }: { locals: App.Locals }) => {
-	const profile = locals.profile;
+export const load: PageServerLoad = async ({ parent }) => {
+	const { profile } = await parent();
 
-	// Profile is guaranteed to exist by (app)/+layout.server.ts
 	if (!profile) {
 		throw redirect(302, '/');
 	}
 
-	// Load dashboard data (challenges + leaderboards) in optimized way
 	const { challengesWithParticipation, challengeParticipantsWithRelationsByChallenge } =
 		await loadDashboardData(profile.id);
 

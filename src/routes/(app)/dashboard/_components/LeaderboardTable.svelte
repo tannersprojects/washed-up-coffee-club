@@ -12,14 +12,14 @@
 <div class="flex flex-col">
 	<!-- List Header (hidden on mobile per two-row card layout) -->
 	<div
-		class="hidden border-b border-white/10 bg-black/20 px-4 py-3 font-mono text-[10px] tracking-widest text-gray-500 uppercase backdrop-blur-sm md:grid md:grid-cols-[50px_2fr_1fr_1fr_1fr_1fr] md:gap-4"
+		class="sticky top-0 z-10 hidden border-b border-white/10 bg-black/80 px-4 py-3 font-mono text-[10px] tracking-widest text-gray-500 uppercase backdrop-blur-sm md:grid md:grid-cols-[50px_2fr_1fr_1fr_1fr_1fr] md:gap-4"
 	>
 		<div class="text-center">#</div>
-		<div>Athlete</div>
-		<div class="hidden md:block">Activity</div>
-		<div class="text-right">Distance</div>
-		<div class="text-right">Pace</div>
-		<div class="text-right">Time/Status</div>
+		<div class="md:border-l md:border-white/10 md:pl-4">Athlete</div>
+		<div class="hidden md:block md:border-l md:border-white/10 md:pl-4">Activity</div>
+		<div class="text-right md:border-l md:border-white/10 md:pl-4">Distance</div>
+		<div class="text-right md:border-l md:border-white/10 md:pl-4">Pace</div>
+		<div class="text-right md:border-l md:border-white/10 md:pl-4">Time/Status</div>
 	</div>
 
 	<!-- List Rows -->

@@ -123,6 +123,20 @@ export class ChallengeUI {
 		this.leaderboard.updateChallengeParticipantsWithRelations(challengeParticipantsWithRelations);
 	}
 
+	/**
+	 * Get the current user's rank in this challenge
+	 * Returns null if user is not participating or hasn't finished
+	 */
+	getCurrentUserRank(profileId: string): number | null {
+		if (!this.isParticipating) return null;
+
+		const userRow = this.leaderboard.leaderboardRows.find(
+			(row) => row.profile.id === profileId
+		);
+
+		return userRow?.rank || null;
+	}
+
 	toJSON() {
 		return {
 			id: this.id,

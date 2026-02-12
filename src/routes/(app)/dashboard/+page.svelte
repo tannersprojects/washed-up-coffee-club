@@ -1,13 +1,15 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
+	import { DashboardTab } from '$lib/types/dashboard.js';
+	import Tabs from '$lib/components/Tabs.svelte';
 	import ChallengeHero from './_components/ChallengeHero.svelte';
 	import LeaderboardSection from './_components/LeaderboardSection.svelte';
-	import ChallengesList from './_components/ChallengesList.svelte';
+	import DashboardChallengesSidebar from './_components/DashboardChallengesSidebar.svelte';
+	import ChallengesDrawer from './_components/ChallengesDrawer.svelte';
 	import EmptyState from './_components/EmptyState.svelte';
 	import DashboardFooter from './_components/DashboardFooter.svelte';
-	import { untrack } from 'svelte';
 	import { setDashboardContext } from './_logic/context.js';
 
-	// --- DATA FROM SERVER ---
 	let { data } = $props();
 
 	// Initialize Dashboard context - only set once
@@ -19,23 +21,95 @@
 	});
 </script>
 
-{#if dashboard.challenges.length === 0}
-	<!-- Empty state - no challenges -->
-	<EmptyState
-		title="No Active Challenge"
-		message="Check back later for the next event."
-		variant="no-challenge"
-	/>
-{:else}
-	{#if dashboard.challenges.length > 1}
-		<!-- Multiple challenges view -->
-		<ChallengesList />
-	{/if}
-	<!-- Single challenge view -->
-	{#if dashboard.selectedChallenge}
-		<ChallengeHero />
-		<LeaderboardSection />
-	{/if}
-{/if}
+<!-- Outer wrapper: fill viewport so content area has height for centering / scroll -->
+<div class="flex min-h-0 w-full flex-1 flex-col">
+	<!-- Mobile drawer -->
+	<ChallengesDrawer profile={data.profile} />
 
-<DashboardFooter />
+	<!-- Tab bar -->
+	<nav class="flex shrink-0 flex-col px-6">
+		<!-- Row 1: Tabs -->
+		<div class="flex items-center justify-center py-3">
+			<Tabs
+				tabs={[
+					{ value: DashboardTab.Challenges, label: 'Challenges' },
+					{ value: DashboardTab.ClubLeaderboard, label: 'Club Leaderboard' }
+				]}
+				value={dashboard.activeTab}
+				onSelect={(v) => dashboard.setActiveTab(v as DashboardTab)}
+			/>
+		</div>
+
+		<!-- Row 2: Challenges drawer trigger (mobile only) -->
+		{#if dashboard.activeTab === DashboardTab.Challenges && dashboard.challenges.length > 1}
+			<div class="flex border-t border-white/10 py-3 md:hidden">
+				<button
+					type="button"
+					onclick={() => dashboard.openChallengesDrawer()}
+					class="flex items-center gap-1 font-mono text-sm tracking-wider text-(--grey-olive) uppercase transition-colors hover:text-white"
+				>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke-width="2"
+						stroke="currentColor"
+						class="h-4 w-4"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+						/>
+					</svg>
+					<span>Challenges</span>
+				</button>
+			</div>
+		{/if}
+	</nav>
+
+	<!-- Content area: flex-1 so it fills space; page scrolls when content is long -->
+	<div class="flex flex-1 flex-col">
+		{#if dashboard.activeTab === DashboardTab.ClubLeaderboard}
+			<div class="flex min-h-0 flex-1 items-center justify-center">
+				<EmptyState title="Club Leaderboard" message="Coming soon." variant="no-challenge" />
+			</div>
+		{:else}
+			<!-- Challenges tab content -->
+			{#if dashboard.challenges.length === 0}
+				<!-- Zero challenges: empty state -->
+				<div class="flex min-h-0 flex-1 items-center justify-center">
+					<EmptyState
+						title="No Active Challenge"
+						message="Check back later for the next event."
+						variant="no-challenge"
+					/>
+				</div>
+			{:else if dashboard.challenges.length === 1}
+				<!-- Single challenge: centered stage without sidebar -->
+				<div class="flex flex-1 flex-col">
+					<div class="mx-auto w-full max-w-7xl px-6">
+						{#if dashboard.selectedChallenge}
+							<ChallengeHero />
+							<LeaderboardSection />
+						{/if}
+					</div>
+				</div>
+			{:else}
+				<!-- Multiple challenges: sidebar (fixed) + stage -->
+				<DashboardChallengesSidebar profile={data.profile} />
+
+				<div class="flex flex-1 flex-col">
+					<div class="mx-auto w-full max-w-7xl flex-1 px-6 pt-8">
+						{#if dashboard.selectedChallenge}
+							<ChallengeHero />
+							<LeaderboardSection />
+						{/if}
+					</div>
+				</div>
+			{/if}
+		{/if}
+
+		<DashboardFooter />
+	</div>
+</div>

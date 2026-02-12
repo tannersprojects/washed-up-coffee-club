@@ -4,11 +4,16 @@ import type {
 	ChallengeParticipantWithRelations,
 	ChallengeWithParticipation
 } from '$lib/types/dashboard.js';
+import { DashboardTab } from '$lib/types/dashboard.js';
 
 export class DashboardUI {
 	challenges: ChallengeUI[];
 	selectedChallengeId: string | null;
 	selectedChallenge: ChallengeUI | null;
+	activeTab: DashboardTab;
+	drawerOpen: boolean;
+	sidebarPinned: boolean;
+	sidebarHovered: boolean;
 
 	constructor(
 		challengesWithParticipation: ChallengeWithParticipation[],
@@ -25,6 +30,10 @@ export class DashboardUI {
 
 		// Initialize UI state
 		this.selectedChallengeId = $state(challengesWithParticipation[0]?.id || null);
+		this.activeTab = $state(DashboardTab.Challenges);
+		this.drawerOpen = $state(false);
+		this.sidebarPinned = $state(true);
+		this.sidebarHovered = $state(false);
 
 		// Initialize derived values
 		this.selectedChallenge = $derived.by(() => {
@@ -48,6 +57,41 @@ export class DashboardUI {
 			challengesWithParticipation,
 			challengeParticipantsWithRelationsByChallenge
 		);
+	}
+
+	/**
+	 * Set the active tab (Challenges or Club Leaderboard)
+	 */
+	setActiveTab(tab: DashboardTab) {
+		this.activeTab = tab;
+	}
+
+	/**
+	 * Open the challenges drawer (mobile)
+	 */
+	openChallengesDrawer() {
+		this.drawerOpen = true;
+	}
+
+	/**
+	 * Close the challenges drawer (mobile)
+	 */
+	closeChallengesDrawer() {
+		this.drawerOpen = false;
+	}
+
+	/**
+	 * Toggle sidebar pin state (desktop)
+	 */
+	toggleSidebarPin() {
+		this.sidebarPinned = !this.sidebarPinned;
+	}
+
+	/**
+	 * Set sidebar hover state (desktop)
+	 */
+	setSidebarHovered(hovered: boolean) {
+		this.sidebarHovered = hovered;
 	}
 
 	/**

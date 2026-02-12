@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { setAdminContext } from './_logic/context.js';
-	import AdminTabs from './_components/AdminTabs.svelte';
+	import type { AdminTab } from './_logic/AdminUI.svelte.js';
+	import Tabs from '$lib/components/Tabs.svelte';
 	import MemoriesSection from './_components/MemoriesSection.svelte';
 	import SchedulesSection from './_components/SchedulesSection.svelte';
 	import ChallengesSection from './_components/ChallengesSection.svelte';
@@ -16,9 +17,16 @@
 </script>
 
 <div class="mx-auto w-full max-w-4xl px-6">
-	<div class="mb-8">
-		<AdminTabs activeTab={admin.activeTab} onTabChange={(tab) => admin.setActiveTab(tab)} />
-	</div>
+	<Tabs
+		tabs={[
+			{ value: 'memories', label: 'Memories' },
+			{ value: 'schedules', label: 'Schedules' },
+			{ value: 'challenges', label: 'Challenges' }
+		]}
+		value={admin.activeTab}
+		onSelect={(v) => admin.setActiveTab(v as AdminTab)}
+		class="mb-8"
+	/>
 
 	{#if admin.activeTab === 'memories'}
 		<MemoriesSection />
