@@ -35,8 +35,6 @@
 	function handleToggle() {
 		dashboard.toggleSidebarPin();
 	}
-
-	$inspect(expanded);
 </script>
 
 <aside
