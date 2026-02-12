@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { DashboardTabLabel, DashboardTabValue } from '$lib/types/dashboard.js';
-	import Tabs from '$lib/components/Tabs.svelte';
+
 	import ChallengeHero from './_components/ChallengeHero.svelte';
 	import LeaderboardSection from './_components/LeaderboardSection.svelte';
 	import DashboardChallengesSidebar from './_components/DashboardChallengesSidebar.svelte';

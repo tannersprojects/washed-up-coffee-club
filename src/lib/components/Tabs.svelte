@@ -20,7 +20,7 @@
 	{#each tabs as tab}
 		<button
 			type="button"
-			class="flex shrink-0 cursor-pointer justify-center rounded-md px-4 py-2 text-sm font-bold tracking-wider uppercase transition-colors {value ===
+			class="flex grow cursor-pointer items-center justify-center rounded-md px-4 py-2 text-sm font-bold tracking-wider whitespace-nowrap uppercase transition-colors {value ===
 			tab.value
 				? 'bg-(--accent-lime) text-black'
 				: 'text-white/60 hover:bg-white/10 hover:text-white'}"
