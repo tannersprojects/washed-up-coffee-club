@@ -9,6 +9,7 @@
 	import EmptyState from './_components/EmptyState.svelte';
 	import DashboardFooter from './_components/DashboardFooter.svelte';
 	import { setDashboardContext } from './_logic/context.js';
+	import { Menu } from 'lucide-svelte';
 
 	let { data } = $props();
 
@@ -42,26 +43,13 @@
 
 		<!-- Row 2: Challenges drawer trigger (mobile only) -->
 		{#if dashboard.activeTab === DashboardTab.Challenges && dashboard.challenges.length > 1}
-			<div class="flex border-t border-white/10 py-3 md:hidden">
+			<div class="flex py-3 md:hidden">
 				<button
 					type="button"
 					onclick={() => dashboard.openChallengesDrawer()}
 					class="flex items-center gap-1 font-mono text-sm tracking-wider text-(--grey-olive) uppercase transition-colors hover:text-white"
 				>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke-width="2"
-						stroke="currentColor"
-						class="h-4 w-4"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-						/>
-					</svg>
+					<Menu size={20} class="text-(--grey-olive)" />
 					<span>Challenges</span>
 				</button>
 			</div>

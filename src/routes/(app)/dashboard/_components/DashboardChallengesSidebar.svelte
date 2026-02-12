@@ -59,9 +59,9 @@
 				aria-label="Toggle sidebar"
 			>
 				{#if dashboard.sidebarPinned}
-					<PanelLeftOpen size={20} class="text-(--grey-olive)" />
-				{:else}
 					<PanelRightOpen size={20} class="text-(--grey-olive)" />
+				{:else}
+					<PanelLeftOpen size={20} class="text-(--grey-olive)" />
 				{/if}
 			</button>
 		</div>
@@ -82,6 +82,6 @@
 		class="fixed top-40 left-0 z-50 hidden h-12 w-6 items-center justify-center rounded-r-md border-t border-r border-b border-white/10 bg-[#050505] shadow-lg transition-all hover:w-8 hover:shadow-xl md:flex"
 		aria-label="Open sidebar"
 	>
-		<PanelRightOpen size={16} class="text-(--grey-olive)" />
+		<PanelLeftOpen size={16} class="text-(--grey-olive)" />
 	</button>
 {/if}
