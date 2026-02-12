@@ -5,6 +5,7 @@
 	import MemoriesSection from './_components/MemoriesSection.svelte';
 	import SchedulesSection from './_components/SchedulesSection.svelte';
 	import ChallengesSection from './_components/ChallengesSection.svelte';
+	import { AdminTabValue } from '$lib/types/admin.js';
 
 	let { data } = $props();
 
@@ -16,15 +17,12 @@
 </script>
 
 <div class="mx-auto w-full max-w-4xl px-6">
-	<div class="mb-8">
-		<AdminTabs activeTab={admin.activeTab} onTabChange={(tab) => admin.setActiveTab(tab)} />
-	</div>
-
-	{#if admin.activeTab === 'memories'}
+	<AdminTabs />
+	{#if admin.activeTab === AdminTabValue.Memories}
 		<MemoriesSection />
-	{:else if admin.activeTab === 'schedules'}
+	{:else if admin.activeTab === AdminTabValue.Schedules}
 		<SchedulesSection />
-	{:else if admin.activeTab === 'challenges'}
+	{:else if admin.activeTab === AdminTabValue.Challenges}
 		<ChallengesSection />
 	{/if}
 </div>

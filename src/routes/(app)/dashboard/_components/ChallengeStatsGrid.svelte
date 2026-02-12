@@ -12,31 +12,10 @@
 		{ id: 'activeRunners', label: 'On Course', value: stats?.activeRunners },
 		{ id: 'totalDistanceKm', label: 'Total KM', value: stats?.totalDistanceKm }
 	]);
-
-	// Reveal Animation Action
-	function reveal(node: HTMLElement) {
-		const observer = new IntersectionObserver(
-			(entries) => {
-				entries.forEach((entry) => {
-					if (entry.isIntersecting) {
-						node.classList.add('reveal-active');
-						observer.unobserve(node);
-					}
-				});
-			},
-			{ threshold: 0.15, rootMargin: '0px 0px -50px 0px' }
-		);
-		observer.observe(node);
-		return {
-			destroy() {
-				observer.disconnect();
-			}
-		};
-	}
 </script>
 
 {#if stats && statItems}
-	<div use:reveal class="reveal mt-12 grid grid-cols-2 gap-4 md:grid-cols-4">
+	<div class="mt-12 grid grid-cols-2 gap-4 md:grid-cols-4">
 		{#each statItems as statItem (statItem.id)}
 			<div
 				class="group relative overflow-hidden rounded-xl border border-white/10 bg-black/40 p-6 backdrop-blur-md transition-all duration-500 hover:-translate-y-2 hover:border-(--accent-lime)/50 hover:shadow-[0_0_30px_-10px_var(--accent-lime)]"

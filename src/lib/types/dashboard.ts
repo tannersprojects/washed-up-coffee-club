@@ -6,6 +6,19 @@ import type {
 } from '$lib/db/schema';
 
 /**
+ * Dashboard top-level tab (Challenges vs Club Leaderboard)
+ */
+export enum DashboardTabValue {
+	Challenges = 'challenges',
+	ClubLeaderboard = 'club-leaderboard'
+}
+
+export enum DashboardTabLabel {
+	Challenges = 'Challenges',
+	ClubLeaderboard = 'Club Leaderboard'
+}
+
+/**
  * Challenge participant with relations loaded from query
  */
 export type ChallengeParticipantWithRelations = ChallengeParticipant & {

@@ -1,0 +1,34 @@
+---
+alwaysApply: true
+---
+
+## Project Specifics: Svelte 5 & Architecture
+
+# Tech Stack & Syntax
+- **Framework:** Svelte 5 (Runes mode).
+- **Reactivity:** Use `$state`, `$derived`, and `$effect` exclusively. **DO NOT** use legacy `writable` or `readable` stores.
+- **Language:** TypeScript.
+
+# Directory Structure & Colocation
+- **Feature Isolation:** Colocate logic and components by route/feature, not by file type.
+- **Private Folders:**
+  - Place business logic classes in `src/routes/[feature]/_logic/`.
+  - Place feature-specific components in `src/routes/[feature]/_components/`.
+- **Global vs. Local:**
+  - Use `src/lib/` only for truly generic UI (buttons, inputs, tabs) or app-wide utilities.
+  - Domain-specific logic belongs in `src/routes/`.
+
+# State Management Pattern
+1. **Feature State:** Use the Context API (`setContext`/`getContext`) to share state within a route. Initialize the class in `+layout.svelte` or `+page.svelte`.
+2. **Local State:** Use `$state` directly inside `.svelte` components for transient UI state (e.g., open/close toggles).
+
+# The "Smart Object" Pattern
+- **No Raw POJOs:** Never pass raw database objects to components. Hydrate them into TypeScript Classes immediately upon data loading.
+- **Class Hierarchy:**
+  - **Manager Class:** Handles collections, filtering, and CRUD methods (e.g., `Project` class holding a list of Tasks).
+  - **Item Class:** Handles individual state, validation, and UI status (e.g., `Task` class with `isEditing` state).
+- **Serialization:** Implement a `toJSON()` method in Item classes to strip UI-specific state (like `isEditing`) before sending data back to the API.
+
+# Component Implementation
+- **Props:** Components should accept **Class Instances** as props, not raw data objects.
+- **Logic Separation:** Keep `.svelte` files focused on rendering. Move complex business logic, calculations, and state mutations into `.svelte.ts` files.

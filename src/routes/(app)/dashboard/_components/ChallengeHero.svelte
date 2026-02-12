@@ -8,35 +8,13 @@
 
 	const dashboard = getDashboardContext();
 	const challenge = $derived(dashboard.selectedChallenge);
-
-	// Reveal Animation Action
-	function reveal(node: HTMLElement) {
-		const observer = new IntersectionObserver(
-			(entries) => {
-				entries.forEach((entry) => {
-					if (entry.isIntersecting) {
-						node.classList.add('reveal-active');
-						observer.unobserve(node);
-					}
-				});
-			},
-			{ threshold: 0.15, rootMargin: '0px 0px -50px 0px' }
-		);
-		observer.observe(node);
-		return {
-			destroy() {
-				observer.disconnect();
-			}
-		};
-	}
 </script>
 
 {#if challenge}
-	<header class="mx-auto mb-16 max-w-5xl px-6">
-		<!-- Glassmorphic Container with Reveal Animation -->
+	<header class="mb-16 w-full px-6">
+		<!-- Glassmorphic Container -->
 		<div
-			use:reveal
-			class="reveal relative overflow-hidden rounded-xl border border-white/10 bg-black/40 backdrop-blur-md"
+			class="relative overflow-hidden rounded-xl border border-white/10 bg-black/40 backdrop-blur-md"
 		>
 			<!-- Gradient Overlay for Depth -->
 			<div

@@ -15,6 +15,15 @@
 	--header-height: 80px;
 }
 
+html {
+	scroll-behavior: smooth;
+	-ms-overflow-style: none; /* IE and Edge */
+	scrollbar-width: none; /* Firefox */
+}
+html::-webkit-scrollbar {
+	display: none;
+}
+
 /* Base resets */
 body {
 	background-color: var(--black);

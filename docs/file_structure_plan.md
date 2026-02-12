@@ -229,10 +229,13 @@ src/routes/dashboard/
     ChallengeUI.svelte.ts
     LeaderboardUI.svelte.ts
   _components/
-    DashboardNav.svelte
+    DashboardTabs.svelte         # Challenges / Club Leaderboard (uses lib Tabs)
+    DashboardChallengesSidebar.svelte  # Arc-style collapsible sidebar (desktop)
+    ChallengesDrawer.svelte      # Mobile overlay for challenge list
+    ChallengeListItems.svelte    # Shared list items for sidebar/drawer
     ChallengeHero.svelte
     LeaderboardSection.svelte
-    LeaderboardTabs.svelte
+    LeaderboardTabs.svelte       # Leaderboard / Details (uses lib Tabs)
     LeaderboardTable.svelte
     LeaderboardRow.svelte
     ChallengeDetails.svelte

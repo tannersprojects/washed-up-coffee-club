@@ -1,7 +1,7 @@
 import type { ChallengeParticipantWithRelations } from '$lib/types/dashboard.js';
 import { CHALLENGE_STATUS } from '$lib/constants';
-import type { ChallengeUI } from '../../routes/dashboard/_logic/ChallengeUI.svelte';
 import type { Challenge } from '$lib/db/schema';
+import type { ChallengeUI } from '../../routes/(app)/dashboard/_logic/ChallengeUI.svelte';
 
 /**
  * Calculates the total distance in kilometers for all completed participants
