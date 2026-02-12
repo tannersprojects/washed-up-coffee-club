@@ -15,7 +15,7 @@ alwaysApply: true
   - Place business logic classes in `src/routes/[feature]/_logic/`.
   - Place feature-specific components in `src/routes/[feature]/_components/`.
 - **Global vs. Local:**
-  - Use `src/lib/` only for truly generic UI (buttons, inputs) or app-wide utilities.
+  - Use `src/lib/` only for truly generic UI (buttons, inputs, tabs) or app-wide utilities.
   - Domain-specific logic belongs in `src/routes/`.
 
 # State Management Pattern

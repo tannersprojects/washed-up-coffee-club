@@ -140,6 +140,8 @@ Types are colocated by feature in `src/lib/types/`. UI classes live in each rout
 
 - **Route `/` (Landing):** Public marketing page. Contains "Connect with Strava" button.
 - **Route `/dashboard` (Protected):** The main app interface. Requires active session.
+  - **DashboardChallengesSidebar** (Arc-style collapsible on desktop) and **ChallengesDrawer** (mobile overlay) for challenge list when multiple challenges exist.
+  - **Tabs** for Challenges / Club Leaderboard; **LeaderboardTabs** (Leaderboard / Details) within each challenge.
   - Component: Countdown Timer (if active).
   - Component: Split Leaderboard (Completed vs Pending).
 - **Route `/admin` (Protected + Admin Only):**
@@ -153,6 +155,7 @@ Types are colocated by feature in `src/lib/types/`. UI classes live in each rout
 
 | Purpose | Path |
 |--------|------|
+| Shared UI components | `src/lib/components/` (Tabs, AppNav) |
 | DB schema, enums, relations | `src/lib/db/schema.ts` |
 | Dashboard types | `src/lib/types/dashboard.ts` |
 | Challenge/participant constants | `src/lib/constants/challenge-constants.ts`, `participant-constants.ts`, `profile-constants.ts` |
