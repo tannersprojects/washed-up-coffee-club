@@ -1,7 +1,8 @@
 import type { ChallengeParticipantWithRelations } from '$lib/types/dashboard.js';
-import { CHALLENGE_STATUS } from '$lib/constants';
+import { CHALLENGE_STATUS, CHALLENGE_JOIN_DISPLAY_STATE } from '$lib/constants';
 import type { Challenge } from '$lib/db/schema';
 import type { ChallengeUI } from '../../routes/(app)/dashboard/_logic/ChallengeUI.svelte';
+import type { ChallengeJoinDisplayState } from '$lib/constants';
 
 /**
  * Calculates the total distance in kilometers for all completed participants
@@ -41,13 +42,11 @@ export function isChallengeJoinable(challenge: ChallengeUI | Challenge | null): 
 
 	const now = new Date();
 
-	// Check challenge is active
-	if (challenge.status !== CHALLENGE_STATUS.ACTIVE) {
-		return false;
-	}
-
-	// Check challenge is marked as active
-	if (!challenge.isActive) {
+	// Check challenge is active or upcoming (use status only, not isActive)
+	if (
+		challenge.status !== CHALLENGE_STATUS.ACTIVE &&
+		challenge.status !== CHALLENGE_STATUS.UPCOMING
+	) {
 		return false;
 	}
 
@@ -57,11 +56,34 @@ export function isChallengeJoinable(challenge: ChallengeUI | Challenge | null): 
 		return false;
 	}
 
-	// Check challenge has started (optional but good practice)
-	const startDate = new Date(challenge.startDate);
-	if (now < startDate) {
-		return false;
+	return true;
+}
+
+/**
+ * Gets the display state for a challenge join button
+ * @param challenge - The challenge to check
+ * @returns One of five display states: joinable, participating, ended, upcoming, not_active
+ */
+export function getChallengeJoinDisplayState(challenge: ChallengeUI): ChallengeJoinDisplayState {
+	if (challenge.isParticipating) {
+		return CHALLENGE_JOIN_DISPLAY_STATE.PARTICIPATING;
 	}
 
-	return true;
+	const now = new Date();
+	const startDate = new Date(challenge.startDate);
+	const endDate = new Date(challenge.endDate);
+
+	if (now >= endDate) {
+		return CHALLENGE_JOIN_DISPLAY_STATE.ENDED;
+	}
+
+	// Use status only (not isActive) - ACTIVE or UPCOMING are joinable
+	if (
+		challenge.status === CHALLENGE_STATUS.ACTIVE ||
+		challenge.status === CHALLENGE_STATUS.UPCOMING
+	) {
+		return CHALLENGE_JOIN_DISPLAY_STATE.JOINABLE;
+	}
+
+	return CHALLENGE_JOIN_DISPLAY_STATE.NOT_ACTIVE;
 }

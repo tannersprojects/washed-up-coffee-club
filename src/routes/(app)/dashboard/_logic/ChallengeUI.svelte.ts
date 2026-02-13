@@ -5,8 +5,8 @@ import type {
 } from '$lib/types/dashboard.js';
 import type { ChallengeParticipant } from '$lib/db/schema.js';
 import { LeaderboardUI } from './LeaderboardUI.svelte';
-import { isChallengeJoinable } from '$lib/utils/challenge-utils';
-import type { ChallengeType, ChallengeStatus } from '$lib/constants';
+import { isChallengeJoinable, getChallengeJoinDisplayState } from '$lib/utils/challenge-utils';
+import type { ChallengeType, ChallengeStatus, ChallengeJoinDisplayState } from '$lib/constants';
 
 export class ChallengeUI {
 	// Challenge fields from database
@@ -30,6 +30,7 @@ export class ChallengeUI {
 	leaderboard: LeaderboardUI;
 	activeTab: 'leaderboard' | 'details';
 	joinable: boolean;
+	joinDisplayState: ChallengeJoinDisplayState;
 	isSubmitting: boolean;
 	timeLeft: string;
 	private countdownInterval: ReturnType<typeof setInterval> | null;
@@ -58,6 +59,10 @@ export class ChallengeUI {
 		this.leaderboard = new LeaderboardUI(challengeParticipantsWithRelations, this.goalValue);
 		this.activeTab = $state('leaderboard');
 		this.joinable = $derived(isChallengeJoinable(this));
+		this.joinDisplayState = $derived.by(() => {
+			void this.timeLeft; // dependency: re-run when countdown ticks
+			return getChallengeJoinDisplayState(this);
+		});
 		this.isSubmitting = $state(false);
 	}
 
@@ -130,9 +135,7 @@ export class ChallengeUI {
 	getCurrentUserRank(profileId: string): number | null {
 		if (!this.isParticipating) return null;
 
-		const userRow = this.leaderboard.leaderboardRows.find(
-			(row) => row.profile.id === profileId
-		);
+		const userRow = this.leaderboard.leaderboardRows.find((row) => row.profile.id === profileId);
 
 		return userRow?.rank || null;
 	}
