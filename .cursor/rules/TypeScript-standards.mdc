@@ -1,0 +1,42 @@
+---
+alwaysApply: true
+---
+
+# TypeScript Standards
+
+When writing TypeScript in this project, follow these patterns for consistency and maintainability.
+
+## Constants and Enums
+
+**Prefer `as const` objects over `enum`.**
+
+Use the `as const` pattern for constant sets (statuses, types, tab values, etc.):
+
+```ts
+export const CHALLENGE_STATUS = {
+	UPCOMING: 'upcoming' as const,
+	ACTIVE: 'active' as const,
+	COMPLETED: 'completed' as const
+} as const;
+
+export type ChallengeStatus = (typeof CHALLENGE_STATUS)[keyof typeof CHALLENGE_STATUS];
+```
+
+**Why:** Plain objects, no extra runtime code, tree-shakeable, and consistent with existing constants (`CHALLENGE_STATUS`, `CHALLENGE_TYPE`, etc.).
+
+**For function parameters:** Use the derived type:
+
+```ts
+function setTab(tab: DashboardTab) { ... }
+setTab(DASHBOARD_TAB.Challenges);
+```
+
+## Type Safety
+
+- Prefer strong typing; avoid `any` unless necessary.
+- Derive types from constants when possible instead of duplicating string unions.
+
+## Error Handling
+
+- Do not silently swallow errors; use try/catch or Result-like patterns as appropriate.
+- Handle errors at boundaries and propagate with context.

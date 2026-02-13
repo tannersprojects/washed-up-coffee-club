@@ -16,14 +16,16 @@ export type AdminContextData = {
 	challenges: ChallengeWithParticipants[];
 };
 
-export enum AdminTabValue {
-	Memories = 'memories',
-	Schedules = 'schedules',
-	Challenges = 'challenges'
-}
+export const ADMIN_TAB = {
+	Memories: 'memories',
+	Schedules: 'schedules',
+	Challenges: 'challenges'
+} as const;
 
-export enum AdminTabLabel {
-	Memories = 'Memories',
-	Schedules = 'Schedules',
-	Challenges = 'Challenges'
-}
+export type AdminTab = (typeof ADMIN_TAB)[keyof typeof ADMIN_TAB];
+
+export const ADMIN_TAB_LABEL = {
+	Memories: 'Memories',
+	Schedules: 'Schedules',
+	Challenges: 'Challenges'
+} as const;

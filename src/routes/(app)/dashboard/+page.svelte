@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import { DashboardTabLabel, DashboardTabValue } from '$lib/types/dashboard.js';
+	import { DASHBOARD_TAB } from '$lib/types/dashboard.js';
 
 	import ChallengeHero from './_components/ChallengeHero.svelte';
 	import LeaderboardSection from './_components/LeaderboardSection.svelte';
@@ -36,7 +36,7 @@
 		</div>
 
 		<!-- Row 2: Challenges drawer trigger (mobile only) -->
-		{#if dashboard.activeTab === DashboardTabValue.Challenges && dashboard.challenges.length > 1}
+		{#if dashboard.activeTab === DASHBOARD_TAB.Challenges && dashboard.challenges.length > 1}
 			<div class="flex py-3 md:hidden">
 				<button
 					type="button"
@@ -52,7 +52,7 @@
 
 	<!-- Content area: flex-1 so it fills space; page scrolls when content is long -->
 	<div class="flex flex-1 flex-col">
-		{#if dashboard.activeTab === DashboardTabValue.ClubLeaderboard}
+		{#if dashboard.activeTab === DASHBOARD_TAB.ClubLeaderboard}
 			<div class="flex min-h-0 flex-1 items-center justify-center">
 				<EmptyState title="Club Leaderboard" message="Coming soon." variant="no-challenge" />
 			</div>

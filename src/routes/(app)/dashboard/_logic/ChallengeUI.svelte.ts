@@ -1,11 +1,13 @@
 import { formatTimeRemaining } from '$lib/utils/timer-utils.js';
-import type {
-	ChallengeParticipantWithRelations,
-	ChallengeWithParticipation
+import {
+	LEADERBOARD_TAB,
+	type ChallengeParticipantWithRelations,
+	type ChallengeWithParticipation,
+	type LeaderboardTab
 } from '$lib/types/dashboard.js';
 import type { ChallengeParticipant } from '$lib/db/schema.js';
 import { LeaderboardUI } from './LeaderboardUI.svelte';
-import { isChallengeJoinable, getChallengeJoinDisplayState } from '$lib/utils/challenge-utils';
+import { getChallengeJoinDisplayState } from '$lib/utils/challenge-utils';
 import type { ChallengeType, ChallengeStatus, ChallengeJoinDisplayState } from '$lib/constants';
 
 export class ChallengeUI {
@@ -28,8 +30,7 @@ export class ChallengeUI {
 
 	// Reactive state
 	leaderboard: LeaderboardUI;
-	activeTab: 'leaderboard' | 'details';
-	joinable: boolean;
+	activeTab: LeaderboardTab;
 	joinDisplayState: ChallengeJoinDisplayState;
 	isSubmitting: boolean;
 	timeLeft: string;
@@ -57,8 +58,7 @@ export class ChallengeUI {
 		this.timeLeft = $state(formatTimeRemaining(this.endDate));
 		this.countdownInterval = null;
 		this.leaderboard = new LeaderboardUI(challengeParticipantsWithRelations, this.goalValue);
-		this.activeTab = $state('leaderboard');
-		this.joinable = $derived(isChallengeJoinable(this));
+		this.activeTab = $state(LEADERBOARD_TAB.Leaderboard);
 		this.joinDisplayState = $derived.by(() => {
 			void this.timeLeft; // dependency: re-run when countdown ticks
 			return getChallengeJoinDisplayState(this);
@@ -108,7 +108,7 @@ export class ChallengeUI {
 		this.isSubmitting = false;
 	}
 
-	setActiveTab(tab: 'leaderboard' | 'details') {
+	setActiveTab(tab: LeaderboardTab) {
 		this.activeTab = tab;
 	}
 

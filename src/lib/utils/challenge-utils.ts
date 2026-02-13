@@ -36,23 +36,12 @@ export function calculateTotalDistanceKm(
  * @returns true if challenge is joinable, false otherwise
  */
 export function isChallengeJoinable(challenge: ChallengeUI | Challenge | null): boolean {
-	if (!challenge) {
+	if (!challenge || !challenge.isActive) {
 		return false;
 	}
 
-	const now = new Date();
-
-	// Check challenge is active or upcoming (use status only, not isActive)
-	if (
-		challenge.status !== CHALLENGE_STATUS.ACTIVE &&
-		challenge.status !== CHALLENGE_STATUS.UPCOMING
-	) {
-		return false;
-	}
-
-	// Check challenge hasn't ended
-	const endDate = new Date(challenge.endDate);
-	if (now >= endDate) {
+	// Check challenge is no completed
+	if (challenge.status === CHALLENGE_STATUS.COMPLETED) {
 		return false;
 	}
 
@@ -70,7 +59,6 @@ export function getChallengeJoinDisplayState(challenge: ChallengeUI): ChallengeJ
 	}
 
 	const now = new Date();
-	const startDate = new Date(challenge.startDate);
 	const endDate = new Date(challenge.endDate);
 
 	if (now >= endDate) {
