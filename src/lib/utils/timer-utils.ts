@@ -1,7 +1,12 @@
+const MS_PER_SECOND = 1000;
+const MS_PER_MINUTE = MS_PER_SECOND * 60;
+const MS_PER_HOUR = MS_PER_MINUTE * 60;
+const MS_PER_DAY = MS_PER_HOUR * 24;
+
 /**
- * Formats the time remaining until a target date as "HH:MM:SS"
- * @param endDate - The target end date (Date object or ISO string)
- * @returns Formatted time string "HH:MM:SS" or "00:00:00" if expired
+ * Formats the time remaining until a target date.
+ * @param endDate - The target date (Date object or ISO string)
+ * @returns "DDd HH:MM:SS" when 1+ days remain, "HH:MM:SS" when under 24h, "00:00:00" if expired
  */
 export function formatTimeRemaining(endDate: Date | string): string {
 	const diff = getTimeRemainingMs(endDate);
@@ -10,11 +15,14 @@ export function formatTimeRemaining(endDate: Date | string): string {
 		return '00:00:00';
 	}
 
-	const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-	const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-	const s = Math.floor((diff % (1000 * 60)) / 1000);
+	const d = Math.floor(diff / MS_PER_DAY);
+	const remainder = diff % MS_PER_DAY;
+	const h = Math.floor(remainder / MS_PER_HOUR);
+	const m = Math.floor((remainder % MS_PER_HOUR) / MS_PER_MINUTE);
+	const s = Math.floor((remainder % MS_PER_MINUTE) / MS_PER_SECOND);
 
-	return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+	const hhmmss = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+	return d > 0 ? `${d}d ${hhmmss}` : hhmmss;
 }
 
 /**
