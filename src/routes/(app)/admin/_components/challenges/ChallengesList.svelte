@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { ChallengeAdmin } from '../_logic/ChallengeAdmin.svelte.js';
+	import type { ChallengeAdmin } from '../../_logic/ChallengeAdmin.svelte.js';
 	import ChallengeCard from './ChallengeCard.svelte';
 
 	type Props = {

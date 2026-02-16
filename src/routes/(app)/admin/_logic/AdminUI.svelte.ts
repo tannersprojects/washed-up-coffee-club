@@ -1,5 +1,5 @@
-import type { AdminContextData, AdminTab } from '$lib/types/admin.js';
-import { ADMIN_TAB } from '$lib/types/admin.js';
+import type { AdminContextData } from '$lib/types/admin.js';
+import { ADMIN_TAB, type AdminTab } from '$lib/constants';
 import { MemoryAdmin } from './MemoryAdmin.svelte.js';
 import { RoutineScheduleAdmin } from './RoutineScheduleAdmin.svelte.js';
 import { ChallengeAdmin } from './ChallengeAdmin.svelte.js';

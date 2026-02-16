@@ -1,11 +1,8 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { setAdminContext } from './_logic/context.js';
-	import AdminTabs from './_components/AdminTabs.svelte';
-	import MemoriesSection from './_components/MemoriesSection.svelte';
-	import SchedulesSection from './_components/SchedulesSection.svelte';
-	import ChallengesSection from './_components/ChallengesSection.svelte';
-	import { ADMIN_TAB } from '$lib/types/admin.js';
+	import { AdminTabs, MemoriesSection, SchedulesSection, ChallengesSection } from './_components';
+	import { ADMIN_TAB } from '$lib/constants';
 
 	let { data } = $props();
 

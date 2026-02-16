@@ -2,7 +2,7 @@ import { db } from '$lib/db';
 import { memoriesTable, routineSchedulesTable } from '$lib/db/schema';
 import { eq, asc } from 'drizzle-orm';
 import type { PageServerLoad } from './$types';
-import type { Memory, RoutineSchedule } from '$lib/types/content';
+import type { Memory, RoutineSchedule } from '$lib/db/schema';
 
 export const load: PageServerLoad = async ({ locals }: { locals: App.Locals }) => {
 	const { session } = await locals.safeGetSession();

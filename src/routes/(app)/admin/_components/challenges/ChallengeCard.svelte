@@ -2,10 +2,10 @@
 	import { enhance } from '$app/forms';
 	import { toast } from 'svelte-sonner';
 	import { CHALLENGE_TYPE, CHALLENGE_STATUS } from '$lib/constants';
-	import { getChallengeTimeStateFromDates } from '$lib/utils/challenge-utils.js';
-	import { formatDatetimeForInput, formatDate } from '$lib/utils/datetime-utils.js';
-	import type { ChallengeAdmin } from '../_logic/ChallengeAdmin.svelte.js';
-	import { getAdminContext } from '../_logic/context.js';
+	import { getChallengeTimeStateFromDates } from '$lib/utils/challenge.js';
+	import { formatDatetimeForInput, formatDate } from '$lib/utils/datetime.js';
+	import type { ChallengeAdmin } from '../../_logic/ChallengeAdmin.svelte.js';
+	import { getAdminContext } from '../../_logic/context.js';
 
 	type Props = {
 		challenge: ChallengeAdmin;
@@ -153,7 +153,9 @@
 				<h3 class="font-mono text-sm font-bold text-white">{challenge.title}</h3>
 				<p class="mt-1 font-mono text-xs text-white/60">
 					{typeLabels[challenge.type] ?? challenge.type} ·
-					{statusLabels[getChallengeTimeStateFromDates(challenge.startDate, challenge.endDate).status]}
+					{statusLabels[
+						getChallengeTimeStateFromDates(challenge.startDate, challenge.endDate).status
+					]}
 				</p>
 				<p class="mt-2 font-mono text-[10px] text-white/40">
 					{formatDate(challenge.startDate)} – {formatDate(challenge.endDate)}

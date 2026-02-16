@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import { DASHBOARD_TAB } from '$lib/types/dashboard.js';
+	import { DASHBOARD_TAB } from '$lib/constants';
 
 	import ChallengeHero from './_components/ChallengeHero.svelte';
 	import LeaderboardSection from './_components/LeaderboardSection.svelte';

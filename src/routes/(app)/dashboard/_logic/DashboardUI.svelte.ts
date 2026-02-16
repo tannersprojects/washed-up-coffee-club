@@ -4,7 +4,7 @@ import type {
 	ChallengeParticipantWithRelations,
 	ChallengeWithParticipation
 } from '$lib/types/dashboard.js';
-import { DASHBOARD_TAB, type DashboardTab } from '$lib/types/dashboard.js';
+import { DASHBOARD_TAB, type DashboardTab } from '$lib/constants';
 
 export class DashboardUI {
 	challenges: ChallengeUI[];

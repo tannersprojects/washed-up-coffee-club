@@ -29,9 +29,3 @@ export const COUNTDOWN_LABEL = {
 	TIME_UNTIL: 'Time Until',
 	TIME_REMAINING: 'Time Remaining'
 } as const;
-
-export type ChallengeTimeState = {
-	status: ChallengeStatus;
-	targetDate: Date;
-	label: string;
-};

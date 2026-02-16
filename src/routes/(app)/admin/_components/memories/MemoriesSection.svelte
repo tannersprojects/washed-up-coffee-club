@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getAdminContext } from '../_logic/context.js';
+	import { getAdminContext } from '../../_logic/context.js';
 	import MemoriesList from './MemoriesList.svelte';
 	import MemoryForm from './MemoryForm.svelte';
 

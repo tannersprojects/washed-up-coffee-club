@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { CHALLENGE_STATUS } from '$lib/constants/challenge-constants.js';
-	import { formatDateRange } from '$lib/utils/datetime-utils.js';
+	import { CHALLENGE_STATUS } from '$lib/constants';
+	import { formatDateRange } from '$lib/utils/datetime.js';
 	import type { ChallengeUI } from '../_logic/ChallengeUI.svelte.js';
 	import type { Profile } from '$lib/db/schema.js';
 
@@ -28,7 +28,6 @@
 				return 'bg-(--grey-olive)';
 		}
 	}
-
 </script>
 
 {#each challenges as challenge (challenge.id)}
@@ -58,9 +57,7 @@
 			<!-- Meta info -->
 			<div class="mt-0.5 flex items-center gap-2 text-xs text-(--grey-olive)">
 				<span>{formatDateRange(challenge.startDate, challenge.endDate)}</span>
-				{#if (challenge.challengeTimeState.status === CHALLENGE_STATUS.ACTIVE ||
-					challenge.challengeTimeState.status === CHALLENGE_STATUS.UPCOMING) &&
-					challenge.timeLeft}
+				{#if (challenge.challengeTimeState.status === CHALLENGE_STATUS.ACTIVE || challenge.challengeTimeState.status === CHALLENGE_STATUS.UPCOMING) && challenge.timeLeft}
 					<span class="text-(--accent-lime)">• {challenge.timeLeft}</span>
 				{/if}
 			</div>

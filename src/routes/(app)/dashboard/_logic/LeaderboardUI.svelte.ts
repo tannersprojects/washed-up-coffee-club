@@ -4,7 +4,7 @@ import type {
 	ChallengeParticipantWithRelations,
 	ChallengeStats
 } from '$lib/types/dashboard.js';
-import { calculateTotalDistanceKm } from '$lib/utils/challenge-utils.js';
+import { calculateTotalDistanceKm } from '$lib/utils/challenge.js';
 
 /**
  * LeaderboardUI class - Manages leaderboard data and statistics calculations

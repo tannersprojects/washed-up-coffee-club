@@ -3,7 +3,7 @@
 	import LeaderboardTabs from './LeaderboardTabs.svelte';
 	import LeaderboardTable from './LeaderboardTable.svelte';
 	import ChallengeDetails from './ChallengeDetails.svelte';
-	import { LEADERBOARD_TAB } from '$lib/types/dashboard.js';
+	import { LEADERBOARD_TAB } from '$lib/constants';
 
 	const dashboard = getDashboardContext();
 	const challenge = $derived(dashboard.selectedChallenge);

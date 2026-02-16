@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { RoutineScheduleAdmin } from '../_logic/RoutineScheduleAdmin.svelte.js';
+	import type { RoutineScheduleAdmin } from '../../_logic/RoutineScheduleAdmin.svelte.js';
 	import ScheduleCard from './ScheduleCard.svelte';
 
 	type Props = {

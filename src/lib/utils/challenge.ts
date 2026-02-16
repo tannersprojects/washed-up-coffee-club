@@ -1,20 +1,14 @@
 import type { ChallengeParticipantWithRelations } from '$lib/types/dashboard.js';
+import type { ChallengeTimeState } from '$lib/types/challenge.js';
 import {
 	CHALLENGE_STATUS,
 	CHALLENGE_JOIN_DISPLAY_STATE,
 	COUNTDOWN_LABEL,
-	type ChallengeTimeState
+	type ChallengeJoinDisplayState
 } from '$lib/constants';
 import type { Challenge } from '$lib/db/schema';
 import type { ChallengeUI } from '../../routes/(app)/dashboard/_logic/ChallengeUI.svelte';
-import type { ChallengeJoinDisplayState } from '$lib/constants';
 
-/**
- * Calculates the total distance in kilometers for all completed participants
- * @param leaderboard - Array of leaderboard rows
- * @param goalValueMeters - The challenge goal value in meters (or null if not set)
- * @returns Formatted string with total distance in KM (1 decimal place)
- */
 export function calculateTotalDistanceKm(
 	challengeParticipantsWithRelations: ChallengeParticipantWithRelations[],
 	goalValueMeters: number | null
@@ -35,10 +29,6 @@ export function calculateTotalDistanceKm(
 	return totalKm.toFixed(1);
 }
 
-/**
- * Derives challenge time state from dates (status, targetDate, label).
- * Use this instead of challenge.status for UI logic.
- */
 export function getChallengeTimeStateFromDates(
 	startDate: Date | string,
 	endDate: Date | string
@@ -68,11 +58,6 @@ export function getChallengeTimeStateFromDates(
 	};
 }
 
-/**
- * Validates if a challenge can be joined
- * @param challenge - The challenge to validate
- * @returns true if challenge is joinable, false otherwise
- */
 export function isChallengeJoinable(challenge: ChallengeUI | Challenge | null): boolean {
 	if (!challenge || !challenge.isActive) {
 		return false;
@@ -87,11 +72,6 @@ export function isChallengeJoinable(challenge: ChallengeUI | Challenge | null): 
 	return true;
 }
 
-/**
- * Gets the display state for a challenge join button
- * @param challenge - The challenge to check
- * @returns One of five display states: joinable, participating, ended, upcoming, not_active
- */
 export function getChallengeJoinDisplayState(challenge: ChallengeUI): ChallengeJoinDisplayState {
 	if (challenge.isParticipating) {
 		return CHALLENGE_JOIN_DISPLAY_STATE.PARTICIPATING;

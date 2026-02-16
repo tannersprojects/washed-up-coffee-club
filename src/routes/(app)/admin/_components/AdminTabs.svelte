@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Tabs from '$lib/components/Tabs.svelte';
-	import { ADMIN_TAB, ADMIN_TAB_LABEL, type AdminTab } from '$lib/types/admin.js';
+	import { ADMIN_TAB, ADMIN_TAB_LABEL, type AdminTab } from '$lib/constants';
 	import { getAdminContext } from '../_logic/context.js';
 
 	const admin = getAdminContext();

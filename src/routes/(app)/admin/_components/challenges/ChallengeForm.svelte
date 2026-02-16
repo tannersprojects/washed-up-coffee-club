@@ -7,9 +7,9 @@
 		type ChallengeType,
 		type ChallengeStatus
 	} from '$lib/constants';
-	import { getAdminContext } from '../_logic/context.js';
-	import { ChallengeAdmin } from '../_logic/ChallengeAdmin.svelte.js';
-	import { parseEasternToUtc } from '$lib/utils/datetime-utils.js';
+	import { getAdminContext } from '../../_logic/context.js';
+	import { ChallengeAdmin } from '../../_logic/ChallengeAdmin.svelte.js';
+	import { parseEasternToUtc } from '$lib/utils/datetime.js';
 
 	let admin = getAdminContext();
 	let title = $state('');
@@ -64,11 +64,9 @@
 		const id = crypto.randomUUID();
 		formData.set('id', id);
 
-		const start = startDate
-			? parseEasternToUtc(startDate) ?? new Date()
-			: new Date();
+		const start = startDate ? (parseEasternToUtc(startDate) ?? new Date()) : new Date();
 		const end = endDate
-			? parseEasternToUtc(endDate) ?? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+			? (parseEasternToUtc(endDate) ?? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000))
 			: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 		const gv = goalValue ? parseInt(goalValue, 10) : null;
 		const segId = segmentId ? parseInt(segmentId, 10) : null;

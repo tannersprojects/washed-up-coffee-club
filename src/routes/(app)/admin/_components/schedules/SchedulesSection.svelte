@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getAdminContext } from '../_logic/context.js';
+	import { getAdminContext } from '../../_logic/context.js';
 	import SchedulesList from './SchedulesList.svelte';
 	import ScheduleForm from './ScheduleForm.svelte';
 

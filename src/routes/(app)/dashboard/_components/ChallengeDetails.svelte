@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { formatDate } from '$lib/utils/datetime-utils.js';
+	import { formatDate } from '$lib/utils/datetime.js';
 	import { getDashboardContext } from '../_logic/context.js';
 
 	let dashboard = getDashboardContext();

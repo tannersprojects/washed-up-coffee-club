@@ -1,22 +1,19 @@
-import { formatTimeRemaining } from '$lib/utils/timer-utils.js';
-import {
-	LEADERBOARD_TAB,
-	type ChallengeParticipantWithRelations,
-	type ChallengeWithParticipation,
-	type LeaderboardTab
+import { formatTimeRemaining } from '$lib/utils/timer.js';
+import type {
+	ChallengeParticipantWithRelations,
+	ChallengeWithParticipation
 } from '$lib/types/dashboard.js';
 import type { ChallengeParticipant } from '$lib/db/schema.js';
 import { LeaderboardUI } from './LeaderboardUI.svelte';
+import { getChallengeJoinDisplayState, getChallengeTimeStateFromDates } from '$lib/utils/challenge';
 import {
-	getChallengeJoinDisplayState,
-	getChallengeTimeStateFromDates
-} from '$lib/utils/challenge-utils';
-import type {
-	ChallengeType,
-	ChallengeStatus,
-	ChallengeJoinDisplayState,
-	ChallengeTimeState
+	LEADERBOARD_TAB,
+	type ChallengeType,
+	type ChallengeStatus,
+	type ChallengeJoinDisplayState,
+	type LeaderboardTab
 } from '$lib/constants';
+import type { ChallengeTimeState } from '$lib/types/challenge.js';
 
 export class ChallengeUI {
 	// Challenge fields from database

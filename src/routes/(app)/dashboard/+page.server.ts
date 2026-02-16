@@ -1,5 +1,5 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { isChallengeJoinable } from '$lib/utils/challenge-utils.js';
+import { isChallengeJoinable } from '$lib/utils/challenge.js';
 import {
 	checkUserParticipation,
 	joinChallenge,

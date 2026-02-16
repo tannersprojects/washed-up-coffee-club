@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Tabs from '$lib/components/Tabs.svelte';
-	import { DASHBOARD_TAB, DASHBOARD_TAB_LABEL, type DashboardTab } from '$lib/types/dashboard.js';
+	import { DASHBOARD_TAB, DASHBOARD_TAB_LABEL, type DashboardTab } from '$lib/constants';
 	import { getDashboardContext } from '../_logic/context.js';
 
 	const dashboard = getDashboardContext();

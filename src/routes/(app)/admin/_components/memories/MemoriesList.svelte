@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { MemoryAdmin } from '../_logic/MemoryAdmin.svelte.js';
+	import type { MemoryAdmin } from '../../_logic/MemoryAdmin.svelte.js';
 	import MemoryCard from './MemoryCard.svelte';
 
 	type Props = {

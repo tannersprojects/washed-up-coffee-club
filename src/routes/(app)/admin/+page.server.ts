@@ -1,7 +1,7 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { eq, desc } from 'drizzle-orm';
 import { PROFILE_ROLE, CHALLENGE_TYPE, CHALLENGE_STATUS } from '$lib/constants';
-import { parseEasternToUtc } from '$lib/utils/datetime-utils.js';
+import { parseEasternToUtc } from '$lib/utils/datetime.js';
 import { db } from '$lib/db';
 import { memoriesTable, routineSchedulesTable, challengesTable } from '$lib/db/schema';
 import { PUBLIC_SUPABASE_URL } from '$env/static/public';
