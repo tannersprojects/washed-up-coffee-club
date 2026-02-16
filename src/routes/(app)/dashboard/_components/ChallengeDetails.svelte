@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { formatDate } from '$lib/utils/date-utils.js';
+	import { formatDate } from '$lib/utils/datetime-utils.js';
 	import { getDashboardContext } from '../_logic/context.js';
 
 	let dashboard = getDashboardContext();
@@ -47,7 +47,7 @@
 
 		<div>
 			<h3 class="mb-2 font-mono text-xs tracking-widest text-gray-500 uppercase">Status</h3>
-			<p class="font-mono text-sm text-white uppercase">{challenge?.status}</p>
+			<p class="font-mono text-sm text-white uppercase">{challenge?.challengeTimeState.status}</p>
 		</div>
 	</div>
 </div>

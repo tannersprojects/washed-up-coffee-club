@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { CHALLENGE_STATUS } from '$lib/constants/challenge-constants.js';
+	import { formatDateRange } from '$lib/utils/datetime-utils.js';
 	import type { ChallengeUI } from '../_logic/ChallengeUI.svelte.js';
 	import type { Profile } from '$lib/db/schema.js';
 
@@ -28,20 +29,6 @@
 		}
 	}
 
-	function formatDateRange(startDate: Date, endDate: Date): string {
-		const start = new Date(startDate);
-		const end = new Date(endDate);
-		const now = new Date();
-
-		// If challenge is active and ending soon, show time left
-		if (start <= now && end > now) {
-			return 'Active';
-		}
-
-		// Format as month/day
-		const formatter = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' });
-		return `${formatter.format(start)} - ${formatter.format(end)}`;
-	}
 </script>
 
 {#each challenges as challenge (challenge.id)}
@@ -58,7 +45,7 @@
 
 		<!-- Status dot -->
 		<div class="mt-1.5 shrink-0">
-			<div class="h-2 w-2 rounded-full {getStatusColor(challenge.status)}"></div>
+			<div class="h-2 w-2 rounded-full {getStatusColor(challenge.challengeTimeState.status)}"></div>
 		</div>
 
 		<!-- Content -->
@@ -71,7 +58,9 @@
 			<!-- Meta info -->
 			<div class="mt-0.5 flex items-center gap-2 text-xs text-(--grey-olive)">
 				<span>{formatDateRange(challenge.startDate, challenge.endDate)}</span>
-				{#if challenge.status === CHALLENGE_STATUS.ACTIVE && challenge.timeLeft}
+				{#if (challenge.challengeTimeState.status === CHALLENGE_STATUS.ACTIVE ||
+					challenge.challengeTimeState.status === CHALLENGE_STATUS.UPCOMING) &&
+					challenge.timeLeft}
 					<span class="text-(--accent-lime)">• {challenge.timeLeft}</span>
 				{/if}
 			</div>

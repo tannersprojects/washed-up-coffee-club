@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import type { ChallengeParticipantWithRelations } from '$lib/types/dashboard.js';
-	import { formatDate } from '$lib/utils/date-utils.js';
+	import { formatDate } from '$lib/utils/datetime-utils.js';
 	import { CHALLENGE_JOIN_DISPLAY_STATE, CHALLENGE_STATUS } from '$lib/constants';
 	import { getDashboardContext } from '../_logic/context.js';
 
@@ -47,7 +47,7 @@
 					></div>
 				</button>
 			</form>
-			{#if challenge.status === CHALLENGE_STATUS.UPCOMING}
+			{#if challenge.challengeTimeState.status === CHALLENGE_STATUS.UPCOMING}
 				<span class="text-center font-mono text-[10px] tracking-widest text-amber-400/80 uppercase">
 					Starts {formatDate(challenge.startDate)}
 				</span>

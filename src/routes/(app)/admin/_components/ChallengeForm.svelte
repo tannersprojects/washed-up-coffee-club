@@ -9,6 +9,7 @@
 	} from '$lib/constants';
 	import { getAdminContext } from '../_logic/context.js';
 	import { ChallengeAdmin } from '../_logic/ChallengeAdmin.svelte.js';
+	import { parseEasternToUtc } from '$lib/utils/datetime-utils.js';
 
 	let admin = getAdminContext();
 	let title = $state('');
@@ -63,8 +64,12 @@
 		const id = crypto.randomUUID();
 		formData.set('id', id);
 
-		const start = startDate ? new Date(startDate) : new Date();
-		const end = endDate ? new Date(endDate) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+		const start = startDate
+			? parseEasternToUtc(startDate) ?? new Date()
+			: new Date();
+		const end = endDate
+			? parseEasternToUtc(endDate) ?? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+			: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 		const gv = goalValue ? parseInt(goalValue, 10) : null;
 		const segId = segmentId ? parseInt(segmentId, 10) : null;
 
@@ -168,6 +173,7 @@
 		</div>
 	{/if}
 	<div class="grid grid-cols-2 gap-3">
+		<p class="col-span-2 font-mono text-[10px] text-white/50">Dates in Eastern Time (EST/EDT)</p>
 		<div class="flex flex-col gap-1">
 			<label for="challenge-start" class="font-mono text-xs text-white/80">Start Date</label>
 			<input

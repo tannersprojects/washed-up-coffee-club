@@ -24,3 +24,14 @@ export const CHALLENGE_JOIN_DISPLAY_STATE = {
 
 export type ChallengeJoinDisplayState =
 	(typeof CHALLENGE_JOIN_DISPLAY_STATE)[keyof typeof CHALLENGE_JOIN_DISPLAY_STATE];
+
+export const COUNTDOWN_LABEL = {
+	TIME_UNTIL: 'Time Until',
+	TIME_REMAINING: 'Time Remaining'
+} as const;
+
+export type ChallengeTimeState = {
+	status: ChallengeStatus;
+	targetDate: Date;
+	label: string;
+};

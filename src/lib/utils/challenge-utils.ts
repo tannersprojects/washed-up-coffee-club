@@ -1,5 +1,10 @@
 import type { ChallengeParticipantWithRelations } from '$lib/types/dashboard.js';
-import { CHALLENGE_STATUS, CHALLENGE_JOIN_DISPLAY_STATE } from '$lib/constants';
+import {
+	CHALLENGE_STATUS,
+	CHALLENGE_JOIN_DISPLAY_STATE,
+	COUNTDOWN_LABEL,
+	type ChallengeTimeState
+} from '$lib/constants';
 import type { Challenge } from '$lib/db/schema';
 import type { ChallengeUI } from '../../routes/(app)/dashboard/_logic/ChallengeUI.svelte';
 import type { ChallengeJoinDisplayState } from '$lib/constants';
@@ -31,6 +36,39 @@ export function calculateTotalDistanceKm(
 }
 
 /**
+ * Derives challenge time state from dates (status, targetDate, label).
+ * Use this instead of challenge.status for UI logic.
+ */
+export function getChallengeTimeStateFromDates(
+	startDate: Date | string,
+	endDate: Date | string
+): ChallengeTimeState {
+	const now = new Date();
+	const start = new Date(startDate);
+	const end = new Date(endDate);
+
+	if (now < start) {
+		return {
+			status: CHALLENGE_STATUS.UPCOMING,
+			targetDate: start,
+			label: COUNTDOWN_LABEL.TIME_UNTIL
+		};
+	}
+	if (now < end) {
+		return {
+			status: CHALLENGE_STATUS.ACTIVE,
+			targetDate: end,
+			label: COUNTDOWN_LABEL.TIME_REMAINING
+		};
+	}
+	return {
+		status: CHALLENGE_STATUS.COMPLETED,
+		targetDate: end,
+		label: COUNTDOWN_LABEL.TIME_REMAINING
+	};
+}
+
+/**
  * Validates if a challenge can be joined
  * @param challenge - The challenge to validate
  * @returns true if challenge is joinable, false otherwise
@@ -40,8 +78,9 @@ export function isChallengeJoinable(challenge: ChallengeUI | Challenge | null): 
 		return false;
 	}
 
-	// Check challenge is no completed
-	if (challenge.status === CHALLENGE_STATUS.COMPLETED) {
+	const now = new Date();
+	const endDate = new Date(challenge.endDate);
+	if (now >= endDate) {
 		return false;
 	}
 
@@ -58,17 +97,14 @@ export function getChallengeJoinDisplayState(challenge: ChallengeUI): ChallengeJ
 		return CHALLENGE_JOIN_DISPLAY_STATE.PARTICIPATING;
 	}
 
-	const now = new Date();
-	const endDate = new Date(challenge.endDate);
+	const timeState = getChallengeTimeStateFromDates(challenge.startDate, challenge.endDate);
 
-	if (now >= endDate) {
+	if (timeState.status === CHALLENGE_STATUS.COMPLETED) {
 		return CHALLENGE_JOIN_DISPLAY_STATE.ENDED;
 	}
-
-	// Use status only (not isActive) - ACTIVE or UPCOMING are joinable
 	if (
-		challenge.status === CHALLENGE_STATUS.ACTIVE ||
-		challenge.status === CHALLENGE_STATUS.UPCOMING
+		timeState.status === CHALLENGE_STATUS.ACTIVE ||
+		timeState.status === CHALLENGE_STATUS.UPCOMING
 	) {
 		return CHALLENGE_JOIN_DISPLAY_STATE.JOINABLE;
 	}

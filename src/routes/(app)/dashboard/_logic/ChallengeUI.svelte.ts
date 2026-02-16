@@ -7,8 +7,16 @@ import {
 } from '$lib/types/dashboard.js';
 import type { ChallengeParticipant } from '$lib/db/schema.js';
 import { LeaderboardUI } from './LeaderboardUI.svelte';
-import { getChallengeJoinDisplayState } from '$lib/utils/challenge-utils';
-import type { ChallengeType, ChallengeStatus, ChallengeJoinDisplayState } from '$lib/constants';
+import {
+	getChallengeJoinDisplayState,
+	getChallengeTimeStateFromDates
+} from '$lib/utils/challenge-utils';
+import type {
+	ChallengeType,
+	ChallengeStatus,
+	ChallengeJoinDisplayState,
+	ChallengeTimeState
+} from '$lib/constants';
 
 export class ChallengeUI {
 	// Challenge fields from database
@@ -31,6 +39,7 @@ export class ChallengeUI {
 	// Reactive state
 	leaderboard: LeaderboardUI;
 	activeTab: LeaderboardTab;
+	challengeTimeState: ChallengeTimeState;
 	joinDisplayState: ChallengeJoinDisplayState;
 	isSubmitting: boolean;
 	timeLeft: string;
@@ -55,12 +64,17 @@ export class ChallengeUI {
 		this.isParticipating = $state(challengeWithParticipation.isParticipating);
 		this.participant = $state(challengeWithParticipation.participant);
 
-		this.timeLeft = $state(formatTimeRemaining(this.endDate));
+		const initialState = getChallengeTimeStateFromDates(this.startDate, this.endDate);
+		this.timeLeft = $state(formatTimeRemaining(initialState.targetDate));
 		this.countdownInterval = null;
 		this.leaderboard = new LeaderboardUI(challengeParticipantsWithRelations, this.goalValue);
 		this.activeTab = $state(LEADERBOARD_TAB.Leaderboard);
-		this.joinDisplayState = $derived.by(() => {
+		this.challengeTimeState = $derived.by(() => {
 			void this.timeLeft; // dependency: re-run when countdown ticks
+			return getChallengeTimeStateFromDates(this.startDate, this.endDate);
+		});
+		this.joinDisplayState = $derived.by(() => {
+			void this.timeLeft;
 			return getChallengeJoinDisplayState(this);
 		});
 		this.isSubmitting = $state(false);
@@ -70,12 +84,13 @@ export class ChallengeUI {
 		// Don't start if already running
 		if (this.countdownInterval) return;
 
-		// Update immediately
-		this.timeLeft = formatTimeRemaining(this.endDate);
+		// Update immediately using current target date
+		this.timeLeft = formatTimeRemaining(this.challengeTimeState.targetDate);
 
 		// Update every second
 		this.countdownInterval = setInterval(() => {
-			const formatted = formatTimeRemaining(this.endDate);
+			const targetDate = this.challengeTimeState.targetDate;
+			const formatted = formatTimeRemaining(targetDate);
 			this.timeLeft = formatted;
 
 			// Stop when time expires

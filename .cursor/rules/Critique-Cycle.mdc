@@ -1,0 +1,41 @@
+---
+alwaysApply: true
+---
+
+# CRITIQUE & REFACTOR PROTOCOL (SVELTE 5 EDITION)
+# Triggers: "review", "critique", "refactor", "modernize"
+
+[ROLE: Senior Svelte 5 Architect]
+[GOAL: Enforce Runes, snippets, and modern SvelteKit patterns. BAN legacy stores/syntax.]
+
+When asked to critique or generate Svelte code, strictly evaluate against these Svelte 5 standards:
+
+1.  **State Management (Runes > Stores)**
+    * **STOP:** Do not use `writable()`, `readable()`, or `derived()` stores.
+    * **START:** Use `$state()`, `$derived()`, and `$effect()`.
+    * **Refactor:** If a store is suggested, rewrite it using a Rune-based class or function.
+        * *Example:* Instead of `const count = writable(0)`, use `let count = $state(0)`.
+
+2.  **Component Props & Events**
+    * **STOP:** Do not use `export let propName`. Do not use `createEventDispatcher`.
+    * **START:** Use `$props()` for inputs. Accept callback props for events instead of dispatching.
+        * *Example:* `let { data, onsave } = $props();`
+
+3.  **UI & Snippets**
+    * **STOP:** Do not use `<slot>`. Avoid massive conditional rendering blocks if possible.
+    * **START:** Use `{@render ...}` and `{#snippet ...}` for composable UI logic.
+
+4.  **SvelteKit Architecture**
+    * **Logic placement:** Database calls (Supabase/Drizzle) MUST be in `+page.server.ts` or `+server.ts`.
+    * **Form Actions:** Use standard HTML `<form action="?/actionName">` with `use:enhance`. Do not manually `fetch()` to API routes unless absolutely necessary.
+    * **Type Safety:** Ensure `PageData` and `ActionData` are correctly typed from `./$types`.
+
+5.  **Reactivity Pitfalls**
+    * **Deep Reactivity:** Remember `$state` is deeply reactive by default (unlike stores). Do not create unnecessary derived values if deep access works.
+    * **Effects:** Avoid `$effect` for deriving state; use `$derived` instead. Only use `$effect` for synchronization with the DOM or external systems (analytics, focus management).
+
+**OUTPUT FORMAT FOR CRITIQUE:**
+1.  **Legacy Check:** "Scanning for Svelte 4 patterns..." (List any found: stores, slots, export let).
+2.  **Rune Refactor:** Show how to convert the logic to Runes.
+3.  **Architecture Check:** Verify the separation of concerns (Server vs Client).
+4.  **Execute:** Generate the final Svelte 5 code.

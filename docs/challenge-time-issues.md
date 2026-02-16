@@ -7,13 +7,7 @@
 
 ## Executive Summary
 
-The challenge system has several time-related issues stemming from:
-
-1. **UI conflating multiple non-joinable states** — "Challenge Ended" is shown for all non-joinable challenges, including upcoming ones.
-2. **Time Remaining calculation truncates days** — The timer only displays HH:MM:SS, discarding days, leading to confusing or incorrect counts for multi-day challenges.
-3. **No explicit timezone handling** — Admin inputs and database storage lack clear EST semantics, causing ambiguity when users enter "local" times.
-4. **Status badge not derived from dates** — The hero shows "ACTIVE CHALLENGE" for all challenges regardless of actual date state.
-5. **datetime-local input interpretation** — Browser sends local time without timezone; server interprets it as UTC or server-local.
+The challenge system had several time-related issues. **Most are now fixed** (Problems 1–9, 11). **Remaining:** Problem 10 (generic join error message). See Summary table for status.
 
 ---
 
@@ -28,7 +22,7 @@ As of Feb 12, 2026: "Test Challenge" has not started (starts Feb 21 UTC / Feb 20
 
 ---
 
-## Problem 1: "Challenge Ended" Shown for Upcoming Challenges
+## Problem 1: "Challenge Ended" Shown for Upcoming Challenges — **Fixed**
 
 **Location:** `src/routes/(app)/dashboard/_components/JoinChallengeButton.svelte` (lines 59–65)
 
@@ -47,15 +41,11 @@ As of Feb 12, 2026: "Test Challenge" has not started (starts Feb 21 UTC / Feb 20
 
 So any non-joinable challenge falls into the "Challenge Ended" branch, including **upcoming** challenges that have not started yet.
 
-**Fix:** Add distinct states and labels:
-
-- **Ended:** `now >= endDate` → "Challenge Ended"
-- **Upcoming:** `now < startDate` → "Starts [date]" or "Starts in X days"
-- **Not active:** `status !== ACTIVE` and not ended → "Not Active" or status-based label
+**Fix (implemented):** `getChallengeJoinDisplayState()` returns JOINABLE, PARTICIPATING, ENDED, NOT_ACTIVE. Upcoming shows "Starts [date]". JoinChallengeButton branches on `joinDisplayState`.
 
 ---
 
-## Problem 2: Time Remaining Truncates Days (HH:MM:SS Only)
+## Problem 2: Time Remaining Truncates Days (HH:MM:SS Only) — **Fixed** (HH:MM:SS Only)
 
 **Location:** `src/lib/utils/timer-utils.ts` (lines 13–16)
 
@@ -70,28 +60,21 @@ const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
 
 So the timer behaves correctly only when remaining time is under 24 hours.
 
-**Fix:** Support a richer format such as:
-
-- `DDd HH:MM:SS` for multi-day challenges
-- Or `HH:MM:SS` only when under 24 hours
-- Or a separate "days remaining" display above the timer
+**Fix (implemented):** `timer-utils.ts` returns `DDd HH:MM:SS` when days > 0, else `HH:MM:SS`.
 
 ---
 
-## Problem 3: Time Remaining Shows End Date for Upcoming Challenges
+## Problem 3: Time Remaining Shows End Date for Upcoming Challenges — **Fixed**
 
 **Location:** `ChallengeUI.svelte.ts` (line 56), `timer-utils.ts`
 
 The timer always formats time until `endDate`. For an upcoming challenge, the meaningful metric is usually **time until start**, not time until end. Showing "time until end" when the challenge has not started can be misleading.
 
-**Recommendation:** Add logic such as:
-
-- If `now < startDate`: show "Starts in X" (based on `startDate`)
-- If `startDate <= now < endDate`: show "Time remaining: X" (based on `endDate`)
+**Fix (implemented):** `challengeTimeState` derives `targetDate` (start when UPCOMING, end when ACTIVE) and `label` ("Time Until" vs "Time Remaining"). CountdownTimer uses both.
 
 ---
 
-## Problem 4: No Explicit Timezone Handling (EST)
+## Problem 4: No Explicit Timezone Handling (EST) — **Fixed**
 
 **Locations:**
 
@@ -107,15 +90,11 @@ The timer always formats time until `endDate`. For an upcoming challenge, the me
 
 If admins are told "input in EST" but the server interprets values in its own timezone (e.g. UTC), you get incorrect stored times.
 
-**Fix:** Make timezone explicit:
-
-- Add clear UI text: e.g. "Dates in Eastern Time (EST/EDT)"
-- Normalize on the server: e.g. use `America/New_York` and a library like `date-fns-tz` or `luxon` to parse and convert to UTC before DB insert
-- Or accept EST date strings and append `Z` or `-05:00` / `-04:00` as appropriate before parsing
+**Fix (implemented):** `src/lib/utils/datetime-utils.ts` uses Luxon with `America/New_York`. Admin forms show "Dates in Eastern Time (EST/EDT)". Server uses `parseEasternToUtc()` for create/update.
 
 ---
 
-## Problem 5: ChallengeHero Always Shows "ACTIVE CHALLENGE"
+## Problem 5: ChallengeHero Always Shows "ACTIVE CHALLENGE" — **Fixed**
 
 **Location:** `src/routes/(app)/dashboard/_components/ChallengeHero.svelte` (lines 29–33)
 
@@ -125,11 +104,11 @@ The badge is hardcoded as "Active Challenge" for all challenges. There is no log
 - `completed` or ended → e.g. "Challenge Ended" or "Completed"
 - `status !== active` but within date range → status-based label
 
-**Fix:** Derive badge text from `challenge.status` and date checks (`now < startDate`, `now >= endDate`).
+**Fix (implemented):** Badge derived from `challengeTimeState.status`: "Upcoming Challenge", "Active Challenge", or "Challenge Ended".
 
 ---
 
-## Problem 6: Status vs. Dates Can Diverge
+## Problem 6: Status vs. Dates Can Diverge — **Fixed**
 
 **Location:** `challenge-utils.ts` — `isChallengeJoinable()`
 
@@ -138,18 +117,15 @@ The badge is hardcoded as "Active Challenge" for all challenges. There is no log
 - A challenge can be `status: 'active'` even if `endDate` is in the past.
 - Or `status: 'upcoming'` when dates say it should be active.
 
-Join logic already uses dates for `startDate` and `endDate`. Consider:
-
-- Using dates as the source of truth for joinability.
-- Optionally deriving a "computed status" from dates (e.g. ended when `now >= endDate`) for UI, even if you keep the DB status for manual overrides.
+**Fix (implemented):** `isChallengeJoinable()` uses `now >= endDate`. `getChallengeJoinDisplayState()` uses `getChallengeTimeStateFromDates()`. UI uses date-derived `challengeTimeState`.
 
 ---
 
-## Problem 7: Date Display Without Timezone
+## Problem 7: Date Display Without Timezone — **Fixed**
 
 **Locations:**
 
-- `formatDate()` in `date-utils.ts` — uses `toLocaleDateString('en-US', {...})` with no timezone.
+- `formatDate()` in `datetime-utils.ts` — formats in EST.
 - `formatDate(challenge.startDate)` in `ChallengeHero.svelte`, `ChallengeDetails.svelte`.
 
 `Date` objects from the DB are already UTC. `toLocaleDateString` uses the **browser’s local timezone**, so:
@@ -157,20 +133,11 @@ Join logic already uses dates for `startDate` and `endDate`. Consider:
 - An EST user and a PST user may see different dates for the same UTC timestamp.
 - "FEB 11, 2026" vs "FEB 12, 2026" can differ by timezone.
 
-**Recommendation:** If dates should be shown in EST, pass an explicit timezone:
-
-```ts
-new Date(date).toLocaleDateString('en-US', {
-  month: 'short',
-  day: 'numeric',
-  year: 'numeric',
-  timeZone: 'America/New_York'
-});
-```
+**Fix (implemented):** `formatDate()` in `datetime-utils.ts` uses Luxon to format in `America/New_York`.
 
 ---
 
-## Problem 8: formatDatetimeLocal Uses Local Methods
+## Problem 8: formatDatetimeLocal Uses Local Methods — **Fixed**
 
 **Location:** `admin/_components/ChallengeCard.svelte` (lines 37–40)
 
@@ -183,28 +150,22 @@ function formatDatetimeLocal(d: Date): string {
 
 `getFullYear()`, `getMonth()`, `getDate()`, `getHours()` use the **local timezone** of the environment where the code runs. In a server-rendered context, that may not match the admin’s timezone (e.g. EST).
 
-**Fix:** Format in the target zone (e.g. EST) using a timezone-aware formatter.
+**Fix (implemented):** `formatDatetimeForInput()` in `datetime-utils.ts` uses Luxon to format UTC dates in EST for `datetime-local` inputs.
 
 ---
 
-## Problem 9: Seed Uses CURRENT_DATE in Server Timezone
+## Problem 9: Seed Uses CURRENT_DATE in Server Timezone — **Fixed**
 
-**Location:** `supabase/seed.sql` (lines 40–42)
+**Location:** `supabase/seed.sql`
 
-```sql
-CURRENT_DATE::timestamp with time zone,    -- Today at 00:00:00+00
-(CURRENT_DATE + 1)::timestamp with time zone + TIME '23:59:59',
-```
+`CURRENT_DATE` in Postgres uses the **database server timezone**. If the DB is in UTC, you get midnight UTC, not midnight EST.
 
-`CURRENT_DATE` in Postgres uses the **database server timezone**. If the DB is in UTC, you get midnight UTC, not midnight EST. That can misalign with admin expectations when "local" means EST.
-
-**Fix:** If you want EST boundaries, use explicit conversion:
+**Fix (implemented):** Use explicit EST conversion so seed matches app timezone:
 
 ```sql
-(CURRENT_DATE AT TIME ZONE 'America/New_York')::timestamptz
+(CURRENT_DATE AT TIME ZONE 'America/New_York')                    -- Midnight EST today → UTC
+(CURRENT_DATE + 1) AT TIME ZONE 'America/New_York' + INTERVAL '23 hours 59 minutes 59 seconds'  -- 23:59:59 EST tomorrow → UTC
 ```
-
-or equivalent logic for start/end.
 
 ---
 
@@ -228,25 +189,54 @@ The user cannot tell which case applies.
 
 ---
 
+## Problem 11: Status Column Redundant with Dates — **Fixed (client-side)**
+
+**Location:** `challenges.status` (DB), `challenge.status` (client), layout sync in `+layout.server.ts`
+
+**Root cause:** Status is stored separately from `startDate`/`endDate` but can always be derived from them:
+
+- `now < startDate` → UPCOMING
+- `startDate <= now < endDate` → ACTIVE
+- `now >= endDate` → COMPLETED
+
+This creates sync drift (layout must update status on load) and two sources of truth.
+
+**Plan:**
+
+1. **Client-side:** Stop using `challenge.status` for UI logic. Introduce a derived value (e.g. `challengeTimeState` or `effectiveStatus`) computed from dates in `ChallengeUI`. Use it for countdown target/label, join display state, list styling, hero badge, etc. The derived value depends on `timeLeft` so it updates automatically when time crosses boundaries.
+2. **Future migration:** Remove the `status` column from the DB. Replace status-based queries with date-based conditions (`WHERE start_date <= now() AND end_date > now()`). Remove layout sync.
+3. **For now:** Keep the DB `status` column for backward compatibility. All client logic should use the derived value instead of `challenge.status`.
+
+**Fix (implemented):** Client uses `challengeTimeState` (derived from dates) for all UI. DB `status` column and layout sync retained for now; migration is future work.
+
+**Note:** If admin overrides (e.g. end early, pause) are needed later, reintroduce status as an optional override.
+
+---
+
 ## Summary of Recommended Fixes
 
-| Priority | Problem                                   | Recommended Action                                         |
-| -------- | ----------------------------------------- | ---------------------------------------------------------- |
-| **P0**   | "Challenge Ended" for upcoming challenges | Add separate UI states (ended / upcoming / not active)     |
-| **P0**   | Time remaining truncates days             | Support DDd HH:MM:SS or days + HH:MM:SS                    |
-| **P0**   | Wrong time for upcoming challenges        | Show "Starts in X" when `now < startDate`                  |
-| **P1**   | No EST handling on admin input            | Parse EST explicitly and convert to UTC before DB          |
-| **P1**   | Hero badge always "Active"                | Derive badge from status and dates                         |
-| **P2**   | Date display timezone                     | Use `timeZone: 'America/New_York'` for user-facing dates   |
-| **P2**   | `formatDatetimeLocal` in admin            | Use timezone-aware formatting for EST                      |
-| **P2**   | Generic join error message                | Return specific reasons (not started / ended / not active) |
-| **P3**   | Seed uses server timezone                 | Use explicit EST conversion if seed is meant to be EST     |
-| **P3**   | Status vs. dates divergence               | Consider a derived/computed status from dates for UI       |
+| Priority | Problem                                   | Status | Action                                                      |
+| -------- | ----------------------------------------- | ------ | ----------------------------------------------------------- |
+| **P0**   | "Challenge Ended" for upcoming challenges | Fixed  | `joinDisplayState`, "Starts [date]" for upcoming            |
+| **P0**   | Time remaining truncates days             | Fixed  | `DDd HH:MM:SS` in timer-utils                               |
+| **P0**   | Wrong time for upcoming challenges        | Fixed  | `challengeTimeState.targetDate` and `.label`                 |
+| **P1**   | No EST handling on admin input            | Fixed  | `datetime-utils.ts`, `parseEasternToUtc`                    |
+| **P1**   | Hero badge always "Active"                | Fixed  | Badge from `challengeTimeState.status`                       |
+| **P2**   | Date display timezone                     | Fixed  | `formatDate` in datetime-utils uses EST                     |
+| **P2**   | `formatDatetimeLocal` in admin            | Fixed  | `formatDatetimeForInput` in datetime-utils                   |
+| **P2**   | Generic join error message                | Open   | Return specific reasons (not started / ended / not active)  |
+| **P3**   | Seed uses server timezone                 | Fixed  | `AT TIME ZONE 'America/New_York'` in seed.sql                 |
+| **P3**   | Status vs. dates divergence               | Fixed  | Date-derived `challengeTimeState`, `isChallengeJoinable`   |
+| **P3**   | Status column redundant with dates        | Fixed  | Client derives from dates; DB migration future work          |
 
 ---
 
 ## Technical Notes
 
+### Future: Remove Status Column
+
+Status is derived from dates on the client. The DB `status` column is retained for now but should be removed in a future migration. All client logic should use the derived `challengeTimeState` (or equivalent) instead of `challenge.status`. See Problem 11.
+
 - **Schema:** `start_date` and `end_date` use `timestamp with time zone`; storage is correct.
-- **Parsing:** `new Date(isoString)` and `new Date("2026-02-20T20:12")` behave as described above; timezone handling depends on the string format and environment.
-- **`datetime-local`:** Always sends a local datetime string with no timezone. Explicit EST handling requires server-side logic.
+- **`datetime-utils.ts`:** Single source for EST handling. Uses Luxon with `APP_TIMEZONE = 'America/New_York'`. Exports: `parseEasternToUtc`, `formatDate`, `formatDatetimeForInput`, `formatDateRange`.
+- **Parsing:** Admin form values parsed via `parseEasternToUtc()`; datetime-local strings treated as Eastern and converted to UTC.

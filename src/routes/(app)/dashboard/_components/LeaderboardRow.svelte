@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { formatDate } from '$lib/utils/date-utils.js';
+	import { formatDate } from '$lib/utils/datetime-utils.js';
 	import { fly } from 'svelte/transition';
 	import type { LeaderboardRowData } from '$lib/types/dashboard.js';
 	import { getDashboardContext } from '../_logic/context.js';
