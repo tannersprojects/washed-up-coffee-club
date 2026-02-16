@@ -13,3 +13,19 @@ export const CHALLENGE_TYPE = {
 } as const;
 
 export type ChallengeType = (typeof CHALLENGE_TYPE)[keyof typeof CHALLENGE_TYPE];
+
+export const CHALLENGE_JOIN_DISPLAY_STATE = {
+	JOINABLE: 'joinable' as const,
+	PARTICIPATING: 'participating' as const,
+	ENDED: 'ended' as const,
+	UPCOMING: 'upcoming' as const,
+	NOT_ACTIVE: 'not_active' as const
+} as const;
+
+export type ChallengeJoinDisplayState =
+	(typeof CHALLENGE_JOIN_DISPLAY_STATE)[keyof typeof CHALLENGE_JOIN_DISPLAY_STATE];
+
+export const COUNTDOWN_LABEL = {
+	TIME_UNTIL: 'Time Until',
+	TIME_REMAINING: 'Time Remaining'
+} as const;

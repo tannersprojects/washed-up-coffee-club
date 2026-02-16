@@ -1,12 +1,19 @@
-import { formatTimeRemaining } from '$lib/utils/timer-utils.js';
+import { formatTimeRemaining } from '$lib/utils/timer.js';
 import type {
 	ChallengeParticipantWithRelations,
 	ChallengeWithParticipation
 } from '$lib/types/dashboard.js';
 import type { ChallengeParticipant } from '$lib/db/schema.js';
 import { LeaderboardUI } from './LeaderboardUI.svelte';
-import { isChallengeJoinable } from '$lib/utils/challenge-utils';
-import type { ChallengeType, ChallengeStatus } from '$lib/constants';
+import { getChallengeJoinDisplayState, getChallengeTimeStateFromDates } from '$lib/utils/challenge';
+import {
+	LEADERBOARD_TAB,
+	type ChallengeType,
+	type ChallengeStatus,
+	type ChallengeJoinDisplayState,
+	type LeaderboardTab
+} from '$lib/constants';
+import type { ChallengeTimeState } from '$lib/types/challenge.js';
 
 export class ChallengeUI {
 	// Challenge fields from database
@@ -28,8 +35,9 @@ export class ChallengeUI {
 
 	// Reactive state
 	leaderboard: LeaderboardUI;
-	activeTab: 'leaderboard' | 'details';
-	joinable: boolean;
+	activeTab: LeaderboardTab;
+	challengeTimeState: ChallengeTimeState;
+	joinDisplayState: ChallengeJoinDisplayState;
 	isSubmitting: boolean;
 	timeLeft: string;
 	private countdownInterval: ReturnType<typeof setInterval> | null;
@@ -53,11 +61,19 @@ export class ChallengeUI {
 		this.isParticipating = $state(challengeWithParticipation.isParticipating);
 		this.participant = $state(challengeWithParticipation.participant);
 
-		this.timeLeft = $state(formatTimeRemaining(this.endDate));
+		const initialState = getChallengeTimeStateFromDates(this.startDate, this.endDate);
+		this.timeLeft = $state(formatTimeRemaining(initialState.targetDate));
 		this.countdownInterval = null;
 		this.leaderboard = new LeaderboardUI(challengeParticipantsWithRelations, this.goalValue);
-		this.activeTab = $state('leaderboard');
-		this.joinable = $derived(isChallengeJoinable(this));
+		this.activeTab = $state(LEADERBOARD_TAB.Leaderboard);
+		this.challengeTimeState = $derived.by(() => {
+			void this.timeLeft; // dependency: re-run when countdown ticks
+			return getChallengeTimeStateFromDates(this.startDate, this.endDate);
+		});
+		this.joinDisplayState = $derived.by(() => {
+			void this.timeLeft;
+			return getChallengeJoinDisplayState(this);
+		});
 		this.isSubmitting = $state(false);
 	}
 
@@ -65,12 +81,13 @@ export class ChallengeUI {
 		// Don't start if already running
 		if (this.countdownInterval) return;
 
-		// Update immediately
-		this.timeLeft = formatTimeRemaining(this.endDate);
+		// Update immediately using current target date
+		this.timeLeft = formatTimeRemaining(this.challengeTimeState.targetDate);
 
 		// Update every second
 		this.countdownInterval = setInterval(() => {
-			const formatted = formatTimeRemaining(this.endDate);
+			const targetDate = this.challengeTimeState.targetDate;
+			const formatted = formatTimeRemaining(targetDate);
 			this.timeLeft = formatted;
 
 			// Stop when time expires
@@ -103,7 +120,7 @@ export class ChallengeUI {
 		this.isSubmitting = false;
 	}
 
-	setActiveTab(tab: 'leaderboard' | 'details') {
+	setActiveTab(tab: LeaderboardTab) {
 		this.activeTab = tab;
 	}
 
@@ -130,9 +147,7 @@ export class ChallengeUI {
 	getCurrentUserRank(profileId: string): number | null {
 		if (!this.isParticipating) return null;
 
-		const userRow = this.leaderboard.leaderboardRows.find(
-			(row) => row.profile.id === profileId
-		);
+		const userRow = this.leaderboard.leaderboardRows.find((row) => row.profile.id === profileId);
 
 		return userRow?.rank || null;
 	}

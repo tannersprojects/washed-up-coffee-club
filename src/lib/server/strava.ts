@@ -4,11 +4,6 @@ import type { StravaTokenResponse, StravaErrorResponse } from '$lib/types/strava
 const STRAVA_API_BASE = 'https://www.strava.com/api/v3';
 const STRAVA_OAUTH_BASE = 'https://www.strava.com/oauth';
 
-/**
- * Generates the Strava OAuth authorization URL
- * @param state - CSRF state token for security
- * @returns Complete authorization URL
- */
 export function generateAuthUrl(state: string): string {
 	const params = new URLSearchParams({
 		client_id: STRAVA_CLIENT_ID,
@@ -21,11 +16,6 @@ export function generateAuthUrl(state: string): string {
 	return `${STRAVA_OAUTH_BASE}/authorize?${params.toString()}`;
 }
 
-/**
- * Exchanges an authorization code for access and refresh tokens
- * @param code - Authorization code from Strava callback
- * @returns Token response with athlete data
- */
 export async function exchangeCodeForToken(code: string): Promise<StravaTokenResponse> {
 	const params = new URLSearchParams({
 		client_id: STRAVA_CLIENT_ID,
@@ -52,11 +42,6 @@ export async function exchangeCodeForToken(code: string): Promise<StravaTokenRes
 	return data;
 }
 
-/**
- * Refreshes an expired access token using the refresh token
- * @param refreshToken - Current refresh token
- * @returns New token response with updated tokens
- */
 export async function refreshAccessToken(refreshToken: string): Promise<StravaTokenResponse> {
 	const params = new URLSearchParams({
 		client_id: STRAVA_CLIENT_ID,

@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { toast } from 'svelte-sonner';
-	import type { MemoryAdmin } from '../_logic/MemoryAdmin.svelte.js';
-	import { getAdminContext } from '../_logic/context.js';
+	import type { MemoryAdmin } from '../../_logic/MemoryAdmin.svelte.js';
+	import { getAdminContext } from '../../_logic/context.js';
 
 	type Props = {
 		memory: MemoryAdmin;

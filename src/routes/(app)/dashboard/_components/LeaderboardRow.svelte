@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { formatDate } from '$lib/utils/date-utils.js';
+	import { formatDate } from '$lib/utils/datetime.js';
 	import { fly } from 'svelte/transition';
 	import type { LeaderboardRowData } from '$lib/types/dashboard.js';
 	import { getDashboardContext } from '../_logic/context.js';
@@ -52,7 +52,8 @@
 	<div class="flex items-center gap-3 md:contents">
 		<!-- Enhanced Rank Display -->
 		<div
-			class="flex items-center justify-center font-mono text-lg font-black [grid-area:rank] {row.rank === 1
+			class="flex items-center justify-center font-mono text-lg font-black [grid-area:rank] {row.rank ===
+			1
 				? 'text-(--accent-lime) drop-shadow-[0_0_10px_var(--accent-lime)]'
 				: 'text-gray-600'}"
 		>
@@ -60,7 +61,9 @@
 		</div>
 
 		<!-- Athlete Info -->
-		<div class="flex min-w-0 flex-1 items-center gap-4 [grid-area:athlete] md:border-l md:border-white/10 md:pl-4">
+		<div
+			class="flex min-w-0 flex-1 items-center gap-4 [grid-area:athlete] md:border-l md:border-white/10 md:pl-4"
+		>
 			<!-- Enhanced Avatar with Glow -->
 			<div
 				class="relative h-12 w-12 shrink-0 overflow-hidden rounded-full border-2 border-white/20 bg-gray-800 shadow-lg transition-all group-hover:border-(--accent-lime)/50 group-hover:shadow-[0_0_20px_rgba(0,255,0,0.3)]"
@@ -103,7 +106,9 @@
 	<!-- Row 2 (mobile): distance | time. On desktop: children flow into grid -->
 	<div class="flex items-center justify-between gap-4 md:contents">
 		<!-- Distance -->
-		<div class="flex flex-col items-end justify-center [grid-area:distance] md:border-l md:border-white/10 md:pl-4">
+		<div
+			class="flex flex-col items-end justify-center [grid-area:distance] md:border-l md:border-white/10 md:pl-4"
+		>
 			<span class="font-mono font-bold text-white">
 				{#if challenge?.goalValue}
 					{(challenge.goalValue / 1000).toFixed(1)}
@@ -122,19 +127,25 @@
 		</div>
 
 		<!-- Pace (Placeholder / Calc) - Desktop only -->
-		<div class="hidden flex-col items-end justify-center [grid-area:pace] md:flex md:border-l md:border-white/10 md:pl-4">
+		<div
+			class="hidden flex-col items-end justify-center [grid-area:pace] md:flex md:border-l md:border-white/10 md:pl-4"
+		>
 			<span class="font-mono text-sm text-gray-300">-- /km</span>
 		</div>
 
 		<!-- Time/Status -->
-		<div class="flex flex-col items-end justify-center text-right [grid-area:time] md:border-l md:border-white/10 md:pl-4">
+		<div
+			class="flex flex-col items-end justify-center text-right [grid-area:time] md:border-l md:border-white/10 md:pl-4"
+		>
 			{#if row.participant.status === 'completed'}
 				<span class="font-mono text-xl font-bold text-white">{row.participant.resultDisplay}</span>
 				<span class="font-mono text-[10px] tracking-wider text-(--accent-lime) uppercase"
 					>Official</span
 				>
 			{:else}
-				<span class="font-mono text-sm font-bold uppercase {getStatusColor(row.participant.status)}">
+				<span
+					class="font-mono text-sm font-bold uppercase {getStatusColor(row.participant.status)}"
+				>
 					{getMobileStatusLabel(row.participant.status, row.participant.resultDisplay)}
 				</span>
 				{#if row.participant.resultDisplay}
@@ -147,7 +158,9 @@
 	</div>
 
 	<!-- Activity Name (Desktop) - MUST link to Strava with "View on Strava" text -->
-	<div class="hidden flex-col justify-center [grid-area:activity] md:flex md:border-l md:border-white/10 md:pl-4">
+	<div
+		class="hidden flex-col justify-center [grid-area:activity] md:flex md:border-l md:border-white/10 md:pl-4"
+	>
 		{#if row.contribution?.stravaActivityId}
 			<span class="truncate font-mono text-xs text-white/80 uppercase">
 				{row.contribution.activityName || 'No Data'}

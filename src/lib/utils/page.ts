@@ -1,9 +1,4 @@
-export const PAGE_NAME = {
-	dashboard: 'dashboard',
-	admin: 'admin'
-} as const;
-
-export type PageName = (typeof PAGE_NAME)[keyof typeof PAGE_NAME];
+import { PAGE_NAME, type PageName } from '$lib/constants';
 
 export function getPageName(pathname: string): PageName {
 	if (pathname.startsWith('/admin')) return PAGE_NAME.admin;

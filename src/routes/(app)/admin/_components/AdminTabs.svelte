@@ -1,15 +1,14 @@
 <script lang="ts">
 	import Tabs from '$lib/components/Tabs.svelte';
-	import { AdminTabValue, AdminTabLabel } from '$lib/types/admin.js';
-	import type { AdminTab } from '../_logic/AdminUI.svelte.js';
+	import { ADMIN_TAB, ADMIN_TAB_LABEL, type AdminTab } from '$lib/constants';
 	import { getAdminContext } from '../_logic/context.js';
 
 	const admin = getAdminContext();
 
 	const tabs = [
-		{ value: AdminTabValue.Memories, label: AdminTabLabel.Memories },
-		{ value: AdminTabValue.Schedules, label: AdminTabLabel.Schedules },
-		{ value: AdminTabValue.Challenges, label: AdminTabLabel.Challenges }
+		{ value: ADMIN_TAB.Memories, label: ADMIN_TAB_LABEL.Memories },
+		{ value: ADMIN_TAB.Schedules, label: ADMIN_TAB_LABEL.Schedules },
+		{ value: ADMIN_TAB.Challenges, label: ADMIN_TAB_LABEL.Challenges }
 	];
 </script>
 

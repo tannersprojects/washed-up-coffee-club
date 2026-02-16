@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { formatDate } from '$lib/utils/date-utils.js';
+	import { formatDate } from '$lib/utils/datetime.js';
+	import { CHALLENGE_STATUS } from '$lib/constants';
 	import { getDashboardContext } from '../_logic/context.js';
 	import CountdownTimer from './CountdownTimer.svelte';
 	import ChallengeStatsGrid from './ChallengeStatsGrid.svelte';
@@ -8,6 +9,14 @@
 
 	const dashboard = getDashboardContext();
 	const challenge = $derived(dashboard.selectedChallenge);
+
+	const badgeLabel = $derived(
+		challenge?.challengeTimeState.status === CHALLENGE_STATUS.UPCOMING
+			? 'Upcoming Challenge'
+			: challenge?.challengeTimeState.status === CHALLENGE_STATUS.ACTIVE
+				? 'Active Challenge'
+				: 'Challenge Ended'
+	);
 </script>
 
 {#if challenge}
@@ -26,11 +35,11 @@
 				<!-- Top Row: Badges + Leave Button -->
 				<div class="mb-6 flex flex-wrap items-center justify-between gap-4 md:mb-8">
 					<div class="flex flex-wrap items-center gap-3">
-						<!-- Active Challenge badge -->
+						<!-- Challenge status badge -->
 						<span
 							class="inline-block rounded-full border border-(--accent-lime)/40 bg-(--accent-lime)/5 px-3 py-1 text-[10px] tracking-widest text-(--accent-lime) uppercase"
 						>
-							Active Challenge
+							{badgeLabel}
 						</span>
 						<span class="text-[10px] tracking-widest text-gray-500 uppercase">
 							{formatDate(challenge.startDate || new Date())}

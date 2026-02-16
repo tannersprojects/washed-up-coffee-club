@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import AppNav from '$lib/components/AppNav.svelte';
-	import { getPageName, type PageName } from '$lib/types/pages.js';
+	import { getPageName } from '$lib/utils/page.js';
+import type { PageName } from '$lib/constants';
 
 	let { data, children } = $props();
 

@@ -1,7 +1,3 @@
-/**
- * Error messages for authentication failures
- * Maps error codes from OAuth callback to user-friendly messages
- */
 export const AUTH_ERROR_MESSAGES: Record<string, string> = {
 	oauth_denied: 'Authorization was denied. Please try again.',
 	invalid_state: 'Security validation failed. Please try again.',

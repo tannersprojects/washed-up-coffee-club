@@ -4,27 +4,7 @@ import type {
 	ChallengeParticipantWithRelations,
 	ChallengeStats
 } from '$lib/types/dashboard.js';
-import { calculateTotalDistanceKm } from '$lib/utils/challenge-utils.js';
-
-class ChallengeStatsUI {
-	id: string;
-	label: string;
-	value: number | string;
-
-	constructor(id: string, label: string, value: number | string) {
-		this.id = id;
-		this.label = label;
-		this.value = $state(value);
-	}
-
-	toJSON() {
-		return {
-			id: this.id,
-			label: this.label,
-			value: this.value
-		};
-	}
-}
+import { calculateTotalDistanceKm } from '$lib/utils/challenge.js';
 
 /**
  * LeaderboardUI class - Manages leaderboard data and statistics calculations

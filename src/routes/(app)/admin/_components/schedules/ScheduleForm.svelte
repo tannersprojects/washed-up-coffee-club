@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { toast } from 'svelte-sonner';
-	import { getAdminContext } from '../_logic/context.js';
-	import { RoutineScheduleAdmin } from '../_logic/RoutineScheduleAdmin.svelte.js';
+	import { getAdminContext } from '../../_logic/context.js';
+	import { RoutineScheduleAdmin } from '../../_logic/RoutineScheduleAdmin.svelte.js';
 
 	let admin = getAdminContext();
 	let day = $state('');

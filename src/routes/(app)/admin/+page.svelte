@@ -1,11 +1,8 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { setAdminContext } from './_logic/context.js';
-	import AdminTabs from './_components/AdminTabs.svelte';
-	import MemoriesSection from './_components/MemoriesSection.svelte';
-	import SchedulesSection from './_components/SchedulesSection.svelte';
-	import ChallengesSection from './_components/ChallengesSection.svelte';
-	import { AdminTabValue } from '$lib/types/admin.js';
+	import { AdminTabs, MemoriesSection, SchedulesSection, ChallengesSection } from './_components';
+	import { ADMIN_TAB } from '$lib/constants';
 
 	let { data } = $props();
 
@@ -18,11 +15,11 @@
 
 <div class="mx-auto w-full max-w-4xl px-6">
 	<AdminTabs />
-	{#if admin.activeTab === AdminTabValue.Memories}
+	{#if admin.activeTab === ADMIN_TAB.Memories}
 		<MemoriesSection />
-	{:else if admin.activeTab === AdminTabValue.Schedules}
+	{:else if admin.activeTab === ADMIN_TAB.Schedules}
 		<SchedulesSection />
-	{:else if admin.activeTab === AdminTabValue.Challenges}
+	{:else if admin.activeTab === ADMIN_TAB.Challenges}
 		<ChallengesSection />
 	{/if}
 </div>

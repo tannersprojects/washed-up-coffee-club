@@ -15,15 +15,3 @@ export type AdminContextData = {
 	routineSchedules: RoutineSchedule[];
 	challenges: ChallengeWithParticipants[];
 };
-
-export enum AdminTabValue {
-	Memories = 'memories',
-	Schedules = 'schedules',
-	Challenges = 'challenges'
-}
-
-export enum AdminTabLabel {
-	Memories = 'Memories',
-	Schedules = 'Schedules',
-	Challenges = 'Challenges'
-}

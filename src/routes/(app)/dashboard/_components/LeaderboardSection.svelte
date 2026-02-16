@@ -3,6 +3,7 @@
 	import LeaderboardTabs from './LeaderboardTabs.svelte';
 	import LeaderboardTable from './LeaderboardTable.svelte';
 	import ChallengeDetails from './ChallengeDetails.svelte';
+	import { LEADERBOARD_TAB } from '$lib/constants';
 
 	const dashboard = getDashboardContext();
 	const challenge = $derived(dashboard.selectedChallenge);
@@ -12,9 +13,9 @@
 <section class="w-full px-6 pb-10 sm:pb-0">
 	<LeaderboardTabs />
 
-	{#if activeTab === 'leaderboard'}
+	{#if activeTab === LEADERBOARD_TAB.Leaderboard}
 		<LeaderboardTable />
-	{:else if activeTab === 'details'}
+	{:else if activeTab === LEADERBOARD_TAB.Details}
 		<ChallengeDetails />
 	{/if}
 </section>

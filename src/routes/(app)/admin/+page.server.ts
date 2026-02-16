@@ -1,6 +1,7 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { eq, desc } from 'drizzle-orm';
 import { PROFILE_ROLE, CHALLENGE_TYPE, CHALLENGE_STATUS } from '$lib/constants';
+import { parseEasternToUtc } from '$lib/utils/datetime.js';
 import { db } from '$lib/db';
 import { memoriesTable, routineSchedulesTable, challengesTable } from '$lib/db/schema';
 import { PUBLIC_SUPABASE_URL } from '$env/static/public';
@@ -498,8 +499,8 @@ export const actions: Actions = {
 
 		const goalValue = goalValueRaw ? parseInt(goalValueRaw, 10) : null;
 		const segmentId = segmentIdRaw ? parseInt(segmentIdRaw, 10) : null;
-		const startDate = startDateRaw ? new Date(startDateRaw) : null;
-		const endDate = endDateRaw ? new Date(endDateRaw) : null;
+		const startDate = startDateRaw ? parseEasternToUtc(startDateRaw) : null;
+		const endDate = endDateRaw ? parseEasternToUtc(endDateRaw) : null;
 
 		if (
 			(type === CHALLENGE_TYPE.CUMULATIVE || type === CHALLENGE_TYPE.BEST_EFFORT) &&
@@ -587,8 +588,8 @@ export const actions: Actions = {
 
 		const goalValue = goalValueRaw ? parseInt(goalValueRaw, 10) : null;
 		const segmentId = segmentIdRaw ? parseInt(segmentIdRaw, 10) : null;
-		const startDate = startDateRaw ? new Date(startDateRaw) : null;
-		const endDate = endDateRaw ? new Date(endDateRaw) : null;
+		const startDate = startDateRaw ? parseEasternToUtc(startDateRaw) : null;
+		const endDate = endDateRaw ? parseEasternToUtc(endDateRaw) : null;
 
 		if (
 			(type === CHALLENGE_TYPE.CUMULATIVE || type === CHALLENGE_TYPE.BEST_EFFORT) &&

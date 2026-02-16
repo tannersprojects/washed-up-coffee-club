@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { PROFILE_ROLE } from '$lib/constants';
 	import type { Profile } from '$lib/db/schema';
-	import { PAGE_NAME, type PageName } from '$lib/types/pages';
+	import { PAGE_NAME, type PageName } from '$lib/constants';
 	import { LayoutDashboard, Settings, LogOut, Menu, X } from 'lucide-svelte';
 	import { fade, fly } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';

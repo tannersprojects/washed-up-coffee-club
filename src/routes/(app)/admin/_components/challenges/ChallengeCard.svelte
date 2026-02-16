@@ -2,8 +2,10 @@
 	import { enhance } from '$app/forms';
 	import { toast } from 'svelte-sonner';
 	import { CHALLENGE_TYPE, CHALLENGE_STATUS } from '$lib/constants';
-	import type { ChallengeAdmin } from '../_logic/ChallengeAdmin.svelte.js';
-	import { getAdminContext } from '../_logic/context.js';
+	import { getChallengeTimeStateFromDates } from '$lib/utils/challenge.js';
+	import { formatDatetimeForInput, formatDate } from '$lib/utils/datetime.js';
+	import type { ChallengeAdmin } from '../../_logic/ChallengeAdmin.svelte.js';
+	import { getAdminContext } from '../../_logic/context.js';
 
 	type Props = {
 		challenge: ChallengeAdmin;
@@ -18,8 +20,8 @@
 	let editType = $derived(challenge.type);
 	let editGoalValue = $derived(challenge.goalValue?.toString() ?? '');
 	let editSegmentId = $derived(challenge.segmentId?.toString() ?? '');
-	let editStartDate = $derived(formatDatetimeLocal(challenge.startDate));
-	let editEndDate = $derived(formatDatetimeLocal(challenge.endDate));
+	let editStartDate = $derived(formatDatetimeForInput(challenge.startDate));
+	let editEndDate = $derived(formatDatetimeForInput(challenge.endDate));
 	let editStatus = $derived(challenge.status);
 
 	$effect(() => {
@@ -29,16 +31,11 @@
 			editType = challenge.type;
 			editGoalValue = challenge.goalValue?.toString() ?? '';
 			editSegmentId = challenge.segmentId?.toString() ?? '';
-			editStartDate = formatDatetimeLocal(challenge.startDate);
-			editEndDate = formatDatetimeLocal(challenge.endDate);
+			editStartDate = formatDatetimeForInput(challenge.startDate);
+			editEndDate = formatDatetimeForInput(challenge.endDate);
 			editStatus = challenge.status;
 		}
 	});
-
-	function formatDatetimeLocal(d: Date): string {
-		const pad = (n: number) => n.toString().padStart(2, '0');
-		return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-	}
 
 	const typeLabels: Record<string, string> = {
 		[CHALLENGE_TYPE.CUMULATIVE]: 'Cumulative',
@@ -111,6 +108,7 @@
 				class="rounded border border-white/20 bg-black/40 px-3 py-2 font-mono text-sm text-white"
 			/>
 		{/if}
+		<p class="font-mono text-[10px] text-white/50">Dates in Eastern Time (EST/EDT)</p>
 		<input
 			type="datetime-local"
 			name="startDate"
@@ -154,11 +152,13 @@
 			<div>
 				<h3 class="font-mono text-sm font-bold text-white">{challenge.title}</h3>
 				<p class="mt-1 font-mono text-xs text-white/60">
-					{typeLabels[challenge.type] ?? challenge.type} · {statusLabels[challenge.status] ??
-						challenge.status}
+					{typeLabels[challenge.type] ?? challenge.type} ·
+					{statusLabels[
+						getChallengeTimeStateFromDates(challenge.startDate, challenge.endDate).status
+					]}
 				</p>
 				<p class="mt-2 font-mono text-[10px] text-white/40">
-					{challenge.startDate.toLocaleDateString()} – {challenge.endDate.toLocaleDateString()}
+					{formatDate(challenge.startDate)} – {formatDate(challenge.endDate)}
 				</p>
 				<p class="mt-1 font-mono text-[10px] text-white/40">
 					{challenge.participantCount} participants
