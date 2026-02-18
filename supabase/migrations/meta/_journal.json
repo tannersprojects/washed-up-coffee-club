@@ -8,6 +8,27 @@
       "when": 1770061301983,
       "tag": "0000_initial_schema",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1771356552400,
+      "tag": "0001_rls_initial_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1771356552401,
+      "tag": "0002_memories_storage_bucket",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1771357475441,
+      "tag": "0003_sticky_microchip",
+      "breakpoints": true
     }
   ]
 }

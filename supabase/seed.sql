@@ -65,3 +65,19 @@ VALUES
   (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000002', 99002, 'Sunday Long Run', 5530, '2026-01-18 08:00:00+00'),
   (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000003', 99003, 'Easy Pace Half', 6330, '2026-01-18 09:15:00+00'),
   (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000004', 99004, 'Partial Run', 15000, '2026-01-18 10:00:00+00');
+
+-- 5. Webhook Vault Secrets (local dev)
+-- Uses vault.create_secret() to properly encrypt secrets at rest.
+-- Delete existing entries first since vault secret names must be unique.
+DELETE FROM vault.secrets WHERE name IN ('webhook_url');
+SELECT vault.create_secret(
+  'http://host.docker.internal:54321/functions/v1/process-strava-webhook',
+  'webhook_url',
+  'Edge Function URL for the DB webhook trigger'
+);
+-- TODO: Add custom JWT for Edge Function auth
+-- SELECT vault.create_secret(
+--   'LOCAL_SECRET_KEY',
+--   'service_role_key',
+--   'Supabase service role key for Edge Function auth'
+-- );

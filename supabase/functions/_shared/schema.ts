@@ -6,7 +6,7 @@ import {
 	WEBHOOK_OBJECT_TYPE,
 	WEBHOOK_ASPECT_TYPE,
 	WEBHOOK_STATUS
-} from '$lib/constants';
+} from '../_shared/constants.ts';
 import {
 	pgTable,
 	uuid,
@@ -18,9 +18,9 @@ import {
 	boolean,
 	index,
 	pgEnum
-} from 'drizzle-orm/pg-core';
-import { relations } from 'drizzle-orm';
-import type { InferSelectModel } from 'drizzle-orm';
+} from 'npm:drizzle-orm@0.45.1/pg-core';
+import { relations } from 'npm:drizzle-orm@0.45.1';
+import type { InferSelectModel } from 'npm:drizzle-orm@0.45.1';
 
 // --- ENUMS ---
 // Enforcing strict types for logic branching
