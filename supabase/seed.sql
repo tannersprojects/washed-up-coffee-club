@@ -36,7 +36,7 @@ VALUES (
   'c0000000-0000-0000-0000-000000000001', 
   'The "Sunday Scaries" Half', 
   'Shake off the weekend with a half marathon.',
-  'best_effort', 
+  'cumulative', 
   21097, -- 21.1 km in meters
   CURRENT_DATE::timestamp with time zone,    -- Today at 00:00:00+00
   (CURRENT_DATE + 1)::timestamp with time zone + TIME '23:59:59', -- Tomorrow at 23:59:59+00
@@ -46,35 +46,40 @@ VALUES (
 ON CONFLICT (id) DO NOTHING;
 
 -- 3. Seed Participants (The Scoreboard)
--- FIXED: Changed 'p' to 'a' to ensure valid hexadecimal UUIDs.
-INSERT INTO challenge_participants (id, challenge_id, profile_id, status, result_value, result_display)
+-- cumulative challenge: result_distance in meters (result_time null; display shows "--" until distance display added)
+INSERT INTO challenge_participants (id, challenge_id, profile_id, status, result_distance, result_time)
 VALUES 
-  ('a0000000-0000-0000-0000-000000000001', 'c0000000-0000-0000-0000-000000000001', 'd0c2c0e0-1111-4444-8888-000000000001', 'completed', 5325, '1:28:45'),
-  ('a0000000-0000-0000-0000-000000000002', 'c0000000-0000-0000-0000-000000000001', 'd0c2c0e0-1111-4444-8888-000000000002', 'completed', 5530, '1:32:10'),
-  ('a0000000-0000-0000-0000-000000000003', 'c0000000-0000-0000-0000-000000000001', 'd0c2c0e0-1111-4444-8888-000000000003', 'completed', 6330, '1:45:30'),
-  ('a0000000-0000-0000-0000-000000000004', 'c0000000-0000-0000-0000-000000000001', 'd0c2c0e0-1111-4444-8888-000000000004', 'in_progress', 15000, 'Mile 9'),
-  ('a0000000-0000-0000-0000-000000000005', 'c0000000-0000-0000-0000-000000000001', 'd0c2c0e0-1111-4444-8888-000000000005', 'in_progress', 5200, 'Mile 3'),
-  ('a0000000-0000-0000-0000-000000000006', 'c0000000-0000-0000-0000-000000000001', 'd0c2c0e0-1111-4444-8888-000000000006', 'did_not_finish', 8000, 'Stopped')
+  ('a0000000-0000-0000-0000-000000000001', 'c0000000-0000-0000-0000-000000000001', 'd0c2c0e0-1111-4444-8888-000000000001', 'completed', 21197, NULL),
+  ('a0000000-0000-0000-0000-000000000002', 'c0000000-0000-0000-0000-000000000001', 'd0c2c0e0-1111-4444-8888-000000000002', 'completed', 21197, NULL),
+  ('a0000000-0000-0000-0000-000000000003', 'c0000000-0000-0000-0000-000000000001', 'd0c2c0e0-1111-4444-8888-000000000003', 'completed', 21197, NULL),
+  ('a0000000-0000-0000-0000-000000000004', 'c0000000-0000-0000-0000-000000000001', 'd0c2c0e0-1111-4444-8888-000000000004', 'in_progress', 15000, NULL),
+  ('a0000000-0000-0000-0000-000000000005', 'c0000000-0000-0000-0000-000000000001', 'd0c2c0e0-1111-4444-8888-000000000005', 'in_progress', 5200, NULL),
+  ('a0000000-0000-0000-0000-000000000006', 'c0000000-0000-0000-0000-000000000001', 'd0c2c0e0-1111-4444-8888-000000000006', 'did_not_finish', 8000, NULL)
 ON CONFLICT (id) DO NOTHING;
 
 -- 4. Seed Contributions (The Evidence)
--- Updated foreign keys to match the new 'a' IDs
-INSERT INTO challenge_contributions (id, participant_id, strava_activity_id, activity_name, value, occurred_at)
+-- cumulative: distance in meters, time null
+INSERT INTO challenge_contributions (id, participant_id, strava_activity_id, activity_name, distance, time, occurred_at)
 VALUES
-  (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000001', 99001, 'Morning Half Marathon', 5325, '2026-01-18 07:30:00+00'),
-  (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000002', 99002, 'Sunday Long Run', 5530, '2026-01-18 08:00:00+00'),
-  (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000003', 99003, 'Easy Pace Half', 6330, '2026-01-18 09:15:00+00'),
-  (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000004', 99004, 'Partial Run', 15000, '2026-01-18 10:00:00+00');
+  (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000001', 99001, 'Morning Half Marathon', 21197, NULL, '2026-01-18 07:30:00+00'),
+  (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000002', 99002, 'Sunday Long Run', 21197, NULL, '2026-01-18 08:00:00+00'),
+  (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000003', 99003, 'Easy Pace Half', 21197, NULL, '2026-01-18 09:15:00+00'),
+  (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000004', 99004, 'Partial Run', 15000, NULL, '2026-01-18 10:00:00+00');
 
 -- 5. Webhook Vault Secrets (local dev)
 -- Uses vault.create_secret() to properly encrypt secrets at rest.
 -- Delete existing entries first since vault secret names must be unique.
 DELETE FROM vault.secrets WHERE name IN ('webhook_url');
 SELECT vault.create_secret(
-  'http://host.docker.internal:54321/functions/v1/process-strava-webhook',
+  'https://c4fb-2600-382-2771-577e-fcb2-d0a0-15f-4b5b.ngrok-free.app/api/strava/process-webhook',
   'webhook_url',
   'Edge Function URL for the DB webhook trigger'
 );
+-- SELECT vault.create_secret(
+--   'http://host.docker.internal:54321/functions/v1/process-strava-webhook',
+--   'webhook_url',
+--   'Edge Function URL for the DB webhook trigger'
+-- );
 -- TODO: Add custom JWT for Edge Function auth
 -- SELECT vault.create_secret(
 --   'LOCAL_SECRET_KEY',

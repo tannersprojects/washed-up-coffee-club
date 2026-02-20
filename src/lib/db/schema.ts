@@ -17,7 +17,8 @@ import {
 	integer,
 	boolean,
 	index,
-	pgEnum
+	pgEnum,
+	real
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import type { InferSelectModel } from 'drizzle-orm';
@@ -168,10 +169,11 @@ export const challengeParticipantsTable = pgTable(
 		joinedAt: timestamp('joined_at', { withTimezone: true }).defaultNow(),
 
 		// THE CACHED TOTAL
-		// For 'cumulative': This is the Sum of all contributions.
-		// For 'best_effort': This is the Value of the single best contribution.
-		resultValue: integer('result_value').default(0),
-		resultDisplay: text('result_display'),
+		// For 'cumulative': Sum of value_distance from contributions.
+		// For 'best_effort': Max value_distance from contributions.
+		// For 'segment_race': Min value_time from contributions.
+		resultDistance: real('result_distance'),
+		resultTime: integer('result_time'),
 
 		// For 'best_effort', this links to the winning activity.
 		// For 'cumulative', this could link to the *latest* activity that pushed them over the goal.
@@ -181,7 +183,8 @@ export const challengeParticipantsTable = pgTable(
 	},
 	(table) => [
 		index('idx_participant_challenge_profile').on(table.challengeId, table.profileId),
-		index('idx_participant_result').on(table.challengeId, table.resultValue)
+		index('idx_participant_result_distance').on(table.challengeId, table.resultDistance),
+		index('idx_participant_result_time').on(table.challengeId, table.resultTime)
 	]
 );
 
@@ -201,9 +204,9 @@ export const challengeContributionsTable = pgTable(
 		stravaActivityId: bigint('strava_activity_id', { mode: 'number' }).notNull(),
 		activityName: text('activity_name'), // Useful for UI ("Morning Run")
 
-		// The value this specific run contributed
-		// e.g. User runs 5 miles. value = 8046 (meters)
-		value: integer('value').notNull(),
+		// The value this specific run contributed (one of the two is set per challenge type)
+		distance: real('distance'),
+		time: integer('time'),
 
 		// Verification
 		isValid: boolean('is_valid').default(true), // Allows you to "disqualify" a specific run without deleting it
@@ -225,6 +228,7 @@ export const stravaWebhookLogsTable = pgTable('strava_webhook_logs', {
 	payload: jsonb('payload').notNull(),
 	stravaAthleteId: bigint('strava_athlete_id', { mode: 'number' }),
 	objectType: webhookObjectTypeEnum('object_type'),
+	objectId: bigint('object_id', { mode: 'number' }),
 	aspectType: webhookAspectTypeEnum('aspect_type'),
 	eventTime: integer('event_time'),
 	status: webhookStatusEnum('status').default(WEBHOOK_STATUS.PENDING),
@@ -284,4 +288,5 @@ export type RoutineSchedule = InferSelectModel<typeof routineSchedulesTable>;
 export type Challenge = InferSelectModel<typeof challengesTable>;
 export type ChallengeParticipant = InferSelectModel<typeof challengeParticipantsTable>;
 export type ChallengeContribution = InferSelectModel<typeof challengeContributionsTable>;
+export type StravaConnection = InferSelectModel<typeof stravaConnectionsTable>;
 export type StravaWebhookLog = InferSelectModel<typeof stravaWebhookLogsTable>;

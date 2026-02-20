@@ -1,10 +1,17 @@
-import { PARTICIPANT_STATUS } from '$lib/constants';
+import { CHALLENGE_TYPE, PARTICIPANT_STATUS } from '$lib/constants';
 import type {
 	LeaderboardRowData,
 	ChallengeParticipantWithRelations,
 	ChallengeStats
 } from '$lib/types/dashboard.js';
 import { calculateTotalDistanceKm } from '$lib/utils/challenge.js';
+
+const STATUS_ORDER: Record<string, number> = {
+	[PARTICIPANT_STATUS.COMPLETED]: 0,
+	[PARTICIPANT_STATUS.IN_PROGRESS]: 1,
+	[PARTICIPANT_STATUS.REGISTERED]: 2,
+	[PARTICIPANT_STATUS.DID_NOT_FINISH]: 3
+};
 
 /**
  * LeaderboardUI class - Manages leaderboard data and statistics calculations
@@ -19,6 +26,7 @@ import { calculateTotalDistanceKm } from '$lib/utils/challenge.js';
 export class LeaderboardUI {
 	private challengeParticipantsWithRelations: ChallengeParticipantWithRelations[];
 	private goalValue: number | null;
+	private challengeType: string;
 
 	leaderboardRows: LeaderboardRowData[];
 
@@ -30,19 +38,35 @@ export class LeaderboardUI {
 
 	constructor(
 		challengeParticipantsWithRelations: ChallengeParticipantWithRelations[],
-		goalValue: number | null
+		goalValue: number | null,
+		challengeType: string
 	) {
 		this.challengeParticipantsWithRelations = $state(challengeParticipantsWithRelations);
 		this.goalValue = $state(goalValue);
+		this.challengeType = challengeType;
 		this.leaderboardRows = $derived.by(() => {
+			const sorted = [...this.challengeParticipantsWithRelations].sort((a, b) => {
+				const statusA = STATUS_ORDER[a.status ?? ''] ?? 4;
+				const statusB = STATUS_ORDER[b.status ?? ''] ?? 4;
+				if (statusA !== statusB) return statusA - statusB;
+
+				if (this.challengeType === CHALLENGE_TYPE.SEGMENT_RACE) {
+					const timeA = a.resultTime ?? Infinity;
+					const timeB = b.resultTime ?? Infinity;
+					return timeA - timeB;
+				}
+				const distA = a.resultDistance ?? -1;
+				const distB = b.resultDistance ?? -1;
+				return distB - distA;
+			});
+
 			let currentRank = 1;
-			return this.challengeParticipantsWithRelations.map((participant) => {
+			return sorted.map((participant) => {
 				const isFinished = participant.status === PARTICIPANT_STATUS.COMPLETED;
 
 				const row: LeaderboardRowData = {
 					participant,
 					profile: participant.profile,
-					// We grab the first contribution to display the activity name (e.g. "Morning Run")
 					contribution: participant.contributions?.[0] || null,
 					rank: isFinished ? currentRank++ : null
 				};

@@ -1,10 +1,14 @@
+// TODO: Add some production configuration for this script
+
 import 'dotenv/config';
 
 const { STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET, STRAVA_WEBHOOK_VERIFY_TOKEN, PUBLIC_NGROK_URL } =
 	process.env;
 
 if (!STRAVA_CLIENT_ID || !STRAVA_CLIENT_SECRET || !PUBLIC_NGROK_URL) {
-	console.error('Missing required env vars (STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET, PUBLIC_NGROK_URL). Check your .env file.');
+	console.error(
+		'Missing required env vars (STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET, PUBLIC_NGROK_URL). Check your .env file.'
+	);
 	process.exit(1);
 }
 

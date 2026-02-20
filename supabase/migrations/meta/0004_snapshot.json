@@ -1,6 +1,6 @@
 {
-  "id": "42445d39-f74a-4c25-910b-3148f5dfd2c8",
-  "prevId": "ec6beb70-03e5-452c-96c0-304b4f473467",
+  "id": "a4ef2e43-d9ac-4456-96fe-6646eb22ee29",
+  "prevId": "42445d39-f74a-4c25-910b-3148f5dfd2c8",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -33,11 +33,17 @@
           "primaryKey": false,
           "notNull": false
         },
-        "value": {
-          "name": "value",
+        "distance": {
+          "name": "distance",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "time": {
+          "name": "time",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "is_valid": {
           "name": "is_valid",
@@ -142,16 +148,15 @@
           "notNull": false,
           "default": "now()"
         },
-        "result_value": {
-          "name": "result_value",
-          "type": "integer",
+        "result_distance": {
+          "name": "result_distance",
+          "type": "real",
           "primaryKey": false,
-          "notNull": false,
-          "default": 0
+          "notNull": false
         },
-        "result_display": {
-          "name": "result_display",
-          "type": "text",
+        "result_time": {
+          "name": "result_time",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
@@ -198,8 +203,8 @@
           "method": "btree",
           "with": {}
         },
-        "idx_participant_result": {
-          "name": "idx_participant_result",
+        "idx_participant_result_distance": {
+          "name": "idx_participant_result_distance",
           "columns": [
             {
               "expression": "challenge_id",
@@ -208,7 +213,28 @@
               "nulls": "last"
             },
             {
-              "expression": "result_value",
+              "expression": "result_distance",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_participant_result_time": {
+          "name": "idx_participant_result_time",
+          "columns": [
+            {
+              "expression": "challenge_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "result_time",
               "isExpression": false,
               "asc": true,
               "nulls": "last"

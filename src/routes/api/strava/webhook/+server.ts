@@ -26,6 +26,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		await db.insert(stravaWebhookLogsTable).values({
 			payload: body,
 			stravaAthleteId: body.owner_id,
+			objectId: body.object_id,
 			objectType: body.object_type as WebhookObjectType,
 			aspectType: body.aspect_type as WebhookAspectType,
 			eventTime: body.event_time

@@ -1,19 +1,17 @@
--- Existing Types for Strava Webhook
-CREATE TYPE "public"."webhook_aspect_type" AS ENUM('create', 'update', 'delete');
-CREATE TYPE "public"."webhook_object_type" AS ENUM('activity', 'athlete');
-CREATE TYPE "public"."webhook_status" AS ENUM('pending', 'processed', 'error');
-
--- Webhook Logs Table
-CREATE TABLE IF NOT EXISTS "strava_webhook_logs" (
-  "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-  "payload" jsonb NOT NULL,
-  "strava_athlete_id" bigint,
-  "object_type" "webhook_object_type",
-  "aspect_type" "webhook_aspect_type",
-  "event_time" integer,
-  "status" "webhook_status" DEFAULT 'pending',
-  "error_message" text,
-  "created_at" timestamp with time zone DEFAULT now() NOT NULL
+CREATE TYPE "public"."webhook_aspect_type" AS ENUM('create', 'update', 'delete');--> statement-breakpoint
+CREATE TYPE "public"."webhook_object_type" AS ENUM('activity', 'athlete');--> statement-breakpoint
+CREATE TYPE "public"."webhook_status" AS ENUM('pending', 'processed', 'error');--> statement-breakpoint
+CREATE TABLE "strava_webhook_logs" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"payload" jsonb NOT NULL,
+	"strava_athlete_id" bigint,
+	"object_type" "webhook_object_type",
+	"object_id" bigint,
+	"aspect_type" "webhook_aspect_type",
+	"event_time" integer,
+	"status" "webhook_status" DEFAULT 'pending',
+	"error_message" text,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 
 -- 1. Enable required extensions
@@ -41,7 +39,7 @@ DECLARE
 BEGIN
   -- Fetch values from Vault
   webhook_url := public.get_secret('webhook_url');
-  -- service_role_key := public.get_secret('service_role_key');
+  -- TODO: Add jwt authentication
 
   -- Validation
   IF webhook_url IS NULL OR webhook_url = '' THEN
@@ -49,27 +47,29 @@ BEGIN
     RETURN NEW;
   END IF;
 
-  -- IF service_role_key IS NULL OR service_role_key = '' THEN
-  --   RAISE WARNING 'Webhook skipped: "service_role_key" not found in vault';
-  --   RETURN NEW;
-  -- END IF;
-
-  -- Debugging: Check the key length in Postgres logs (supabase log --db)
-  RAISE LOG 'Attempting webhook to % with key length %', webhook_url, length(service_role_key);
-
   -- Perform the asynchronous HTTP POST request
   -- Using explicit jsonb for headers to ensure correct serialization
   PERFORM net.http_post(
     url := webhook_url,
     headers := jsonb_build_object(
       'Content-Type', 'application/json'
-      -- 'Authorization', (SELECT 'Bearer ' || trim(both ' ' from service_role_key))
       -- TODO: Add custom JWT for Edge Function auth
     ),
     body := jsonb_build_object(
       'type', TG_OP,
       'table', TG_TABLE_NAME,
-      'record', row_to_json(NEW)
+      'record', jsonb_build_object(
+        'id', NEW.id,
+        'payload', NEW.payload,
+        'stravaAthleteId', NEW.strava_athlete_id,
+        'objectType', NEW.object_type,
+        'objectId', NEW.object_id,
+        'aspectType', NEW.aspect_type,
+        'eventTime', NEW.event_time,
+        'status', NEW.status,
+        'errorMessage', NEW.error_message,
+        'createdAt', NEW.created_at
+      )
     )
   );
 

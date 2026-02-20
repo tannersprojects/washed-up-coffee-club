@@ -91,3 +91,32 @@ export function getChallengeJoinDisplayState(challenge: ChallengeUI): ChallengeJ
 
 	return CHALLENGE_JOIN_DISPLAY_STATE.NOT_ACTIVE;
 }
+
+/** Format seconds as H:MM:SS */
+export function formatTime(seconds: number): string {
+	const h = Math.floor(seconds / 3600);
+	const m = Math.floor((seconds % 3600) / 60);
+	const s = Math.floor(seconds % 60);
+	if (h > 0) {
+		return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+	}
+	return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+/** Format meters as "X.X km" or "Mile N" for round miles */
+export function formatDistance(meters: number): string {
+	const km = meters / 1000;
+	const miles = meters / 1609.344;
+	if (miles >= 1 && Math.abs(miles - Math.round(miles)) < 0.01) {
+		return `Mile ${Math.round(miles)}`;
+	}
+	return `${km.toFixed(1)} km`;
+}
+
+/** Format result for display. Always shows time when resultTime is set; otherwise "--". */
+export function formatResultDisplay(resultTime: number | null): string {
+	if (resultTime != null) {
+		return formatTime(resultTime);
+	}
+	return '--';
+}
