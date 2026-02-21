@@ -50,14 +50,43 @@ export class LeaderboardUI {
 				const statusB = STATUS_ORDER[b.status ?? ''] ?? 4;
 				if (statusA !== statusB) return statusA - statusB;
 
+				let cmp: number;
 				if (this.challengeType === CHALLENGE_TYPE.SEGMENT_RACE) {
 					const timeA = a.resultTime ?? Infinity;
 					const timeB = b.resultTime ?? Infinity;
-					return timeA - timeB;
+					cmp = timeA - timeB;
+				} else if (this.challengeType === CHALLENGE_TYPE.CUMULATIVE) {
+					const isCompleted = statusA === STATUS_ORDER[PARTICIPANT_STATUS.COMPLETED];
+					if (isCompleted) {
+						// Completed: faster time = higher rank
+						const timeA = a.resultTime ?? Infinity;
+						const timeB = b.resultTime ?? Infinity;
+						cmp = timeA - timeB;
+						if (cmp !== 0) return cmp;
+						// Tiebreaker: has time ranks above no time
+						const hasTimeA = a.resultTime != null ? 1 : 0;
+						const hasTimeB = b.resultTime != null ? 1 : 0;
+						return hasTimeB - hasTimeA;
+					} else {
+						// Incomplete: longer distance = higher rank
+						const distA = a.resultDistance ?? -1;
+						const distB = b.resultDistance ?? -1;
+						cmp = distB - distA;
+					}
+				} else {
+					// BEST_EFFORT: longer distance = higher rank
+					const distA = a.resultDistance ?? -1;
+					const distB = b.resultDistance ?? -1;
+					cmp = distB - distA;
 				}
-				const distA = a.resultDistance ?? -1;
-				const distB = b.resultDistance ?? -1;
-				return distB - distA;
+				if (cmp !== 0) return cmp;
+
+				// Tiebreaker for BEST_EFFORT: participants with time rank above those without
+				const hasEffectiveTime = (p: ChallengeParticipantWithRelations) =>
+					p.resultTime != null || (p.contributions?.some((c) => c.time != null) ?? false);
+				const hasTimeA = hasEffectiveTime(a) ? 1 : 0;
+				const hasTimeB = hasEffectiveTime(b) ? 1 : 0;
+				return hasTimeB - hasTimeA;
 			});
 
 			let currentRank = 1;

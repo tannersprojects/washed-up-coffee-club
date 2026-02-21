@@ -1,18 +1,23 @@
-// TODO: Add some production configuration for this script
-
 import 'dotenv/config';
 
-const { STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET, STRAVA_WEBHOOK_VERIFY_TOKEN, PUBLIC_NGROK_URL } =
+const { STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET, STRAVA_WEBHOOK_VERIFY_TOKEN, PUBLIC_NGROK_URL, PUBLIC_APP_URL } =
 	process.env;
 
-if (!STRAVA_CLIENT_ID || !STRAVA_CLIENT_SECRET || !PUBLIC_NGROK_URL) {
+const args = process.argv.slice(2);
+const isProd = args.includes('--prod');
+const actionArgs = args.filter((a) => a !== '--prod');
+
+const baseUrl = isProd ? PUBLIC_APP_URL : PUBLIC_NGROK_URL;
+const requiredEnvVar = isProd ? 'PUBLIC_APP_URL' : 'PUBLIC_NGROK_URL';
+
+if (!STRAVA_CLIENT_ID || !STRAVA_CLIENT_SECRET || !baseUrl) {
 	console.error(
-		'Missing required env vars (STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET, PUBLIC_NGROK_URL). Check your .env file.'
+		`Missing required env vars (STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET, ${requiredEnvVar}). Check your .env file.`
 	);
 	process.exit(1);
 }
 
-const CALLBACK_URL = `${PUBLIC_NGROK_URL}/api/strava/webhook`;
+const CALLBACK_URL = `${baseUrl.replace(/\/$/, '')}/api/strava/webhook`;
 
 async function viewSubscription() {
 	const url = new URL('https://www.strava.com/api/v3/push_subscriptions');
@@ -25,7 +30,7 @@ async function viewSubscription() {
 }
 
 async function createSubscription() {
-	console.log(`--- Creating Subscription for: ${CALLBACK_URL} ---`);
+	console.log(`--- Creating Subscription (${isProd ? 'prod' : 'dev'}): ${CALLBACK_URL} ---`);
 
 	const formData = new FormData();
 	formData.append('client_id', STRAVA_CLIENT_ID!);
@@ -52,8 +57,8 @@ async function deleteSubscription(id: string) {
 	else console.log('❌ Delete failed:', await res.json());
 }
 
-const [action, id] = process.argv.slice(2);
+const [action, id] = actionArgs;
 if (action === 'view') viewSubscription();
 else if (action === 'create') createSubscription();
 else if (action === 'delete') deleteSubscription(id!);
-else console.log('Usage: npx tsx scripts/manage-strava.ts [view|create|delete] [id]');
+else console.log('Usage: npx tsx scripts/manage-strava.ts [view|create|delete] [id] [--prod]');

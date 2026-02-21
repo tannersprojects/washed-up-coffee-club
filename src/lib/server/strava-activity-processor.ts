@@ -108,6 +108,7 @@ function computeNextParticipantState(
 		const currentDistance = participant.resultDistance ?? 0;
 		if (newDistance > currentDistance) {
 			resultDistance = newDistance;
+			resultTime = validation.time;
 			highlightActivityId = activityId;
 		}
 	} else if (challengeType === CHALLENGE_TYPE.CUMULATIVE) {
