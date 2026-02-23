@@ -96,6 +96,7 @@ export class LeaderboardUI {
 				const row: LeaderboardRowData = {
 					participant,
 					profile: participant.profile,
+					//TODO: Should this be highlight activity?
 					contribution: participant.contributions?.[0] || null,
 					rank: isFinished ? currentRank++ : null
 				};
