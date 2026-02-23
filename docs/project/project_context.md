@@ -1,6 +1,6 @@
 # Project Context: Washed Up Coffee Club Leaderboard
 
-**Purpose:** Dense reference for AI assistants or other chats. For a short “what is this app” summary, use [`project_overview.md`](./project_overview.md) first.
+**Purpose:** Dense reference for AI assistants or other chats. For a short "what is this app" summary, use [`project_overview.md`](./project_overview.md) first.
 
 ---
 
@@ -32,7 +32,7 @@
 
 ## 3. Database Schema (Supabase / Drizzle)
 
-The current schema is defined in detail in [`src/lib/db/schema.ts`](../src/lib/db/schema.ts). This section summarizes the parts most relevant to the dashboard and leaderboard.
+The current schema is defined in detail in [`src/lib/db/schema.ts`](../../src/lib/db/schema.ts). This section summarizes the parts most relevant to the dashboard and leaderboard.
 
 ### 1. `profile` (Public Info)
 
@@ -95,7 +95,7 @@ These tables together power the dashboard: `challenges` define the events, `chal
 
 ## 4. Data Models (TypeScript)
 
-Types are colocated by feature in `src/lib/types/`. UI classes live in each route’s `_logic/` and consume these types.
+Types are colocated by feature in `src/lib/types/`. UI classes live in each route's `_logic/` and consume these types.
 
 ### Dashboard (`src/lib/types/dashboard.ts`)
 
@@ -106,7 +106,7 @@ Types are colocated by feature in `src/lib/types/`. UI classes live in each rout
 
 - `ChallengeWithParticipants` — challenge plus its participants (no profile/contributions).
 - `AdminContextData` — loader payload: `{ memories, routineSchedules, challenges }`.
-- **UI classes:** `AdminUI` (tab state, passes data to sections), `ChallengeAdmin`, `MemoryAdmin`, `RoutineScheduleAdmin` (each section’s CRUD state).
+- **UI classes:** `AdminUI` (tab state, passes data to sections), `ChallengeAdmin`, `MemoryAdmin`, `RoutineScheduleAdmin` (each section's CRUD state).
 
 ### Content / Landing (`src/lib/types/content.ts`)
 
@@ -137,7 +137,7 @@ Implemented in `LeaderboardUI.svelte.ts`. Participants are first grouped by stat
 
 ## 5. Authentication Flow
 
-**Method:** OAuth 2.0 Authorization Code Flow.
+**Method:** OAuth 2.0 Authorization Code Flow. See [`auth.md`](./auth.md) for full details (Shadow User pattern, flow, key files).
 
 **Scope Request:**
 - `read`: To view public profile info.
@@ -163,6 +163,15 @@ Implemented in `LeaderboardUI.svelte.ts`. Participants are first grouped by stat
   - POST: Ingests incoming activity events; inserts into `strava_webhook_logs`.
 - **Route `/api/strava/process-webhook` (Internal, called by DB trigger):**
   - POST: Fetches activity details from Strava, validates against active challenges, updates `challenge_participants` and `challenge_contributions`.
+
+### Authenticated layout
+
+Dashboard and admin routes live under the `(app)` route group:
+
+- **`(app)/+layout.server.ts`** — Enforces auth for all routes under `(app)`. Calls `locals.safeGetSession()`; redirects to `/` if no session, user, or profile. Returns `profile` to layout data.
+- **`(app)/+layout.svelte`** — Shared layout for authenticated pages. Renders `AppNav` with `profile` and `pageName`; slots in page content via `{@render children()}`.
+- **`(app)/dashboard/`** — Assumes user is authenticated; only loads dashboard data.
+- **`(app)/admin/`** — Enforces admin-only access in `admin/+page.server.ts` (checks `profile.role === PROFILE_ROLE.ADMIN`, redirects non-admins to `/dashboard`).
 
 ### Key file locations
 
@@ -194,6 +203,8 @@ Implemented in `LeaderboardUI.svelte.ts`. Participants are first grouped by stat
 ## 8. Webhook Architecture (Primary Sync)
 
 **Goal:** Instant updates when a user finishes a run.
+
+**Full guide:** See [`strava_webhook.md`](../strava/strava_webhook.md) for the complete flow, setup, and key files.
 
 **Implementation:** Two-stage flow:
 

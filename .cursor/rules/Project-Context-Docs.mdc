@@ -9,22 +9,29 @@ When answering questions about this app, making architectural decisions, or impl
 
 ## Primary Docs
 
-1. **`docs/project_overview.md`** — Start here for:
+1. **`docs/project/project_overview.md`** — Start here for:
    - What the app is (running club leaderboard, Strava-only auth)
    - Tech stack (SvelteKit, Svelte 5, Supabase, Drizzle)
    - Architecture (colocation, smart objects, runes)
    - Main routes and Strava compliance constraints
 
-2. **`docs/project_context.md`** — Use for:
+2. **`docs/project/project_context.md`** — Use for:
    - Dense reference: schema summary, auth flow, webhooks
    - Database tables (profile, strava_connections, challenges, challenge_participants)
    - Admin workflow, file map, implementation details
    - Compliance rules (attribution, terminology, data privacy)
 
+3. **`docs/project/file_structure_plan.md`** — Use for:
+   - Directory structure (lib vs routes, _logic, _components)
+   - State management tiers (global, context, local)
+   - Colocation and smart object patterns
+   - Architectural decisions when generating code
+
 ## When to Use
 
 - **Onboarding / “what is this app?”** → Read `project_overview.md` first.
 - **Schema, API, or implementation details** → Use `project_context.md`.
-- **Compliance (Strava, attribution, user limits)** → Both docs; see also `strava_compliance.md` if needed.
+- **Directory structure, folder layout, or state patterns** → Use `file_structure_plan.md`.
+- **Compliance (Strava, attribution, user limits)** → Both docs; see also `docs/strava_compliance.md` if needed.
 
-Do not guess app purpose, schema, or constraints—pull from these files or suggest the user open them with `@docs/project_context.md` or `@docs/project_overview.md`.
+Do not guess app purpose, schema, or constraints—pull from these files or suggest the user open them with `@docs/project/project_context.md`, `@docs/project/project_overview.md`, or `@docs/project/file_structure_plan.md`.

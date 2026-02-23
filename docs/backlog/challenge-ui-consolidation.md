@@ -106,15 +106,14 @@ Components only care about `isParticipating`. `participant` could stay internal 
 
 ## Files to Update When Implementing
 
-- [src/lib/constants/challenge-constants.ts](src/lib/constants/challenge-constants.ts) — extend `ChallengeTimeState` or add `ChallengeDisplayState` type
-- [src/lib/utils/challenge-utils.ts](src/lib/utils/challenge-utils.ts) — `getChallengeJoinDisplayState` can be removed or reduced if join logic moves inline
-- [src/routes/(app)/dashboard/_logic/ChallengeUI.svelte.ts](src/routes/(app)/dashboard/_logic/ChallengeUI.svelte.ts) — consolidate derived state, inline initialState
-- [src/routes/(app)/dashboard/_components/](src/routes/(app)/dashboard/_components/) — update references from `challengeTimeState`/`joinDisplayState` to `displayState`
-- [src/lib/types/dashboard.ts](src/lib/types/dashboard.ts) — optional: add `ChallengeUIInput` type
+- `src/lib/constants/challenge.ts` — extend `ChallengeTimeState` or add `ChallengeDisplayState` type
+- `src/lib/utils/challenge.ts` — `getChallengeJoinDisplayState` can be removed or reduced if join logic moves inline
+- `src/routes/(app)/dashboard/_logic/ChallengeUI.svelte.ts` — consolidate derived state, inline initialState
+- `src/routes/(app)/dashboard/_components/` — update references from `challengeTimeState`/`joinDisplayState` to `displayState`
+- `src/lib/types/dashboard.ts` — optional: add `ChallengeUIInput` type
 
 ---
 
 ## Related Docs
 
-- [challenge-time-issues.md](./challenge-time-issues.md) — Problem 11: status column redundant with dates
-- [project_context.md](./project_context.md) — schema, auth, architecture
+- [project_context.md](../project/project_context.md) — schema, auth, architecture
