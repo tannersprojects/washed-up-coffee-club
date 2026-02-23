@@ -34,11 +34,6 @@ jobs:
         run: |
           supabase db execute --linked "
             DELETE FROM vault.secrets WHERE name IN ('webhook_url');
-            SELECT vault.create_secret('${{ secrets.WEBHOOK_URL }}', 'webhook_url', 'Edge Function URL for the DB webhook trigger');
+            SELECT vault.create_secret('${{ secrets.WEBHOOK_URL }}', 'webhook_url', 'API Function URL for the DB webhook trigger');
           "
-          # TODO: Add custom JWT for Edge Function auth
-      - name: Deploy Edge Functions
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
-        run: supabase functions deploy --no-verify-jwt --linked
+          # TODO: Add custom JWT for Function auth
