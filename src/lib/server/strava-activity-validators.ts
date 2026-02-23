@@ -72,9 +72,17 @@ function validateActivityForSegmentRaceChallenge(
 		return { valid: false };
 	}
 
-	const effort = activity.segmentEfforts?.find((e) => e.segment?.id === challenge.segmentId);
-	if (!effort) {
+	const matchingEfforts =
+		activity.segmentEfforts?.filter((e) => e.segment?.id === challenge.segmentId) ?? [];
+	if (matchingEfforts.length === 0) {
 		console.log(`Activity ${activity.id} has no segment effort`);
+		return { valid: false };
+	}
+
+	const effort = matchingEfforts.reduce((best, current) =>
+		(current.elapsedTime ?? Infinity) < (best.elapsedTime ?? Infinity) ? current : best
+	);
+	if (effort.elapsedTime == null || effort.elapsedTime <= 0) {
 		return { valid: false };
 	}
 
