@@ -1,5 +1,5 @@
 <script lang="ts">
-	import stravaConnectButton from '$lib/assets/1.1 Connect with Strava Buttons/Connect with Strava Orange/btn_strava_connect_with_orange.svg';
+	import stravaConnectButton from '$lib/assets/strava_buttons/connect_with_strava_orange/btn_strava_connect_with_orange.svg';
 
 	let { isLoggedIn } = $props();
 

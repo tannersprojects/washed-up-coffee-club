@@ -6,7 +6,6 @@ import { stravaConnectionsTable, profileTable } from '$lib/db/schema';
 import { eq } from 'drizzle-orm';
 import type { StravaTokenResponse, StravaSummaryAthlete } from '$lib/types/strava';
 
-// Create admin client for service role operations
 const adminClient = createClient(PUBLIC_SUPABASE_URL, SUPABASE_SECRET_KEY, {
 	auth: {
 		autoRefreshToken: false,
@@ -14,17 +13,10 @@ const adminClient = createClient(PUBLIC_SUPABASE_URL, SUPABASE_SECRET_KEY, {
 	}
 });
 
-/**
- * Finds or creates a shadow user for a Strava athlete
- * @param athleteData - Strava athlete profile data
- * @param tokens - OAuth tokens from Strava
- * @returns Supabase user ID
- */
 export async function findOrCreateShadowUser(
 	athleteData: StravaSummaryAthlete,
 	tokens: StravaTokenResponse
 ): Promise<string> {
-	// Check if connection already exists
 	const existingConnection = await db
 		.select()
 		.from(stravaConnectionsTable)
@@ -34,7 +26,6 @@ export async function findOrCreateShadowUser(
 	if (existingConnection.length > 0) {
 		const userId = existingConnection[0].profileId;
 
-		// Update existing connection with new tokens
 		await db
 			.update(stravaConnectionsTable)
 			.set({
@@ -46,19 +37,16 @@ export async function findOrCreateShadowUser(
 			})
 			.where(eq(stravaConnectionsTable.stravaAthleteId, athleteData.id));
 
-		// Update profile data if Strava profile has changed
 		await updateUserProfile(userId, athleteData);
 
 		return userId;
 	}
 
-	// Create new shadow user
 	const shadowEmail = `${athleteData.id}@strava.washed-up.club`;
 
-	// Create user via Admin API
 	const { data: user, error: userError } = await adminClient.auth.admin.createUser({
 		email: shadowEmail,
-		email_confirm: true, // Mark email as confirmed
+		email_confirm: true,
 		user_metadata: {
 			strava_athlete_id: athleteData.id,
 			firstname: athleteData.firstname,
@@ -71,8 +59,6 @@ export async function findOrCreateShadowUser(
 		throw new Error(`Failed to create shadow user: ${userError?.message || 'Unknown error'}`);
 	}
 
-	// Create profile record with user data
-	// This is required because strava_connections references profile.id
 	try {
 		await db.insert(profileTable).values({
 			id: user.user.id,
@@ -83,12 +69,9 @@ export async function findOrCreateShadowUser(
 			updatedAt: new Date()
 		});
 	} catch (profileError) {
-		// Profile might already exist, or there might be a constraint issue
-		// Log but don't fail - the connection insert will fail if there's a real problem
 		console.warn('Profile creation warning:', profileError);
 	}
 
-	// Insert Strava connection record
 	await db.insert(stravaConnectionsTable).values({
 		profileId: user.user.id,
 		stravaAthleteId: athleteData.id,
@@ -101,14 +84,6 @@ export async function findOrCreateShadowUser(
 	return user.user.id;
 }
 
-// Note: Session creation is now handled directly in the callback route
-// This function is kept for potential future use but is not currently called
-
-/**
- * Updates user profile data from Strava athlete data
- * @param userId - Supabase user ID
- * @param athleteData - Strava athlete profile data
- */
 export async function updateUserProfile(
 	userId: string,
 	athleteData: StravaSummaryAthlete
@@ -125,11 +100,6 @@ export async function updateUserProfile(
 		.where(eq(profileTable.id, userId));
 }
 
-/**
- * Gets the current user's Strava connection data
- * @param userId - Supabase user ID
- * @returns Strava connection record or null
- */
 export async function getStravaConnection(userId: string) {
 	const connection = await db
 		.select()
@@ -140,11 +110,6 @@ export async function getStravaConnection(userId: string) {
 	return connection[0] || null;
 }
 
-/**
- * Gets user profile data from database
- * @param userId - Supabase user ID
- * @returns Profile record or null
- */
 export async function getUserProfile(userId: string) {
 	const profile = await db.query.profileTable.findFirst({
 		where: eq(profileTable.id, userId)
