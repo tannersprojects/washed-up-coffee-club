@@ -1,4 +1,15 @@
-import type { SportType } from '$lib/constants/strava';
+import type { SportType, WebhookObjectType, WebhookAspectType } from '$lib/constants/strava';
+
+/** Strava webhook POST body. Matches structure in strava_webhook_logs (migration 0003). */
+export interface StravaWebhookPayload {
+	object_type: WebhookObjectType;
+	aspect_type: WebhookAspectType;
+	object_id: number;
+	owner_id: number;
+	subscription_id: number;
+	event_time: number;
+	updates?: Record<string, unknown>;
+}
 
 // Strava OAuth Token Exchange Response
 export interface StravaTokenResponse {

@@ -35,11 +35,10 @@ CREATE OR REPLACE FUNCTION public.handle_new_strava_webhook()
 RETURNS TRIGGER AS $$
 DECLARE
   webhook_url TEXT;
-  service_role_key TEXT;
 BEGIN
   -- Fetch values from Vault
   webhook_url := public.get_secret('webhook_url');
-  -- TODO: Add jwt authentication
+  -- TODO: To add auth: create webhook_auth_token in Vault, fetch it here, add to Authorization header; validate in process-webhook handler
 
   -- Validation
   IF webhook_url IS NULL OR webhook_url = '' THEN
@@ -53,7 +52,6 @@ BEGIN
     url := webhook_url,
     headers := jsonb_build_object(
       'Content-Type', 'application/json'
-      -- TODO: Add custom JWT for Edge Function auth
     ),
     body := jsonb_build_object(
       'type', TG_OP,

@@ -3,7 +3,7 @@ import type { RequestHandler } from './$types';
 import { STRAVA_WEBHOOK_VERIFY_TOKEN } from '$env/static/private';
 import { db } from '$lib/db';
 import { stravaWebhookLogsTable } from '$lib/db/schema';
-import type { WebhookObjectType, WebhookAspectType } from '$lib/constants';
+import type { StravaWebhookPayload } from '$lib/types/strava';
 
 export const GET: RequestHandler = async ({ url }) => {
 	const mode = url.searchParams.get('hub.mode');
@@ -19,16 +19,15 @@ export const GET: RequestHandler = async ({ url }) => {
 
 export const POST: RequestHandler = async ({ request }) => {
 	try {
-		// TODO: Validate the webhook signature (cast to appropriate type)
 		// TODO: Add logging
-		const body = await request.json();
+		const body = (await request.json()) as StravaWebhookPayload;
 
 		await db.insert(stravaWebhookLogsTable).values({
 			payload: body,
 			stravaAthleteId: body.owner_id,
 			objectId: body.object_id,
-			objectType: body.object_type as WebhookObjectType,
-			aspectType: body.aspect_type as WebhookAspectType,
+			objectType: body.object_type,
+			aspectType: body.aspect_type,
 			eventTime: body.event_time
 		});
 

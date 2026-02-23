@@ -69,6 +69,7 @@ async function deleteSubscription(id: string) {
 	else console.log('❌ Delete failed:', await res.json());
 }
 
+// TODO: Validate id is provided when action === 'delete'; exit with clear error if missing
 const [action, id] = actionArgs;
 if (action === 'view') viewSubscription();
 else if (action === 'create') createSubscription();

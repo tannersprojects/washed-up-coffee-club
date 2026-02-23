@@ -1,4 +1,4 @@
-import { CHALLENGE_TYPE, PARTICIPANT_STATUS } from '$lib/constants';
+import { CHALLENGE_TYPE, PARTICIPANT_STATUS, type ChallengeType } from '$lib/constants';
 import type {
 	LeaderboardRowData,
 	ChallengeParticipantWithRelations,
@@ -26,7 +26,7 @@ const STATUS_ORDER: Record<string, number> = {
 export class LeaderboardUI {
 	private challengeParticipantsWithRelations: ChallengeParticipantWithRelations[];
 	private goalValue: number | null;
-	private challengeType: string;
+	private challengeType: ChallengeType;
 
 	leaderboardRows: LeaderboardRowData[];
 
@@ -39,7 +39,7 @@ export class LeaderboardUI {
 	constructor(
 		challengeParticipantsWithRelations: ChallengeParticipantWithRelations[],
 		goalValue: number | null,
-		challengeType: string
+		challengeType: ChallengeType
 	) {
 		this.challengeParticipantsWithRelations = $state(challengeParticipantsWithRelations);
 		this.goalValue = $state(goalValue);
