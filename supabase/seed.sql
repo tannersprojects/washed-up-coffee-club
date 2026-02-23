@@ -26,7 +26,8 @@ VALUES
   ('d0c2c0e0-1111-4444-8888-000000000003', 'Emily', 'Voss', 'evoss', 'user', 1003),
   ('d0c2c0e0-1111-4444-8888-000000000004', 'Tyler', 'Durden', 'tdurden', 'user', 1004),
   ('d0c2c0e0-1111-4444-8888-000000000005', 'Jessica', 'Alba', 'jalba', 'user', 1005),
-  ('d0c2c0e0-1111-4444-8888-000000000006', 'Ken', 'Block', 'kblock', 'user', 1006)
+  ('d0c2c0e0-1111-4444-8888-000000000006', 'Ken', 'Block', 'kblock', 'user', 1006),
+  ('d0c2c0e0-1111-4444-8888-000000000007', 'Alex', 'Newbie', 'anewbie', 'user', 1007)
 ON CONFLICT (id) DO NOTHING;
 
 -- 2. Seed The Challenge
@@ -46,24 +47,25 @@ VALUES (
 ON CONFLICT (id) DO NOTHING;
 
 -- 3. Seed Participants (The Scoreboard)
--- cumulative challenge: result_distance in meters (result_time null; display shows "--" until distance display added)
+-- cumulative challenge: result_distance in meters, result_time in seconds (for completed)
 INSERT INTO challenge_participants (id, challenge_id, profile_id, status, result_distance, result_time)
 VALUES 
-  ('a0000000-0000-0000-0000-000000000001', 'c0000000-0000-0000-0000-000000000001', 'd0c2c0e0-1111-4444-8888-000000000001', 'completed', 21197, NULL),
-  ('a0000000-0000-0000-0000-000000000002', 'c0000000-0000-0000-0000-000000000001', 'd0c2c0e0-1111-4444-8888-000000000002', 'completed', 21197, NULL),
-  ('a0000000-0000-0000-0000-000000000003', 'c0000000-0000-0000-0000-000000000001', 'd0c2c0e0-1111-4444-8888-000000000003', 'completed', 21197, NULL),
+  ('a0000000-0000-0000-0000-000000000001', 'c0000000-0000-0000-0000-000000000001', 'd0c2c0e0-1111-4444-8888-000000000001', 'completed', 21197, 5700),  -- 1:35:00
+  ('a0000000-0000-0000-0000-000000000002', 'c0000000-0000-0000-0000-000000000001', 'd0c2c0e0-1111-4444-8888-000000000002', 'completed', 21197, 6120),  -- 1:42:00
+  ('a0000000-0000-0000-0000-000000000003', 'c0000000-0000-0000-0000-000000000001', 'd0c2c0e0-1111-4444-8888-000000000003', 'completed', 21197, 6480),  -- 1:48:00
   ('a0000000-0000-0000-0000-000000000004', 'c0000000-0000-0000-0000-000000000001', 'd0c2c0e0-1111-4444-8888-000000000004', 'in_progress', 15000, NULL),
   ('a0000000-0000-0000-0000-000000000005', 'c0000000-0000-0000-0000-000000000001', 'd0c2c0e0-1111-4444-8888-000000000005', 'in_progress', 5200, NULL),
-  ('a0000000-0000-0000-0000-000000000006', 'c0000000-0000-0000-0000-000000000001', 'd0c2c0e0-1111-4444-8888-000000000006', 'did_not_finish', 8000, NULL)
+  ('a0000000-0000-0000-0000-000000000006', 'c0000000-0000-0000-0000-000000000001', 'd0c2c0e0-1111-4444-8888-000000000006', 'did_not_finish', 8000, NULL),
+  ('a0000000-0000-0000-0000-000000000007', 'c0000000-0000-0000-0000-000000000001', 'd0c2c0e0-1111-4444-8888-000000000007', 'registered', NULL, NULL)
 ON CONFLICT (id) DO NOTHING;
 
 -- 4. Seed Contributions (The Evidence)
--- cumulative: distance in meters, time null
+-- cumulative: distance in meters, time in seconds
 INSERT INTO challenge_contributions (id, participant_id, strava_activity_id, activity_name, distance, time, occurred_at)
 VALUES
-  (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000001', 99001, 'Morning Half Marathon', 21197, NULL, '2026-01-18 07:30:00+00'),
-  (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000002', 99002, 'Sunday Long Run', 21197, NULL, '2026-01-18 08:00:00+00'),
-  (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000003', 99003, 'Easy Pace Half', 21197, NULL, '2026-01-18 09:15:00+00'),
+  (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000001', 99001, 'Morning Half Marathon', 21197, 5700, '2026-01-18 07:30:00+00'),  -- 1:35:00
+  (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000002', 99002, 'Sunday Long Run', 21197, 6120, '2026-01-18 08:00:00+00'),   -- 1:42:00
+  (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000003', 99003, 'Easy Pace Half', 21197, 6480, '2026-01-18 09:15:00+00'),    -- 1:48:00
   (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000004', 99004, 'Partial Run', 15000, NULL, '2026-01-18 10:00:00+00');
 
 -- 5. Webhook Vault Secrets (local dev)
