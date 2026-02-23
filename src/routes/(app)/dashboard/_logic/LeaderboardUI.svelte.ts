@@ -54,14 +54,14 @@ export class LeaderboardUI {
 				if (this.challengeType === CHALLENGE_TYPE.SEGMENT_RACE) {
 					const timeA = a.resultTime ?? Infinity;
 					const timeB = b.resultTime ?? Infinity;
-					cmp = timeA - timeB;
+					cmp = timeA === Infinity && timeB === Infinity ? 0 : timeA - timeB;
 				} else if (this.challengeType === CHALLENGE_TYPE.CUMULATIVE) {
 					const isCompleted = statusA === STATUS_ORDER[PARTICIPANT_STATUS.COMPLETED];
 					if (isCompleted) {
 						// Completed: faster time = higher rank
 						const timeA = a.resultTime ?? Infinity;
 						const timeB = b.resultTime ?? Infinity;
-						cmp = timeA - timeB;
+						cmp = timeA === Infinity && timeB === Infinity ? 0 : timeA - timeB;
 						if (cmp !== 0) return cmp;
 						// Tiebreaker: has time ranks above no time
 						const hasTimeA = a.resultTime != null ? 1 : 0;

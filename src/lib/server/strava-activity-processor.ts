@@ -114,6 +114,7 @@ function computeNextParticipantState(
 	} else if (challengeType === CHALLENGE_TYPE.CUMULATIVE) {
 		resultDistance = (participant.resultDistance ?? 0) + validation.distance;
 		resultTime = (participant.resultTime ?? 0) + validation.time;
+		highlightActivityId = activityId;
 	} else if (challengeType === CHALLENGE_TYPE.SEGMENT_RACE) {
 		const newTime = validation.time;
 		if (newTime != null) {
