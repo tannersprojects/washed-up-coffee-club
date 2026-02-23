@@ -1,7 +1,16 @@
 import { STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET, STRAVA_REDIRECT_URI } from '$env/static/private';
-import type { StravaTokenResponse, StravaErrorResponse } from '$lib/types/strava';
+import type {
+	StravaDetailedActivityCamel,
+	StravaErrorResponse,
+	StravaTokenResponse
+} from '$lib/types/strava';
+import { keysToCamel } from '$lib/utils/case';
+import { db } from '$lib/db';
+import { stravaConnectionsTable, type StravaConnection } from '$lib/db/schema';
+import { eq } from 'drizzle-orm';
 
 const STRAVA_API_BASE = 'https://www.strava.com/api/v3';
+const TOKEN_REFRESH_BUFFER_MS = 5 * 60 * 1000;
 const STRAVA_OAUTH_BASE = 'https://www.strava.com/oauth';
 
 export function generateAuthUrl(state: string): string {
@@ -64,4 +73,67 @@ export async function refreshAccessToken(refreshToken: string): Promise<StravaTo
 	}
 
 	return response.json();
+}
+
+export async function refreshConnectionIfNeeded(
+	connection: StravaConnection
+): Promise<StravaConnection> {
+	const expiresAt = new Date(connection.expiresAt);
+	const fiveMinutesFromNow = new Date(Date.now() + TOKEN_REFRESH_BUFFER_MS);
+
+	if (expiresAt > fiveMinutesFromNow) return connection;
+
+	const newTokens = await refreshAccessToken(connection.refreshToken);
+
+	const [updated] = await db
+		.update(stravaConnectionsTable)
+		.set({
+			accessToken: newTokens.access_token,
+			refreshToken: newTokens.refresh_token,
+			expiresAt: new Date(newTokens.expires_at * 1000),
+			updatedAt: new Date()
+		})
+		.where(eq(stravaConnectionsTable.id, connection.id))
+		.returning();
+
+	if (!updated) {
+		throw new Error('Failed to update Strava connection');
+	}
+
+	return updated;
+}
+
+export async function getActivityById(
+	activityId: number,
+	includeAllEfforts: boolean,
+	accessToken: string
+): Promise<StravaDetailedActivityCamel> {
+	const url = new URL(`${STRAVA_API_BASE}/activities/${activityId}`);
+	url.searchParams.append('include_all_efforts', includeAllEfforts.toString());
+
+	const response = await fetch(url.toString(), {
+		headers: {
+			Authorization: `Bearer ${accessToken}`
+		}
+	});
+
+	if (!response.ok) {
+		let message = response.statusText;
+		try {
+			const errBody = (await response.json()) as { message?: string };
+			if (errBody?.message) message = errBody.message;
+		} catch {
+			// Body wasn't JSON, keep statusText
+		}
+		throw new Error(`Failed to fetch activity: ${response.status} ${message}`);
+	}
+
+	let data: unknown;
+	try {
+		data = await response.json();
+	} catch {
+		throw new Error('Failed to parse activity response as JSON');
+	}
+
+	return keysToCamel<StravaDetailedActivityCamel>(data);
 }

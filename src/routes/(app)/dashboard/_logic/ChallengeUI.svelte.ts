@@ -64,7 +64,11 @@ export class ChallengeUI {
 		const initialState = getChallengeTimeStateFromDates(this.startDate, this.endDate);
 		this.timeLeft = $state(formatTimeRemaining(initialState.targetDate));
 		this.countdownInterval = null;
-		this.leaderboard = new LeaderboardUI(challengeParticipantsWithRelations, this.goalValue);
+		this.leaderboard = new LeaderboardUI(
+			challengeParticipantsWithRelations,
+			this.goalValue,
+			this.type
+		);
 		this.activeTab = $state(LEADERBOARD_TAB.Leaderboard);
 		this.challengeTimeState = $derived.by(() => {
 			void this.timeLeft; // dependency: re-run when countdown ticks

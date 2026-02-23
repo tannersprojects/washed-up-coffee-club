@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
-	import whiteStravaConnectButton from '$lib/assets/1.1 Connect with Strava Buttons/Connect with Strava White/btn_strava_connect_with_white.svg';
+	import whiteStravaConnectButton from '$lib/assets/strava_buttons/connect_with_strava_white/btn_strava_connect_with_white.svg';
 
 	let { scrollY, isLoggedIn } = $props();
 </script>

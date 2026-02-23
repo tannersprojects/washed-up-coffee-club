@@ -5,3 +5,4 @@ export * from './page';
 export * from './participant';
 export * from './profile';
 export * from './auth';
+export * from './strava';

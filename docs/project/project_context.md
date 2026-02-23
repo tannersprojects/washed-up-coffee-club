@@ -1,6 +1,6 @@
 # Project Context: Washed Up Coffee Club Leaderboard
 
-**Purpose:** Dense reference for AI assistants or other chats. For a short “what is this app” summary, use [`project_overview.md`](./project_overview.md) first.
+**Purpose:** Dense reference for AI assistants or other chats. For a short "what is this app" summary, use [`project_overview.md`](./project_overview.md) first.
 
 ---
 
@@ -32,7 +32,7 @@
 
 ## 3. Database Schema (Supabase / Drizzle)
 
-The current schema is defined in detail in [`src/lib/db/schema.ts`](../src/lib/db/schema.ts). This section summarizes the parts most relevant to the dashboard and leaderboard.
+The current schema is defined in detail in [`src/lib/db/schema.ts`](../../src/lib/db/schema.ts). This section summarizes the parts most relevant to the dashboard and leaderboard.
 
 ### 1. `profile` (Public Info)
 
@@ -59,7 +59,7 @@ The current schema is defined in detail in [`src/lib/db/schema.ts`](../src/lib/d
 - `id` (UUID, PK).
 - `title` (text).
 - `description` (text).
-- `type` (enum): see `CHALLENGE_TYPE` in `src/lib/constants/challenge-constants.ts`.
+- `type` (enum): see `CHALLENGE_TYPE` in `src/lib/constants/challenge.ts`.
 - `goalValue` (integer, nullable): goal value in meters for distance‑based challenges.
 - `segmentId` (bigint, nullable) for segment‑based events.
 - `startDate`, `endDate` (timestamps with time zone).
@@ -72,11 +72,11 @@ The current schema is defined in detail in [`src/lib/db/schema.ts`](../src/lib/d
 - `id` (UUID, PK).
 - `challengeId` (UUID, FK → `challenges.id`).
 - `profileId` (UUID, FK → `profile.id`).
-- `status` (enum): see `PARTICIPANT_STATUS` in `src/lib/constants/participant-constants.ts`.
+- `status` (enum): see `PARTICIPANT_STATUS` in `src/lib/constants/participant.ts`.
 - `joinedAt` (timestamp).
-- `resultValue` (integer): cached value used for sorting.
-- `resultDisplay` (text): formatted time/distance for UI.
-- `highlightActivityId` (bigint, nullable): ties a participant to a specific Strava activity.
+- `resultDistance` (real, nullable): cached total distance in meters. For cumulative: sum of contributions; for best_effort: max.
+- `resultTime` (integer, nullable): cached total time in seconds. For cumulative: sum; for segment_race: min.
+- `highlightActivityId` (bigint, nullable): ties a participant to the key Strava activity (best effort or latest that met goal).
 - `createdAt`, `updatedAt` (timestamps).
 
 ### 5. `challenge_contributions`
@@ -85,7 +85,8 @@ The current schema is defined in detail in [`src/lib/db/schema.ts`](../src/lib/d
 - `participantId` (UUID, FK → `challenge_participants.id`).
 - `stravaActivityId` (bigint): Strava activity identifier.
 - `activityName` (text, nullable).
-- `value` (integer): contribution value in meters or other units depending on challenge type.
+- `distance` (real, nullable): contribution distance in meters.
+- `time` (integer, nullable): contribution time in seconds.
 - `isValid` (boolean): allows invalidating a specific run without deleting it.
 - `occurredAt` (timestamp with time zone).
 - `createdAt` (timestamp with time zone).
@@ -94,7 +95,7 @@ These tables together power the dashboard: `challenges` define the events, `chal
 
 ## 4. Data Models (TypeScript)
 
-Types are colocated by feature in `src/lib/types/`. UI classes live in each route’s `_logic/` and consume these types.
+Types are colocated by feature in `src/lib/types/`. UI classes live in each route's `_logic/` and consume these types.
 
 ### Dashboard (`src/lib/types/dashboard.ts`)
 
@@ -105,7 +106,7 @@ Types are colocated by feature in `src/lib/types/`. UI classes live in each rout
 
 - `ChallengeWithParticipants` — challenge plus its participants (no profile/contributions).
 - `AdminContextData` — loader payload: `{ memories, routineSchedules, challenges }`.
-- **UI classes:** `AdminUI` (tab state, passes data to sections), `ChallengeAdmin`, `MemoryAdmin`, `RoutineScheduleAdmin` (each section’s CRUD state).
+- **UI classes:** `AdminUI` (tab state, passes data to sections), `ChallengeAdmin`, `MemoryAdmin`, `RoutineScheduleAdmin` (each section's CRUD state).
 
 ### Content / Landing (`src/lib/types/content.ts`)
 
@@ -124,9 +125,19 @@ Types are colocated by feature in `src/lib/types/`. UI classes live in each rout
 - **Components:** Accept class instances as props; keep `.svelte` for rendering and use `.svelte.ts` for non-trivial logic. Item classes implement `toJSON()` for API payloads.
 - Full rules: `.cursor/rules/Svelte-5-Standards.mdc` in repo root.
 
+## 4b. Leaderboard Sorting Rules
+
+Implemented in `LeaderboardUI.svelte.ts`. Participants are first grouped by status (completed, in progress, registered, did not finish). Within each status group:
+
+| Challenge Type | Completed | Incomplete |
+|-----------------|-----------|------------|
+| **CUMULATIVE** | Sort by time (faster = higher rank). Tiebreaker: has time ranks above no time. | Sort by distance (longer = higher rank). |
+| **BEST_EFFORT** | Sort by distance (longer = higher rank). Tiebreaker: has time ranks above no time. | Sort by distance. |
+| **SEGMENT_RACE** | Sort by time (faster = higher rank). | Sort by time. |
+
 ## 5. Authentication Flow
 
-**Method:** OAuth 2.0 Authorization Code Flow.
+**Method:** OAuth 2.0 Authorization Code Flow. See [`auth.md`](./auth.md) for full details (Shadow User pattern, flow, key files).
 
 **Scope Request:**
 - `read`: To view public profile info.
@@ -147,9 +158,20 @@ Types are colocated by feature in `src/lib/types/`. UI classes live in each rout
 - **Route `/admin` (Protected + Admin Only):**
   - Action: Form to Create New Challenge.
   - Action: Button to "Force Sync" leaderboard (Backup for webhooks).
-- **Route `/api/webhooks/strava` (Public Endpoint):**
+- **Route `/api/strava/webhook` (Public Endpoint):**
   - GET: Handles Strava's subscription verification (echoing hub.challenge).
-  - POST: Handles incoming activity events.
+  - POST: Ingests incoming activity events; inserts into `strava_webhook_logs`.
+- **Route `/api/strava/process-webhook` (Internal, called by DB trigger):**
+  - POST: Fetches activity details from Strava, validates against active challenges, updates `challenge_participants` and `challenge_contributions`.
+
+### Authenticated layout
+
+Dashboard and admin routes live under the `(app)` route group:
+
+- **`(app)/+layout.server.ts`** — Enforces auth for all routes under `(app)`. Calls `locals.safeGetSession()`; redirects to `/` if no session, user, or profile. Returns `profile` to layout data.
+- **`(app)/+layout.svelte`** — Shared layout for authenticated pages. Renders `AppNav` with `profile` and `pageName`; slots in page content via `{@render children()}`.
+- **`(app)/dashboard/`** — Assumes user is authenticated; only loads dashboard data.
+- **`(app)/admin/`** — Enforces admin-only access in `admin/+page.server.ts` (checks `profile.role === PROFILE_ROLE.ADMIN`, redirects non-admins to `/dashboard`).
 
 ### Key file locations
 
@@ -158,14 +180,16 @@ Types are colocated by feature in `src/lib/types/`. UI classes live in each rout
 | Shared UI components | `src/lib/components/` (Tabs, AppNav) |
 | DB schema, enums, relations | `src/lib/db/schema.ts` |
 | Dashboard types | `src/lib/types/dashboard.ts` |
-| Challenge/participant constants | `src/lib/constants/challenge-constants.ts`, `participant-constants.ts`, `profile-constants.ts` |
+| Challenge/participant constants | `src/lib/constants/challenge.ts`, `participant.ts`, `profile.ts` |
 | Dashboard UI classes | `src/routes/(app)/dashboard/_logic/` (`DashboardUI.svelte.ts`, `ChallengeUI.svelte.ts`, `LeaderboardUI.svelte.ts`) |
 | Dashboard context | `src/routes/(app)/dashboard/_logic/context.ts` |
 | Admin UI classes | `src/routes/(app)/admin/_logic/` |
 | Auth (session, Strava shadow user) | `src/lib/server/auth.ts` |
 | Strava API helpers | `src/lib/server/strava.ts` |
 | Strava OAuth routes | `src/routes/auth/strava/login/`, `auth/strava/callback/` |
-| Strava webhook (planned) | `src/routes/api/webhooks/strava/+server.ts` |
+| Strava webhook ingest | `src/routes/api/strava/webhook/+server.ts` |
+| Strava webhook processor | `src/routes/api/strava/process-webhook/+server.ts` |
+| Strava activity processor | `src/lib/server/strava-activity-processor.ts` |
 | Strava assets (buttons, logos) | `src/lib/assets/` |
 
 ## 7. Asset Placement Guide
@@ -180,23 +204,21 @@ Types are colocated by feature in `src/lib/types/`. UI classes live in each rout
 
 **Goal:** Instant updates when a user finishes a run.
 
-**Implementation:** SvelteKit API Route (`src/routes/api/webhooks/strava/+server.ts`).
+**Full guide:** See [`strava_webhook.md`](../strava/strava_webhook.md) for the complete flow, setup, and key files.
 
-### Logic Flow:
+**Implementation:** Two-stage flow:
 
-1. **Ingest:** Strava sends POST to `https://[your-domain]/api/webhooks/strava`.
-2. **Filter Event:**
-   - If `aspect_type != 'create'`, ignore.
-   - If `object_type != 'activity'`, ignore.
-3. **Check Active Challenge:** Query challenges table via supabase-admin client. Is there a challenge active right now? If no, exit.
-4. **Fetch Activity Details:**
-   - Get `owner_id` (Strava ID) from payload.
-   - Look up `access_token` in `strava_connections`.
-   - Call Strava API: `GET /activities/{object_id}`.
-5. **Verify Criteria:**
-   - Is `type == 'Run'`?
-   - Is `distance >= challenge.goal_distance_meters`?
-6. **Update Leaderboard:** Insert into `challenge_results`.
+1. **Ingest** (`/api/strava/webhook`): Strava sends POST; app inserts raw payload into `strava_webhook_logs`.
+2. **DB trigger** (`on_strava_webhook_inserted`): Fires `pg_net.http_post` to the URL stored in `vault.secrets` (`webhook_url`), which points to `/api/strava/process-webhook`.
+3. **Process** (`/api/strava/process-webhook`): Receives the inserted record, fetches activity, updates leaderboard.
+
+### Logic Flow (process-webhook):
+
+1. **Filter Event:** Skip if `object_type != 'activity'` or `aspect_type != 'create'`.
+2. **Lookup Connection:** Look up `strava_connections` by `strava_athlete_id` from payload.
+3. **Fetch Activity:** Call Strava API `GET /activities/{id}` with `include_all_efforts=true`.
+4. **Validate & Process:** For each active challenge the user participates in, validate activity (sport type, distance, segment effort if applicable). See `strava-activity-validators.ts` and `strava-activity-processor.ts`.
+5. **Update Leaderboard:** Insert into `challenge_contributions`; update `challenge_participants` (result_distance, result_time, status, highlight_activity_id).
 
 ## 9. Admin Workflow (Owner Only)
 
@@ -242,6 +264,7 @@ Once the challenge is created in the app, the Owner sends the group text: "Go ti
 - When testing, click the button to manually trigger the "Fetch Activity" logic for your user.
 
 **Production Deployment:**
-- Register the webhook with Strava pointing to your live domain: `https://[your-domain].com/api/webhooks/strava`.
+- Register the webhook with Strava pointing to your live domain: `https://[your-domain].com/api/strava/webhook`.
 - The live app will update automatically via webhooks.
+- Configure `vault.secrets.webhook_url` to point to `https://[your-domain].com/api/strava/process-webhook` so the DB trigger can invoke the processor.
 - The "Force Sync" button remains available as a backup.

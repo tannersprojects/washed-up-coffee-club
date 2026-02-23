@@ -16,7 +16,8 @@
 		"db:generate:name": "tsx node_modules/drizzle-kit/bin.cjs generate --name",
 		"db:migrate": "tsx node_modules/drizzle-kit/bin.cjs migrate",
 		"db:push": "tsx node_modules/drizzle-kit/bin.cjs push",
-		"db:studio": "drizzle-kit studio"
+		"db:studio": "drizzle-kit studio",
+		"strava:manage-webhook": "tsx scripts/manage-strava.ts"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.4.0",

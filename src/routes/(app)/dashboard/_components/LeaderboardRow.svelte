@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { formatDate } from '$lib/utils/datetime.js';
+	import { formatResultDisplay } from '$lib/utils/challenge.js';
 	import { fly } from 'svelte/transition';
 	import type { LeaderboardRowData } from '$lib/types/dashboard.js';
 	import { getDashboardContext } from '../_logic/context.js';
@@ -13,6 +14,7 @@
 
 	const dashboard = getDashboardContext();
 	const challenge = $derived(dashboard.selectedChallenge);
+	const resultDisplay = $derived(formatResultDisplay(row.participant.resultTime));
 
 	// Helper function for status color
 	const getStatusColor = (status: string | null) => {
@@ -29,11 +31,11 @@
 		}
 	};
 
-	function getMobileStatusLabel(status: string | null, resultDisplay: string | null): string {
-		if (status === 'completed') return resultDisplay || '--';
+	function getMobileStatusLabel(status: string | null, display: string): string {
+		if (status === 'completed') return display;
 		if (status === 'did_not_finish') return 'DNF';
 		if (status === 'in_progress') return 'In progress';
-		return resultDisplay || status || '--';
+		return display || status || '--';
 	}
 </script>
 
@@ -138,7 +140,7 @@
 			class="flex flex-col items-end justify-center text-right [grid-area:time] md:border-l md:border-white/10 md:pl-4"
 		>
 			{#if row.participant.status === 'completed'}
-				<span class="font-mono text-xl font-bold text-white">{row.participant.resultDisplay}</span>
+				<span class="font-mono text-xl font-bold text-white">{resultDisplay}</span>
 				<span class="font-mono text-[10px] tracking-wider text-(--accent-lime) uppercase"
 					>Official</span
 				>
@@ -146,11 +148,11 @@
 				<span
 					class="font-mono text-sm font-bold uppercase {getStatusColor(row.participant.status)}"
 				>
-					{getMobileStatusLabel(row.participant.status, row.participant.resultDisplay)}
+					{getMobileStatusLabel(row.participant.status, resultDisplay)}
 				</span>
-				{#if row.participant.resultDisplay}
+				{#if resultDisplay !== '--'}
 					<span class="font-mono text-[10px] tracking-wider text-gray-500 uppercase">
-						{row.participant.resultDisplay}
+						{resultDisplay}
 					</span>
 				{/if}
 			{/if}

@@ -3,10 +3,7 @@ import { createServerClient } from '@supabase/ssr';
 import type { Handle } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { getStravaConnection, getUserProfile } from '$lib/server/auth';
-import { refreshAccessToken } from '$lib/server/strava';
-import { db } from '$lib/db';
-import { stravaConnectionsTable } from '$lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { refreshConnectionIfNeeded } from '$lib/server/strava';
 
 const supabaseHandle: Handle = async ({ event, resolve }) => {
 	event.locals.supabase = createServerClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY, {
@@ -44,26 +41,10 @@ const supabaseHandle: Handle = async ({ event, resolve }) => {
 		try {
 			const connection = await getStravaConnection(user.id);
 			if (connection) {
-				const expiresAt = new Date(connection.expiresAt);
-				const now = new Date();
-				const fiveMinutesFromNow = new Date(now.getTime() + 5 * 60 * 1000);
-
-				if (expiresAt <= fiveMinutesFromNow) {
-					try {
-						const newTokens = await refreshAccessToken(connection.refreshToken);
-
-						await db
-							.update(stravaConnectionsTable)
-							.set({
-								accessToken: newTokens.access_token,
-								refreshToken: newTokens.refresh_token,
-								expiresAt: new Date(newTokens.expires_at * 1000),
-								updatedAt: new Date()
-							})
-							.where(eq(stravaConnectionsTable.profileId, user.id));
-					} catch (refreshError) {
-						console.error('Failed to refresh Strava token:', refreshError);
-					}
+				try {
+					await refreshConnectionIfNeeded(connection);
+				} catch (refreshError) {
+					console.error('Failed to refresh Strava token:', refreshError);
 				}
 			}
 		} catch (err) {

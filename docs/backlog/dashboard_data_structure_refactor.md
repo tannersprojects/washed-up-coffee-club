@@ -8,7 +8,7 @@ This doc records options for refactoring how dashboard challenge + participant d
 
 ## Current Shape
 
-- **Loader** (`src/routes/dashboard/loader.server.ts`) returns:
+- **Loader** (`src/routes/(app)/dashboard/loader.server.ts`) returns:
   - `challengesWithParticipation`: `ChallengeWithParticipation[]`
   - `challengeParticipantsWithRelationsByChallenge`: `Record<string, ChallengeParticipantWithRelations[]>`
 - **Risk:** If a challenge has no participants, the record has no key for that challenge ID; consumers that do `record[challengeId]` get `undefined` and can throw (e.g. `.length` on undefined in `LeaderboardUI`). The loader was updated to pre-initialize an empty array for every challenge ID to avoid that.
@@ -17,7 +17,7 @@ This doc records options for refactoring how dashboard challenge + participant d
 
 ## Options for Refactor
 
-### Option 1: Single array of “challenge with participants” (recommended)
+### Option 1: Single array of "challenge with participants" (recommended)
 
 **Idea:** Drop the separate record. Each challenge object carries its own `participants` array. One array of objects, each with everything needed for that challenge.
 
@@ -58,20 +58,20 @@ type DashboardContextData = {
 - Change `DashboardContextData` to:
   - `{ challengesWithParticipation: ChallengeWithParticipationAndParticipants[] }` (remove `challengeParticipantsWithRelationsByChallenge`).
 
-### 2. `src/routes/dashboard/loader.server.ts`
+### 2. `src/routes/(app)/dashboard/loader.server.ts`
 
 - In `loadDashboardData`:
   - Build a single array of challenges.
   - For each challenge, attach `participants: []` (and existing participation fields).
-  - In one pass over `allParticipants`, push each participant into the correct challenge’s `participants` (e.g. by finding the challenge by id in the array, or by indexing once by `challenge.id` for O(1) lookup).
+  - In one pass over `allParticipants`, push each participant into the correct challenge's `participants` (e.g. by finding the challenge by id in the array, or by indexing once by `challenge.id` for O(1) lookup).
   - Return only `{ challengesWithParticipation }` (no separate record).
 
-### 3. `src/routes/dashboard/_logic/context.ts`
+### 3. `src/routes/(app)/dashboard/_logic/context.ts`
 
 - `setDashboardContext(data: DashboardContextData)` already takes `DashboardContextData`; no signature change if `DashboardContextData` is updated as above.
 - Ensure the type import for `DashboardContextData` comes from `$lib/types/dashboard` and reflects the new shape (single array only).
 
-### 4. `src/routes/dashboard/_logic/DashboardUI.svelte.ts`
+### 4. `src/routes/(app)/dashboard/_logic/DashboardUI.svelte.ts`
 
 - **Constructor:** Change from:
   - `(challengesWithParticipation, challengeParticipantsWithRelationsByChallenge)`  
@@ -87,18 +87,18 @@ type DashboardContextData = {
   to:
   - Using `challengeData.participants` (each item in `challengesWithParticipation` already has `participants`).
 
-### 5. `src/routes/dashboard/_logic/ChallengeUI.svelte.ts`
+### 5. `src/routes/(app)/dashboard/_logic/ChallengeUI.svelte.ts`
 
 - **Constructor:** Second parameter is already `challengeParticipantsWithRelations: ChallengeParticipantWithRelations[]`; no type change.
 - If the first argument becomes a `ChallengeWithParticipationAndParticipants`, the constructor can take that single object and pass `challenge.participants` into `LeaderboardUI`; no need for a second parameter if the type carries `participants`.
 
-### 6. `src/routes/dashboard/_logic/LeaderboardUI.svelte.ts`
+### 6. `src/routes/(app)/dashboard/_logic/LeaderboardUI.svelte.ts`
 
-- No change required: it already receives `ChallengeParticipantWithRelations[]` and uses `.length` etc.; the array will always be defined (possibly empty) once it’s coming from the challenge object.
+- No change required: it already receives `ChallengeParticipantWithRelations[]` and uses `.length` etc.; the array will always be defined (possibly empty) once it's coming from the challenge object.
 
-### 7. `src/routes/dashboard/+page.server.ts`
+### 7. `src/routes/(app)/dashboard/+page.server.ts`
 
-- Load function already returns the result of `loadDashboardData(profile.id)`; once the loader returns only `{ challengesWithParticipation }`, the page’s `data` will have that shape. No change needed except to avoid passing the removed record to any consumer.
+- Load function already returns the result of `loadDashboardData(profile.id)`; once the loader returns only `{ challengesWithParticipation }`, the page's `data` will have that shape. No change needed except to avoid passing the removed record to any consumer.
 
 ---
 
@@ -110,6 +110,6 @@ type DashboardContextData = {
 | `loader.server.ts`        | Build one array; attach `participants` per challenge; return only that array. |
 | `context.ts`               | No API change; type import reflects new `DashboardContextData`. |
 | `DashboardUI.svelte.ts`    | Constructor and `fromServerData` take single array; use `c.participants` for `ChallengeUI`; `updateFromServerData` uses `challengeData.participants`. |
-| `ChallengeUI.svelte.ts`   | Optionally take single “challenge with participants” and pass `.participants` to `LeaderboardUI`. |
+| `ChallengeUI.svelte.ts`   | Optionally take single "challenge with participants" and pass `.participants` to `LeaderboardUI`. |
 | `LeaderboardUI.svelte.ts` | No change. |
 | `+page.server.ts`         | No change (loader return shape only). |

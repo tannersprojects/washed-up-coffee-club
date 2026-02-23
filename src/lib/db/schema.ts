@@ -1,14 +1,24 @@
-import { CHALLENGE_TYPE, CHALLENGE_STATUS, PARTICIPANT_STATUS, PROFILE_ROLE } from '$lib/constants';
+import {
+	CHALLENGE_TYPE,
+	CHALLENGE_STATUS,
+	PARTICIPANT_STATUS,
+	PROFILE_ROLE,
+	WEBHOOK_OBJECT_TYPE,
+	WEBHOOK_ASPECT_TYPE,
+	WEBHOOK_STATUS
+} from '$lib/constants';
 import {
 	pgTable,
 	uuid,
+	jsonb,
 	text,
 	timestamp,
 	bigint,
 	integer,
 	boolean,
 	index,
-	pgEnum
+	pgEnum,
+	real
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import type { InferSelectModel } from 'drizzle-orm';
@@ -41,6 +51,26 @@ export const participantStatusEnum = pgEnum('participant_status', [
 	PARTICIPANT_STATUS.IN_PROGRESS,
 	PARTICIPANT_STATUS.COMPLETED,
 	PARTICIPANT_STATUS.DID_NOT_FINISH
+]);
+
+// 4. Webhook Object Type: The Strava resource that triggered the event
+export const webhookObjectTypeEnum = pgEnum('webhook_object_type', [
+	WEBHOOK_OBJECT_TYPE.ACTIVITY,
+	WEBHOOK_OBJECT_TYPE.ATHLETE
+]);
+
+// 5. Webhook Aspect Type: What happened to the resource
+export const webhookAspectTypeEnum = pgEnum('webhook_aspect_type', [
+	WEBHOOK_ASPECT_TYPE.CREATE,
+	WEBHOOK_ASPECT_TYPE.UPDATE,
+	WEBHOOK_ASPECT_TYPE.DELETE
+]);
+
+// 6. Webhook Status: Processing lifecycle of the webhook event
+export const webhookStatusEnum = pgEnum('webhook_status', [
+	WEBHOOK_STATUS.PENDING,
+	WEBHOOK_STATUS.PROCESSED,
+	WEBHOOK_STATUS.ERROR
 ]);
 
 // Reference to Supabase auth.users (not managed by Drizzle, just for FK)
@@ -139,10 +169,11 @@ export const challengeParticipantsTable = pgTable(
 		joinedAt: timestamp('joined_at', { withTimezone: true }).defaultNow(),
 
 		// THE CACHED TOTAL
-		// For 'cumulative': This is the Sum of all contributions.
-		// For 'best_effort': This is the Value of the single best contribution.
-		resultValue: integer('result_value').default(0),
-		resultDisplay: text('result_display'),
+		// For 'cumulative': Sum of value_distance from contributions.
+		// For 'best_effort': Max value_distance from contributions.
+		// For 'segment_race': Min value_time from contributions.
+		resultDistance: real('result_distance'),
+		resultTime: integer('result_time'),
 
 		// For 'best_effort', this links to the winning activity.
 		// For 'cumulative', this could link to the *latest* activity that pushed them over the goal.
@@ -152,7 +183,8 @@ export const challengeParticipantsTable = pgTable(
 	},
 	(table) => [
 		index('idx_participant_challenge_profile').on(table.challengeId, table.profileId),
-		index('idx_participant_result').on(table.challengeId, table.resultValue)
+		index('idx_participant_result_distance').on(table.challengeId, table.resultDistance),
+		index('idx_participant_result_time').on(table.challengeId, table.resultTime)
 	]
 );
 
@@ -172,9 +204,9 @@ export const challengeContributionsTable = pgTable(
 		stravaActivityId: bigint('strava_activity_id', { mode: 'number' }).notNull(),
 		activityName: text('activity_name'), // Useful for UI ("Morning Run")
 
-		// The value this specific run contributed
-		// e.g. User runs 5 miles. value = 8046 (meters)
-		value: integer('value').notNull(),
+		// The value this specific run contributed (one of the two is set per challenge type)
+		distance: real('distance'),
+		time: integer('time'),
 
 		// Verification
 		isValid: boolean('is_valid').default(true), // Allows you to "disqualify" a specific run without deleting it
@@ -187,6 +219,22 @@ export const challengeContributionsTable = pgTable(
 		index('idx_contribution_unique').on(table.participantId, table.stravaActivityId)
 	]
 );
+
+// --- STRAVA WEBHOOK LOGS TABLE ---
+// Stores raw Strava webhook events for audit and async processing.
+// The DB trigger on INSERT fires an Edge Function via pg_net.
+export const stravaWebhookLogsTable = pgTable('strava_webhook_logs', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	payload: jsonb('payload').notNull(),
+	stravaAthleteId: bigint('strava_athlete_id', { mode: 'number' }),
+	objectType: webhookObjectTypeEnum('object_type'),
+	objectId: bigint('object_id', { mode: 'number' }),
+	aspectType: webhookAspectTypeEnum('aspect_type'),
+	eventTime: integer('event_time'),
+	status: webhookStatusEnum('status').default(WEBHOOK_STATUS.PENDING),
+	errorMessage: text('error_message'),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull()
+});
 
 // --- RELATIONS ---
 
@@ -240,3 +288,5 @@ export type RoutineSchedule = InferSelectModel<typeof routineSchedulesTable>;
 export type Challenge = InferSelectModel<typeof challengesTable>;
 export type ChallengeParticipant = InferSelectModel<typeof challengeParticipantsTable>;
 export type ChallengeContribution = InferSelectModel<typeof challengeContributionsTable>;
+export type StravaConnection = InferSelectModel<typeof stravaConnectionsTable>;
+export type StravaWebhookLog = InferSelectModel<typeof stravaWebhookLogsTable>;

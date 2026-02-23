@@ -14,43 +14,44 @@ This document defines the architectural patterns, folder structure, and state ma
 ### Global vs. Feature
 
 - **`src/lib/_`**: Generic, app-wide utilities and UI components (e.g., Buttons, Form Inputs, Date Formatters).
-- **`src/routes/_`**: Domain-specific logic. If a component or class is only used for the "Projects" feature, it belongs in `src/routes/projects/...`.
+- **`src/routes/_`**: Domain-specific logic. If a component or class is only used for a feature (e.g. dashboard, admin), it belongs in that route's folder under `src/routes/(app)/...`.
 
 ### The Tree
 
 ```
 src/
 ├── lib/
-│   ├── components/ui/  # Generic UI (shadcn-svelte, etc.)
-│   ├── db/             # Database Clients (Drizzle, Prisma, Firebase)
+│   ├── components/     # Shared UI (AppNav, Tabs, etc.)
+│   ├── db/             # Database (Drizzle)
 │   ├── utils/          # Pure helper functions
-│   └── state/          # GLOBAL State Singletons
-│       ├── auth.svelte.ts  # (See svelte5_auth_pattern.md)
-│       └── theme.svelte.ts
+│   └── server/         # Server-only (auth, Strava, processors)
 │
 ├── routes/
-│   ├── +layout.svelte  # Main App Shell
+│   ├── +layout.svelte      # Root layout
+│   ├── +layout.server.ts   # Root load
+│   ├── +page.svelte        # Landing (public)
 │   │
-│   │   # --- FEATURE: PROJECTS ---
-│   ├── projects/[id]/
-│   │   ├── +layout.svelte      # Project-specific layout
-│   │   ├── +page.svelte        # Entry point view
-│   │   ├── +page.server.ts     # Server-side data loading
+│   │   # --- AUTHENTICATED APP (dashboard + admin) ---
+│   ├── (app)/
+│   │   ├── +layout.server.ts   # Auth check; returns profile
+│   │   ├── +layout.svelte      # AppNav + slot for children
 │   │   │
-│   │   │   # LOGIC (Private folder)
-│   │   ├── _logic/
-│   │   │   ├── Project.svelte.ts  # Parent Class (Manager)
-│   │   │   └── Task.svelte.ts     # Child Class (Item)
+│   │   ├── dashboard/
+│   │   │   ├── +page.svelte
+│   │   │   ├── +page.server.ts
+│   │   │   ├── loader.server.ts
+│   │   │   ├── _logic/         # DashboardUI, ChallengeUI, LeaderboardUI
+│   │   │   └── _components/    # ChallengeCard, LeaderboardTable, etc.
 │   │   │
-│   │   │   # COMPONENTS (Private folder)
-│   │   ├── _components/
-│   │   │   ├── ProjectHeader.svelte
-│   │   │   └── KanbanBoard.svelte
-│   │   │
-│   │   └── settings/  # Sub-route
-│   │       └── +page.svelte
+│   │   └── admin/
+│   │       ├── +page.svelte
+│   │       ├── +page.server.ts # Admin-only guard
+│   │       ├── loader.server.ts
+│   │       ├── _logic/         # AdminUI, MemoryAdmin, etc.
+│   │       └── _components/    # MemoriesSection, SchedulesSection, etc.
 │   │
-│   └── (auth)/  # Auth routes
+│   ├── auth/           # OAuth (strava/login, strava/callback, logout)
+│   └── api/            # API routes (strava/webhook, strava/process-webhook)
 ```
 
 ## 3. State Management Patterns

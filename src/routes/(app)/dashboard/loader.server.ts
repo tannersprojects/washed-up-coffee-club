@@ -1,6 +1,6 @@
 import { db } from '$lib/db';
 import { challengeParticipantsTable, challengesTable } from '$lib/db/schema';
-import { asc, desc, eq, and, inArray } from 'drizzle-orm';
+import { eq, and, inArray } from 'drizzle-orm';
 import type {
 	ChallengeWithParticipation,
 	DashboardContextData,
@@ -64,8 +64,7 @@ export async function loadChallengeParticipants(
 		with: {
 			profile: true,
 			contributions: true
-		},
-		orderBy: [desc(challengeParticipantsTable.status), asc(challengeParticipantsTable.resultValue)]
+		}
 	});
 }
 
@@ -110,8 +109,7 @@ export async function loadDashboardData(profileId: string): Promise<DashboardCon
 		with: {
 			profile: true,
 			contributions: true
-		},
-		orderBy: [desc(challengeParticipantsTable.status), asc(challengeParticipantsTable.resultValue)]
+		}
 	});
 
 	for (const participant of allParticipants) {
