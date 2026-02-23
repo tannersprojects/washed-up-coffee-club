@@ -85,7 +85,7 @@ export async function refreshConnectionIfNeeded(
 
 	const newTokens = await refreshAccessToken(connection.refreshToken);
 
-	await db
+	const [updated] = await db
 		.update(stravaConnectionsTable)
 		.set({
 			accessToken: newTokens.access_token,
@@ -93,15 +93,14 @@ export async function refreshConnectionIfNeeded(
 			expiresAt: new Date(newTokens.expires_at * 1000),
 			updatedAt: new Date()
 		})
-		.where(eq(stravaConnectionsTable.id, connection.id));
+		.where(eq(stravaConnectionsTable.id, connection.id))
+		.returning();
 
-	return {
-		...connection,
-		accessToken: newTokens.access_token,
-		refreshToken: newTokens.refresh_token,
-		expiresAt: new Date(newTokens.expires_at * 1000),
-		updatedAt: new Date()
-	};
+	if (!updated) {
+		throw new Error('Failed to update Strava connection');
+	}
+
+	return updated;
 }
 
 export async function getActivityById(
