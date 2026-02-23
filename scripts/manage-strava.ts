@@ -1,7 +1,12 @@
 import 'dotenv/config';
 
-const { STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET, STRAVA_WEBHOOK_VERIFY_TOKEN, PUBLIC_NGROK_URL, PUBLIC_APP_URL } =
-	process.env;
+const {
+	STRAVA_CLIENT_ID,
+	STRAVA_CLIENT_SECRET,
+	STRAVA_WEBHOOK_VERIFY_TOKEN,
+	PUBLIC_NGROK_URL,
+	PUBLIC_APP_URL
+} = process.env;
 
 const args = process.argv.slice(2);
 const isProd = args.includes('--prod');
@@ -30,13 +35,20 @@ async function viewSubscription() {
 }
 
 async function createSubscription() {
+	if (!STRAVA_WEBHOOK_VERIFY_TOKEN) {
+		console.error(
+			'Missing required env var: STRAVA_WEBHOOK_VERIFY_TOKEN. Strava sends this back during verification; without it the subscription will fail. Check your .env file.'
+		);
+		process.exit(1);
+	}
+
 	console.log(`--- Creating Subscription (${isProd ? 'prod' : 'dev'}): ${CALLBACK_URL} ---`);
 
 	const formData = new FormData();
 	formData.append('client_id', STRAVA_CLIENT_ID!);
 	formData.append('client_secret', STRAVA_CLIENT_SECRET!);
 	formData.append('callback_url', CALLBACK_URL);
-	formData.append('verify_token', STRAVA_WEBHOOK_VERIFY_TOKEN!);
+	formData.append('verify_token', STRAVA_WEBHOOK_VERIFY_TOKEN);
 
 	const response = await fetch('https://www.strava.com/api/v3/push_subscriptions', {
 		method: 'POST',
