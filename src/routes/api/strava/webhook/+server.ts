@@ -11,7 +11,7 @@ export const GET: RequestHandler = async ({ url }) => {
 	const challenge = url.searchParams.get('hub.challenge');
 
 	if (mode === 'subscribe' && token === STRAVA_WEBHOOK_VERIFY_TOKEN) {
-		console.log('WEBHOOK_HANDSHAKE_SUCCESSFUL');
+		console.log('Webhook handshake successful');
 		return json({ 'hub.challenge': challenge });
 	}
 	return new Response('Forbidden', { status: 403 });

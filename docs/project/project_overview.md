@@ -47,5 +47,5 @@ Details: [`strava_compliance.md`](../strava_compliance.md), [`strava_compliance_
 - **Full context for AI/other chats:** [`project_context.md`](./project_context.md) — schema summary, auth flow, webhooks, admin workflow, file map.
 - **Strava webhook:** [`strava_webhook.md`](../strava/strava_webhook.md) — how the webhook pipeline works, setup, and key files.
 - **Svelte 5 + patterns:** `.cursor/rules/Svelte-5-Standards.mdc` in repo root.
-- **Backlog (future work):** [`docs/backlog/`](../backlog/) — admin dashboard plan, contribution recalculation options, dashboard data refactor, challenge UI consolidation.
+- **Backlog (future work):** [`docs/backlog/`](../backlog/) — admin dashboard plan, contribution recalculation options, dashboard data refactor, challenge UI consolidation, logging improvements.
 - **Auth:** [`auth.md`](./auth.md) — Strava-only login, Shadow User pattern, key files.
