@@ -1,12 +1,3 @@
-Gemini said
-It looks like you’ve done a great job debugging the CLI limitations. You are absolutely correct: the Supabase CLI does not currently have a sql query command, and db push requires a linked project state or a direct connection string.
-
-The Shadow User pattern and Webhook Architecture described in your documentation rely heavily on the database being correctly configured to talk to your SvelteKit API. Since supabase sql isn't an option, using the Supabase Management API via curl is the most reliable way to inject those Vault secrets during CI.
-
-Updated GitHub Action Workflow
-Here is the corrected and refined workflow based on your findings:
-
-YAML
 name: Supabase Migrations
 
 on:
@@ -44,7 +35,7 @@ jobs:
         run: |
           # Escape single quotes in WEBHOOK_URL for SQL safety
           WEBHOOK_URL_ESCAPED=$(echo "$WEBHOOK_URL" | sed "s/'/''/g")
-          
+
           # Use Management API to execute the Vault injection
           curl -sf -X POST "https://api.supabase.com/v1/projects/${SUPABASE_PROJECT_REF}/database/query" \
             -H "Authorization: Bearer ${SUPABASE_ACCESS_TOKEN}" \
