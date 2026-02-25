@@ -6,6 +6,8 @@
 		CHALLENGE_STATUS,
 		DISTANCE_LABEL,
 		DISTANCE_UNIT,
+		type ChallengeStatus,
+		type ChallengeType,
 		type DistanceUnit
 	} from '$lib/constants';
 	import { getUserPreferencesContext } from '$lib/state/user-preferences.svelte.js';
@@ -30,18 +32,25 @@
 	const unit = $derived(prefs.distanceUnit);
 
 	let isEditing = $state(false);
-	let editTitle = $derived(challenge.title);
-	let editDescription = $derived(challenge.description);
-	let editType = $derived(challenge.type);
+	let editTitle = $state('');
+	let editDescription = $state('');
+	let editType = $state<ChallengeType>(CHALLENGE_TYPE.CUMULATIVE);
 	let editGoalValue = $state('');
-	let editSegmentId = $derived(challenge.segmentId?.toString() ?? '');
-	let editStartDate = $derived(formatDatetimeForInput(challenge.startDate));
-	let editEndDate = $derived(formatDatetimeForInput(challenge.endDate));
-	let editStatus = $derived(challenge.status);
+	let editSegmentId = $state('');
+	let editStartDate = $state('');
+	let editEndDate = $state('');
+	let editStatus = $state<ChallengeStatus>(CHALLENGE_STATUS.UPCOMING);
 
 	$effect(() => {
 		if (!isEditing) {
+			editTitle = challenge.title;
+			editDescription = challenge.description;
+			editType = challenge.type as ChallengeType;
 			editGoalValue = metersToDisplayValue(challenge.goalDistance, unit);
+			editSegmentId = challenge.segmentId?.toString() ?? '';
+			editStartDate = formatDatetimeForInput(challenge.startDate);
+			editEndDate = formatDatetimeForInput(challenge.endDate);
+			editStatus = challenge.status as ChallengeStatus;
 		}
 	});
 

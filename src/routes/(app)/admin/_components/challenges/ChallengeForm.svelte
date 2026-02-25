@@ -75,12 +75,14 @@
 		const end = endDate
 			? (parseEasternToUtc(endDate) ?? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000))
 			: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-		const displayVal = goalValue ? parseFloat(goalValue) : null;
+		const isDistanceType =
+			type === CHALLENGE_TYPE.CUMULATIVE || type === CHALLENGE_TYPE.BEST_EFFORT;
+		const displayVal = isDistanceType && goalValue ? parseFloat(goalValue) : null;
 		const meters =
 			displayVal != null
 				? (unit === DISTANCE_UNIT.MILES ? milesToMeters(displayVal) : kmToMeters(displayVal))
 				: null;
-		formData.set('goalDistance', meters != null ? String(meters) : '');
+		formData.set('goalDistance', isDistanceType && meters != null ? String(meters) : '');
 		const segId = segmentId ? parseInt(segmentId, 10) : null;
 
 		const optimistic = new ChallengeAdmin({
