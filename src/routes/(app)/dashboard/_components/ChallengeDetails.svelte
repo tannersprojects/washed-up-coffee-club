@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { formatDate } from '$lib/utils/datetime.js';
+	import { formatDistanceDisplay } from '$lib/utils/distance.js';
 	import { getDashboardContext } from '../_logic/context.js';
 
-	let dashboard = getDashboardContext();
-	let challenge = $derived(dashboard.selectedChallenge);
-	let goalDistanceKm = $derived(
-		challenge?.goalValue ? (challenge.goalValue / 1000).toFixed(1) : null
+	const dashboard = getDashboardContext();
+	const challenge = $derived(dashboard.selectedChallenge);
+	const unit = $derived(dashboard.distanceUnit);
+	const goalDistanceDisplay = $derived(
+		challenge?.goalDistance ? formatDistanceDisplay(challenge.goalDistance, unit) : null
 	);
 </script>
 
@@ -25,12 +27,12 @@
 			<p class="font-mono text-sm text-white uppercase">{challenge?.type}</p>
 		</div>
 
-		{#if goalDistanceKm}
+		{#if goalDistanceDisplay}
 			<div>
 				<h3 class="mb-2 font-mono text-xs tracking-widest text-gray-500 uppercase">
 					Goal Distance
 				</h3>
-				<p class="font-mono text-2xl font-bold text-white">{goalDistanceKm} KM</p>
+				<p class="font-mono text-2xl font-bold text-white">{goalDistanceDisplay}</p>
 			</div>
 		{/if}
 

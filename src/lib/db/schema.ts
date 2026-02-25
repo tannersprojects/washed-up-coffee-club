@@ -143,7 +143,7 @@ export const challengesTable = pgTable('challenges', {
 	title: text('title').notNull(),
 	description: text('description').notNull().default(''),
 	type: challengeTypeEnum('type').notNull().default(CHALLENGE_TYPE.CUMULATIVE),
-	goalValue: integer('goal_value'),
+	goalDistance: real('goal_distance'),
 	segmentId: bigint('segment_id', { mode: 'number' }),
 	startDate: timestamp('start_date', { withTimezone: true }).notNull(),
 	endDate: timestamp('end_date', { withTimezone: true }).notNull(),

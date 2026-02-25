@@ -4,14 +4,21 @@
 	import {
 		CHALLENGE_TYPE,
 		CHALLENGE_STATUS,
+		DISTANCE_LABEL,
+		DISTANCE_UNIT,
 		type ChallengeType,
 		type ChallengeStatus
 	} from '$lib/constants';
 	import { getAdminContext } from '../../_logic/context.js';
+	import { getUserPreferencesContext } from '$lib/state/user-preferences.svelte.js';
 	import { ChallengeAdmin } from '../../_logic/ChallengeAdmin.svelte.js';
 	import { parseEasternToUtc } from '$lib/utils/datetime.js';
+	import { kmToMeters, milesToMeters } from '$lib/utils/distance.js';
 
 	let admin = getAdminContext();
+	const prefs = getUserPreferencesContext();
+	const unit = $derived(prefs.distanceUnit);
+
 	let title = $state('');
 	let description = $state('');
 	let type = $state<ChallengeType>(CHALLENGE_TYPE.CUMULATIVE);
@@ -51,7 +58,7 @@
 			!!startDate &&
 			!!endDate &&
 			(type === CHALLENGE_TYPE.CUMULATIVE || type === CHALLENGE_TYPE.BEST_EFFORT
-				? !!goalValue && parseInt(goalValue, 10) > 0
+				? !!goalValue && parseFloat(goalValue) > 0
 				: true) &&
 			(type === CHALLENGE_TYPE.SEGMENT_RACE ? !!segmentId && parseInt(segmentId, 10) > 0 : true)
 	);
@@ -68,7 +75,12 @@
 		const end = endDate
 			? (parseEasternToUtc(endDate) ?? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000))
 			: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-		const gv = goalValue ? parseInt(goalValue, 10) : null;
+		const displayVal = goalValue ? parseFloat(goalValue) : null;
+		const meters =
+			displayVal != null
+				? (unit === DISTANCE_UNIT.MILES ? milesToMeters(displayVal) : kmToMeters(displayVal))
+				: null;
+		formData.set('goalDistance', meters != null ? String(meters) : '');
 		const segId = segmentId ? parseInt(segmentId, 10) : null;
 
 		const optimistic = new ChallengeAdmin({
@@ -76,7 +88,7 @@
 			title: title.trim(),
 			description: description.trim(),
 			type,
-			goalValue: gv ?? null,
+			goalDistance: meters ?? null,
 			segmentId: segId ?? null,
 			startDate: start,
 			endDate: end,
@@ -143,15 +155,16 @@
 	{#if type === CHALLENGE_TYPE.CUMULATIVE || type === CHALLENGE_TYPE.BEST_EFFORT}
 		<div class="flex flex-col gap-1">
 			<label for="challenge-goal" class="font-mono text-xs text-white/80"
-				>Goal Value (meters/sec)</label
+				>Goal Distance ({DISTANCE_LABEL[unit]})</label
 			>
 			<input
 				id="challenge-goal"
 				type="number"
-				name="goalValue"
+				name="goalDistance"
 				bind:value={goalValue}
 				required={type === CHALLENGE_TYPE.CUMULATIVE || type === CHALLENGE_TYPE.BEST_EFFORT}
-				min="1"
+				min="0.1"
+				step="0.1"
 				class="rounded border border-white/20 bg-black/40 px-3 py-2 font-mono text-sm text-white"
 			/>
 		</div>

@@ -59,7 +59,7 @@
 		</div>
 		<div>
 			<p class="mb-1 text-xs text-neutral-400">Distance</p>
-			<p class="text-lg font-bold text-white">{challenge.leaderboard.totalDistanceKm}</p>
+			<p class="text-lg font-bold text-white">{challenge.leaderboard.totalDistance}</p>
 		</div>
 	</div>
 </button>

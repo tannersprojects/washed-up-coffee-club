@@ -19,7 +19,7 @@ function validateActivityForBestEffortChallenge(
 	activity: StravaDetailedActivityCamel,
 	challenge: Challenge
 ): ValidationResult {
-	const goalValue = challenge.goalValue ?? 0;
+	const goalDistance = challenge.goalDistance ?? 0;
 	const isRun = isRunActivity(activity.sportType);
 
 	if (!isRun) {
@@ -27,9 +27,9 @@ function validateActivityForBestEffortChallenge(
 		return { valid: false };
 	}
 
-	if (activity.distance < goalValue) {
+	if (activity.distance < goalDistance) {
 		console.log(
-			`Activity ${activity.id} is less than the goal value ${activity.distance} < ${goalValue}`
+			`Activity ${activity.id} is less than the goal distance ${activity.distance} < ${goalDistance}`
 		);
 		return { valid: false };
 	}

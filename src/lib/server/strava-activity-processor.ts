@@ -95,7 +95,7 @@ function computeNextParticipantState(
 	validation: ValidationResult & { valid: true },
 	activityId: number
 ): NextParticipantState {
-	const goalValue = challenge.goalValue ?? 0;
+	const goalDistance = challenge.goalDistance ?? 0;
 	const challengeType = challenge.type;
 
 	let resultDistance: number | null = participant.resultDistance ?? null;
@@ -129,7 +129,7 @@ function computeNextParticipantState(
 	if (status === PARTICIPANT_STATUS.REGISTERED) {
 		status = PARTICIPANT_STATUS.IN_PROGRESS;
 	}
-	if (isGoalMet(challengeType, resultDistance, resultTime, goalValue, challenge.segmentId)) {
+	if (isGoalMet(challengeType, resultDistance, resultTime, goalDistance, challenge.segmentId)) {
 		status = PARTICIPANT_STATUS.COMPLETED;
 	}
 
@@ -140,14 +140,14 @@ function isGoalMet(
 	challengeType: string,
 	resultDistance: number | null,
 	resultTime: number | null,
-	goalValue: number,
+	goalDistance: number,
 	segmentId: number | null
 ): boolean {
 	if (challengeType === CHALLENGE_TYPE.BEST_EFFORT) {
-		return (resultDistance ?? 0) >= goalValue;
+		return (resultDistance ?? 0) >= goalDistance;
 	}
 	if (challengeType === CHALLENGE_TYPE.CUMULATIVE) {
-		return (resultDistance ?? 0) >= goalValue;
+		return (resultDistance ?? 0) >= goalDistance;
 	}
 	if (challengeType === CHALLENGE_TYPE.SEGMENT_RACE) {
 		return segmentId != null && (resultTime ?? 0) > 0;

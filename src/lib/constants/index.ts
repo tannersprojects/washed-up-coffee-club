@@ -1,6 +1,7 @@
 export * from './admin';
 export * from './challenge';
 export * from './dashboard';
+export * from './distance';
 export * from './page';
 export * from './participant';
 export * from './profile';

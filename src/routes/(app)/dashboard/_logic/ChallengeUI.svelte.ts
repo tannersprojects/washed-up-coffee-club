@@ -11,7 +11,8 @@ import {
 	type ChallengeType,
 	type ChallengeStatus,
 	type ChallengeJoinDisplayState,
-	type LeaderboardTab
+	type LeaderboardTab,
+	type DistanceUnit
 } from '$lib/constants';
 import type { ChallengeTimeState } from '$lib/types/challenge.js';
 
@@ -23,7 +24,7 @@ export class ChallengeUI {
 	type: ChallengeType;
 	startDate: Date;
 	endDate: Date;
-	goalValue: number | null;
+	goalDistance: number | null;
 	segmentId: number | null;
 	status: ChallengeStatus;
 	isActive: boolean;
@@ -44,7 +45,8 @@ export class ChallengeUI {
 
 	constructor(
 		challengeWithParticipation: ChallengeWithParticipation,
-		challengeParticipantsWithRelations: ChallengeParticipantWithRelations[]
+		challengeParticipantsWithRelations: ChallengeParticipantWithRelations[],
+		distanceUnit: DistanceUnit
 	) {
 		this.id = challengeWithParticipation.id;
 		this.title = challengeWithParticipation.title;
@@ -52,7 +54,7 @@ export class ChallengeUI {
 		this.type = challengeWithParticipation.type;
 		this.startDate = challengeWithParticipation.startDate;
 		this.endDate = challengeWithParticipation.endDate;
-		this.goalValue = challengeWithParticipation.goalValue;
+		this.goalDistance = challengeWithParticipation.goalDistance;
 		this.segmentId = challengeWithParticipation.segmentId;
 		this.status = challengeWithParticipation.status;
 		this.isActive = challengeWithParticipation.isActive;
@@ -66,8 +68,9 @@ export class ChallengeUI {
 		this.countdownInterval = null;
 		this.leaderboard = new LeaderboardUI(
 			challengeParticipantsWithRelations,
-			this.goalValue,
-			this.type
+			this.goalDistance,
+			this.type,
+			distanceUnit
 		);
 		this.activeTab = $state(LEADERBOARD_TAB.Leaderboard);
 		this.challengeTimeState = $derived.by(() => {
@@ -164,7 +167,7 @@ export class ChallengeUI {
 			type: this.type,
 			startDate: this.startDate,
 			endDate: this.endDate,
-			goalValue: this.goalValue,
+			goalDistance: this.goalDistance,
 			segmentId: this.segmentId,
 			status: this.status,
 			isActive: this.isActive,

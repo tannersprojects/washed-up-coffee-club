@@ -32,7 +32,7 @@ ON CONFLICT (id) DO NOTHING;
 
 -- 2. Seed The Challenge
 -- 'c' is a valid hex character, so this ID works fine.
-INSERT INTO challenges (id, title, description, type, goal_value, start_date, end_date, status, is_active)
+INSERT INTO challenges (id, title, description, type, goal_distance, start_date, end_date, status, is_active)
 VALUES (
   'c0000000-0000-0000-0000-000000000001', 
   'The "Sunday Scaries" Half', 
