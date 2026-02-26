@@ -2,9 +2,12 @@
 	import { page } from '$app/state';
 	import AppNav from '$lib/components/AppNav.svelte';
 	import { getPageName } from '$lib/utils/page.js';
-import type { PageName } from '$lib/constants';
+	import { setUserPreferencesContext } from '$lib/state/user-preferences.svelte.js';
+	import type { PageName } from '$lib/constants';
 
 	let { data, children } = $props();
+
+	setUserPreferencesContext();
 
 	let pageName: PageName = $derived(getPageName(page.url.pathname));
 </script>

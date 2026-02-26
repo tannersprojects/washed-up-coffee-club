@@ -6,7 +6,7 @@ export class ChallengeAdmin {
 	title: string;
 	description: string;
 	type: string;
-	goalValue: number | null;
+	goalDistance: number | null;
 	segmentId: number | null;
 	startDate: Date;
 	endDate: Date;
@@ -21,7 +21,7 @@ export class ChallengeAdmin {
 		this.title = row.title;
 		this.description = row.description;
 		this.type = row.type;
-		this.goalValue = row.goalValue;
+		this.goalDistance = row.goalDistance;
 		this.segmentId = row.segmentId;
 		this.startDate = row.startDate;
 		this.endDate = row.endDate;
@@ -42,7 +42,7 @@ export class ChallengeAdmin {
 			title: this.title,
 			description: this.description,
 			type: this.type,
-			goalValue: this.goalValue,
+			goalDistance: this.goalDistance,
 			segmentId: this.segmentId,
 			startDate: this.startDate,
 			endDate: this.endDate,

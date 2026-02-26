@@ -4,6 +4,7 @@ import type {
 	ChallengeParticipant,
 	ChallengeContribution
 } from '$lib/db/schema';
+import type { LongDistanceLabel } from '$lib/constants';
 
 /**
  * Challenge participant with relations loaded from query
@@ -30,7 +31,8 @@ export interface ChallengeStats {
 	totalRunners: number;
 	finishers: number;
 	activeRunners: number;
-	totalDistanceKm: string;
+	totalDistance: string;
+	totalDistanceLabel: LongDistanceLabel;
 }
 
 /**

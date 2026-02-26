@@ -1,6 +1,12 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { eq, desc } from 'drizzle-orm';
-import { PROFILE_ROLE, CHALLENGE_TYPE, CHALLENGE_STATUS } from '$lib/constants';
+import {
+	PROFILE_ROLE,
+	CHALLENGE_TYPE,
+	CHALLENGE_STATUS,
+	CHALLENGE_TYPES_WITH_GOAL_DISTANCE,
+	type ChallengeType
+} from '$lib/constants';
 import { parseEasternToUtc } from '$lib/utils/datetime.js';
 import { db } from '$lib/db';
 import { memoriesTable, routineSchedulesTable, challengesTable } from '$lib/db/schema';
@@ -479,7 +485,7 @@ export const actions: Actions = {
 		const title = formData.get('title')?.toString()?.trim() ?? '';
 		const description = formData.get('description')?.toString()?.trim() ?? '';
 		const type = formData.get('type')?.toString() ?? '';
-		const goalValueRaw = formData.get('goalValue')?.toString();
+		const goalDistanceRaw = formData.get('goalDistance')?.toString();
 		const segmentIdRaw = formData.get('segmentId')?.toString();
 		const startDateRaw = formData.get('startDate')?.toString();
 		const endDateRaw = formData.get('endDate')?.toString();
@@ -497,17 +503,17 @@ export const actions: Actions = {
 			return fail(400, { error: 'Invalid challenge status.' });
 		}
 
-		const goalValue = goalValueRaw ? parseInt(goalValueRaw, 10) : null;
+		const goalDistance = goalDistanceRaw ? parseFloat(goalDistanceRaw) : null;
 		const segmentId = segmentIdRaw ? parseInt(segmentIdRaw, 10) : null;
 		const startDate = startDateRaw ? parseEasternToUtc(startDateRaw) : null;
 		const endDate = endDateRaw ? parseEasternToUtc(endDateRaw) : null;
 
 		if (
-			(type === CHALLENGE_TYPE.CUMULATIVE || type === CHALLENGE_TYPE.BEST_EFFORT) &&
-			(goalValue === null || isNaN(goalValue) || goalValue <= 0)
+			CHALLENGE_TYPES_WITH_GOAL_DISTANCE.includes(type as ChallengeType) &&
+			(goalDistance === null || isNaN(goalDistance) || goalDistance <= 0)
 		) {
 			return fail(400, {
-				error: 'Goal value is required for cumulative and best-effort challenges.'
+				error: 'Goal distance is required for cumulative and best-effort challenges.'
 			});
 		}
 		if (type === CHALLENGE_TYPE.SEGMENT_RACE && (segmentId === null || isNaN(segmentId))) {
@@ -532,7 +538,7 @@ export const actions: Actions = {
 				title,
 				description,
 				type: type as (typeof VALID_CHALLENGE_TYPES)[number],
-				goalValue: goalValue ?? undefined,
+				goalDistance: type === CHALLENGE_TYPE.SEGMENT_RACE ? null : (goalDistance ?? undefined),
 				segmentId: segmentId ?? undefined,
 				startDate,
 				endDate,
@@ -557,7 +563,7 @@ export const actions: Actions = {
 		const title = formData.get('title')?.toString()?.trim() ?? '';
 		const description = formData.get('description')?.toString()?.trim() ?? '';
 		const type = formData.get('type')?.toString() ?? '';
-		const goalValueRaw = formData.get('goalValue')?.toString();
+		const goalDistanceRaw = formData.get('goalDistance')?.toString();
 		const segmentIdRaw = formData.get('segmentId')?.toString();
 		const startDateRaw = formData.get('startDate')?.toString();
 		const endDateRaw = formData.get('endDate')?.toString();
@@ -586,17 +592,17 @@ export const actions: Actions = {
 			return fail(400, { error: 'Invalid challenge status.' });
 		}
 
-		const goalValue = goalValueRaw ? parseInt(goalValueRaw, 10) : null;
+		const goalDistance = goalDistanceRaw ? parseFloat(goalDistanceRaw) : null;
 		const segmentId = segmentIdRaw ? parseInt(segmentIdRaw, 10) : null;
 		const startDate = startDateRaw ? parseEasternToUtc(startDateRaw) : null;
 		const endDate = endDateRaw ? parseEasternToUtc(endDateRaw) : null;
 
 		if (
-			(type === CHALLENGE_TYPE.CUMULATIVE || type === CHALLENGE_TYPE.BEST_EFFORT) &&
-			(goalValue === null || isNaN(goalValue) || goalValue <= 0)
+			CHALLENGE_TYPES_WITH_GOAL_DISTANCE.includes(type as ChallengeType) &&
+			(goalDistance === null || isNaN(goalDistance) || goalDistance <= 0)
 		) {
 			return fail(400, {
-				error: 'Goal value is required for cumulative and best-effort challenges.'
+				error: 'Goal distance is required for cumulative and best-effort challenges.'
 			});
 		}
 		if (type === CHALLENGE_TYPE.SEGMENT_RACE && (segmentId === null || isNaN(segmentId))) {
@@ -621,7 +627,7 @@ export const actions: Actions = {
 					title,
 					description,
 					type: type as (typeof VALID_CHALLENGE_TYPES)[number],
-					goalValue: goalValue ?? undefined,
+					goalDistance: type === CHALLENGE_TYPE.SEGMENT_RACE ? null : (goalDistance ?? undefined),
 					segmentId: segmentId ?? undefined,
 					startDate,
 					endDate,

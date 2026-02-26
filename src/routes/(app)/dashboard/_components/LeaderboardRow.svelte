@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { formatDate } from '$lib/utils/datetime.js';
 	import { formatResultDisplay } from '$lib/utils/challenge.js';
+	import { formatDistanceDisplay } from '$lib/utils/distance.js';
+	import { PACE_UNIT_LABEL } from '$lib/constants';
 	import { fly } from 'svelte/transition';
 	import type { LeaderboardRowData } from '$lib/types/dashboard.js';
 	import { getDashboardContext } from '../_logic/context.js';
@@ -14,6 +16,10 @@
 
 	const dashboard = getDashboardContext();
 	const challenge = $derived(dashboard.selectedChallenge);
+	const unit = $derived(dashboard.distanceUnit);
+	const goalDistanceDisplay = $derived(
+		challenge?.goalDistance ? formatDistanceDisplay(challenge.goalDistance, unit) : null
+	);
 	const resultDisplay = $derived(formatResultDisplay(row.participant.resultTime));
 
 	// Helper function for status color
@@ -112,9 +118,8 @@
 			class="flex flex-col items-end justify-center [grid-area:distance] md:border-l md:border-white/10 md:pl-4"
 		>
 			<span class="font-mono font-bold text-white">
-				{#if challenge?.goalValue}
-					{(challenge.goalValue / 1000).toFixed(1)}
-					<span class="text-[10px] text-gray-500">KM</span>
+				{#if goalDistanceDisplay}
+					{goalDistanceDisplay}
 				{:else}
 					--
 				{/if}
@@ -132,7 +137,7 @@
 		<div
 			class="hidden flex-col items-end justify-center [grid-area:pace] md:flex md:border-l md:border-white/10 md:pl-4"
 		>
-			<span class="font-mono text-sm text-gray-300">-- /km</span>
+			<span class="font-mono text-sm text-gray-300">-- {PACE_UNIT_LABEL[unit]}</span>
 		</div>
 
 		<!-- Time/Status -->

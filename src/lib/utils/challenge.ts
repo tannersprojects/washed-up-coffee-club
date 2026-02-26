@@ -4,29 +4,37 @@ import {
 	CHALLENGE_STATUS,
 	CHALLENGE_JOIN_DISPLAY_STATE,
 	COUNTDOWN_LABEL,
-	type ChallengeJoinDisplayState
+	DISTANCE_UNIT,
+	type ChallengeJoinDisplayState,
+	type DistanceUnit
 } from '$lib/constants';
 import type { Challenge } from '$lib/db/schema';
 import type { ChallengeUI } from '../../routes/(app)/dashboard/_logic/ChallengeUI.svelte';
+import { metersToKm, metersToMiles } from '$lib/utils/distance.js';
 
-export function calculateTotalDistanceKm(
+// TODO: Does this just add together the goal value for each participant? Should it?
+export function calculateTotalDistance(
 	challengeParticipantsWithRelations: ChallengeParticipantWithRelations[],
-	goalValueMeters: number | null
+	goalDistanceMeters: number | null,
+	unit: DistanceUnit
 ): string {
-	if (!goalValueMeters) {
-		return '0.0';
+	if (!goalDistanceMeters) {
+		return unit === DISTANCE_UNIT.MILES ? '0.0 mi' : '0.0 km';
 	}
 
-	const totalKm = challengeParticipantsWithRelations.reduce((acc, participant) => {
-		if (participant.status === 'completed' && goalValueMeters) {
-			return acc + goalValueMeters / 1000;
+	const totalMeters = challengeParticipantsWithRelations.reduce((acc, participant) => {
+		if (participant.status === 'completed' && goalDistanceMeters) {
+			return acc + goalDistanceMeters;
 		}
-		// If they are in progress, we ideally use their current progress,
-		// but for now we only have the completed goal value in the logic.
 		return acc;
 	}, 0);
 
-	return totalKm.toFixed(1);
+	if (unit === DISTANCE_UNIT.MILES) {
+		const miles = metersToMiles(totalMeters);
+		return `${miles.toFixed(1)} mi`;
+	}
+	const km = metersToKm(totalMeters);
+	return `${km.toFixed(1)} km`;
 }
 
 export function getChallengeTimeStateFromDates(
@@ -100,15 +108,6 @@ export function formatTime(seconds: number): string {
 		return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 	}
 	return `${m}:${s.toString().padStart(2, '0')}`;
-}
-
-export function formatDistance(meters: number): string {
-	const km = meters / 1000;
-	const miles = meters / 1609.344;
-	if (miles >= 1 && Math.abs(miles - Math.round(miles)) < 0.01) {
-		return `Mile ${Math.round(miles)}`;
-	}
-	return `${km.toFixed(1)} km`;
 }
 
 export function formatResultDisplay(resultTime: number | null): string {

@@ -1,9 +1,20 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { toast } from 'svelte-sonner';
-	import { CHALLENGE_TYPE, CHALLENGE_STATUS } from '$lib/constants';
+	import {
+		CHALLENGE_TYPE,
+		CHALLENGE_STATUS,
+		CHALLENGE_TYPES_WITH_GOAL_DISTANCE,
+		DISTANCE_LABEL,
+		DISTANCE_UNIT,
+		type ChallengeStatus,
+		type ChallengeType,
+		type DistanceUnit
+	} from '$lib/constants';
+	import { getUserPreferencesContext } from '$lib/state/user-preferences.svelte.js';
 	import { getChallengeTimeStateFromDates } from '$lib/utils/challenge.js';
 	import { formatDatetimeForInput, formatDate } from '$lib/utils/datetime.js';
+	import { kmToMeters, metersToKm, metersToMiles, milesToMeters } from '$lib/utils/distance.js';
 	import type { ChallengeAdmin } from '../../_logic/ChallengeAdmin.svelte.js';
 	import { getAdminContext } from '../../_logic/context.js';
 
@@ -11,31 +22,37 @@
 		challenge: ChallengeAdmin;
 	};
 
+	function metersToDisplayValue(m: number | null, u: DistanceUnit): string {
+		if (m == null) return '';
+		return u === DISTANCE_UNIT.MILES ? metersToMiles(m).toFixed(1) : metersToKm(m).toFixed(1);
+	}
+
 	let { challenge }: Props = $props();
 	let admin = getAdminContext();
+	const prefs = getUserPreferencesContext();
+	const unit = $derived(prefs.distanceUnit);
 
 	let isEditing = $state(false);
-	let editTitle = $derived(challenge.title);
-	let editDescription = $derived(challenge.description);
-	let editType = $derived(challenge.type);
-	let editGoalValue = $derived(challenge.goalValue?.toString() ?? '');
-	let editSegmentId = $derived(challenge.segmentId?.toString() ?? '');
-	let editStartDate = $derived(formatDatetimeForInput(challenge.startDate));
-	let editEndDate = $derived(formatDatetimeForInput(challenge.endDate));
-	let editStatus = $derived(challenge.status);
+	let editTitle = $state('');
+	let editDescription = $state('');
+	let editType = $state<ChallengeType>(CHALLENGE_TYPE.CUMULATIVE);
+	let editGoalDistance = $state('');
+	let editSegmentId = $state('');
+	let editStartDate = $state('');
+	let editEndDate = $state('');
+	let editStatus = $state<ChallengeStatus>(CHALLENGE_STATUS.UPCOMING);
 
-	$effect(() => {
-		if (!isEditing) {
-			editTitle = challenge.title;
-			editDescription = challenge.description;
-			editType = challenge.type;
-			editGoalValue = challenge.goalValue?.toString() ?? '';
-			editSegmentId = challenge.segmentId?.toString() ?? '';
-			editStartDate = formatDatetimeForInput(challenge.startDate);
-			editEndDate = formatDatetimeForInput(challenge.endDate);
-			editStatus = challenge.status;
-		}
-	});
+	function startEditing() {
+		editTitle = challenge.title;
+		editDescription = challenge.description;
+		editType = challenge.type as ChallengeType;
+		editGoalDistance = metersToDisplayValue(challenge.goalDistance, unit);
+		editSegmentId = challenge.segmentId?.toString() ?? '';
+		editStartDate = formatDatetimeForInput(challenge.startDate);
+		editEndDate = formatDatetimeForInput(challenge.endDate);
+		editStatus = challenge.status as ChallengeStatus;
+		isEditing = true;
+	}
 
 	const typeLabels: Record<string, string> = {
 		[CHALLENGE_TYPE.CUMULATIVE]: 'Cumulative',
@@ -53,8 +70,14 @@
 	<form
 		method="POST"
 		action="?/updateChallenge"
-		use:enhance={() =>
-			async ({ result, update }) => {
+		use:enhance={({ formData }) => {
+			if (CHALLENGE_TYPES_WITH_GOAL_DISTANCE.includes(editType)) {
+				const displayVal = parseFloat(editGoalDistance);
+				const meters =
+					unit === DISTANCE_UNIT.MILES ? milesToMeters(displayVal) : kmToMeters(displayVal);
+				formData.set('goalDistance', String(meters));
+			}
+			return async ({ result, update }) => {
 				if (result.type === 'success') {
 					await update();
 					isEditing = false;
@@ -64,7 +87,8 @@
 							'Failed to update challenge.'
 					);
 				}
-			}}
+			};
+		}}
 		class="flex flex-col gap-3 rounded-lg border border-white/10 bg-white/5 p-4"
 	>
 		<input type="hidden" name="id" value={challenge.id} />
@@ -90,23 +114,34 @@
 			<option value={CHALLENGE_TYPE.BEST_EFFORT}>Best Effort</option>
 			<option value={CHALLENGE_TYPE.SEGMENT_RACE}>Segment Race</option>
 		</select>
-		{#if editType === CHALLENGE_TYPE.CUMULATIVE || editType === CHALLENGE_TYPE.BEST_EFFORT}
-			<input
-				type="number"
-				name="goalValue"
-				bind:value={editGoalValue}
-				min="1"
-				class="rounded border border-white/20 bg-black/40 px-3 py-2 font-mono text-sm text-white"
-			/>
+		{#if CHALLENGE_TYPES_WITH_GOAL_DISTANCE.includes(editType)}
+			<div class="flex flex-col gap-1">
+				<label for="edit-goal" class="font-mono text-xs text-white/80"
+					>Goal Distance ({DISTANCE_LABEL[unit]})</label
+				>
+				<input
+					id="edit-goal"
+					type="number"
+					name="goalDistance"
+					bind:value={editGoalDistance}
+					min="0.1"
+					step="0.1"
+					class="rounded border border-white/20 bg-black/40 px-3 py-2 font-mono text-sm text-white"
+				/>
+			</div>
 		{/if}
 		{#if editType === CHALLENGE_TYPE.SEGMENT_RACE}
-			<input
-				type="number"
-				name="segmentId"
-				bind:value={editSegmentId}
-				min="1"
-				class="rounded border border-white/20 bg-black/40 px-3 py-2 font-mono text-sm text-white"
-			/>
+			<div class="flex flex-col gap-1">
+				<label for="edit-segment" class="font-mono text-xs text-white/80">Segment ID</label>
+				<input
+					id="edit-segment"
+					type="number"
+					name="segmentId"
+					bind:value={editSegmentId}
+					min="1"
+					class="rounded border border-white/20 bg-black/40 px-3 py-2 font-mono text-sm text-white"
+				/>
+			</div>
 		{/if}
 		<p class="font-mono text-[10px] text-white/50">Dates in Eastern Time (EST/EDT)</p>
 		<input
@@ -166,7 +201,7 @@
 			</div>
 			<div class="flex items-center gap-2">
 				<button
-					onclick={() => (isEditing = true)}
+					onclick={startEditing}
 					class="font-mono text-[10px] text-(--accent-lime) hover:underline">Edit</button
 				>
 				<form

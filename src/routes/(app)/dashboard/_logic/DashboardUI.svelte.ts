@@ -4,7 +4,7 @@ import type {
 	ChallengeParticipantWithRelations,
 	ChallengeWithParticipation
 } from '$lib/types/dashboard.js';
-import { DASHBOARD_TAB, type DashboardTab } from '$lib/constants';
+import { DASHBOARD_TAB, type DashboardTab, type DistanceUnit } from '$lib/constants';
 
 export class DashboardUI {
 	challenges: ChallengeUI[];
@@ -14,17 +14,20 @@ export class DashboardUI {
 	drawerOpen: boolean;
 	sidebarPinned: boolean;
 	sidebarHovered: boolean;
+	distanceUnit: DistanceUnit;
 
 	constructor(
 		challengesWithParticipation: ChallengeWithParticipation[],
 		challengeParticipantsWithRelationsByChallenge: Record<
 			string,
 			ChallengeParticipantWithRelations[]
-		>
+		>,
+		distanceUnit: DistanceUnit
 	) {
+		this.distanceUnit = distanceUnit;
 		// Hydrate challenges into class instances
 		const challenges = challengesWithParticipation.map(
-			(c) => new ChallengeUI(c, challengeParticipantsWithRelationsByChallenge[c.id])
+			(c) => new ChallengeUI(c, challengeParticipantsWithRelationsByChallenge[c.id], distanceUnit)
 		);
 		this.challenges = $state(challenges);
 
@@ -49,13 +52,17 @@ export class DashboardUI {
 		}
 	}
 
-	static fromServerData({
-		challengesWithParticipation,
-		challengeParticipantsWithRelationsByChallenge
-	}: DashboardContextData) {
-		return new DashboardUI(
+	static fromServerData(
+		{
 			challengesWithParticipation,
 			challengeParticipantsWithRelationsByChallenge
+		}: DashboardContextData,
+		distanceUnit: DistanceUnit
+	) {
+		return new DashboardUI(
+			challengesWithParticipation,
+			challengeParticipantsWithRelationsByChallenge,
+			distanceUnit
 		);
 	}
 

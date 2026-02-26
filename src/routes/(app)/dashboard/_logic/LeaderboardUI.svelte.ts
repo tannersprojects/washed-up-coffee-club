@@ -1,10 +1,16 @@
-import { CHALLENGE_TYPE, PARTICIPANT_STATUS, type ChallengeType } from '$lib/constants';
+import {
+	CHALLENGE_TYPE,
+	LONG_DISTANCE_LABEL,
+	PARTICIPANT_STATUS,
+	type ChallengeType,
+	type DistanceUnit
+} from '$lib/constants';
 import type {
 	LeaderboardRowData,
 	ChallengeParticipantWithRelations,
 	ChallengeStats
 } from '$lib/types/dashboard.js';
-import { calculateTotalDistanceKm } from '$lib/utils/challenge.js';
+import { calculateTotalDistance } from '$lib/utils/challenge.js';
 
 const STATUS_ORDER: Record<string, number> = {
 	[PARTICIPANT_STATUS.COMPLETED]: 0,
@@ -25,25 +31,28 @@ const STATUS_ORDER: Record<string, number> = {
 
 export class LeaderboardUI {
 	private challengeParticipantsWithRelations: ChallengeParticipantWithRelations[];
-	private goalValue: number | null;
+	private goalDistance: number | null;
 	private challengeType: ChallengeType;
+	private distanceUnit: DistanceUnit;
 
 	leaderboardRows: LeaderboardRowData[];
 
 	totalRunners: number;
 	finishers: number;
 	activeRunners: number;
-	totalDistanceKm: string;
+	totalDistance: string;
 	stats: ChallengeStats;
 
 	constructor(
 		challengeParticipantsWithRelations: ChallengeParticipantWithRelations[],
-		goalValue: number | null,
-		challengeType: ChallengeType
+		goalDistance: number | null,
+		challengeType: ChallengeType,
+		distanceUnit: DistanceUnit
 	) {
 		this.challengeParticipantsWithRelations = $state(challengeParticipantsWithRelations);
-		this.goalValue = $state(goalValue);
+		this.goalDistance = $state(goalDistance);
 		this.challengeType = challengeType;
+		this.distanceUnit = distanceUnit;
 		this.leaderboardRows = $derived.by(() => {
 			const sorted = [...this.challengeParticipantsWithRelations].sort((a, b) => {
 				const statusA = STATUS_ORDER[a.status ?? ''] ?? 4;
@@ -116,14 +125,19 @@ export class LeaderboardUI {
 				(p) => p.status === PARTICIPANT_STATUS.IN_PROGRESS
 			).length
 		);
-		this.totalDistanceKm = $derived(
-			calculateTotalDistanceKm(this.challengeParticipantsWithRelations, this.goalValue)
+		this.totalDistance = $derived(
+			calculateTotalDistance(
+				this.challengeParticipantsWithRelations,
+				this.goalDistance,
+				this.distanceUnit
+			)
 		);
 		this.stats = $derived({
 			totalRunners: this.totalRunners,
 			finishers: this.finishers,
 			activeRunners: this.activeRunners,
-			totalDistanceKm: this.totalDistanceKm
+			totalDistance: this.totalDistance,
+			totalDistanceLabel: LONG_DISTANCE_LABEL[this.distanceUnit]
 		});
 	}
 
@@ -133,8 +147,8 @@ export class LeaderboardUI {
 		this.challengeParticipantsWithRelations = challengeParticipantsWithRelations;
 	}
 
-	updateGoalValue(goalValue: number | null) {
-		this.goalValue = goalValue;
+	updateGoalDistance(goalDistance: number | null) {
+		this.goalDistance = goalDistance;
 	}
 
 	addChallengeParticipantWithRelations(
