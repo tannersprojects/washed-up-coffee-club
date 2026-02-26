@@ -41,18 +41,17 @@
 	let editEndDate = $state('');
 	let editStatus = $state<ChallengeStatus>(CHALLENGE_STATUS.UPCOMING);
 
-	$effect(() => {
-		if (!isEditing) {
-			editTitle = challenge.title;
-			editDescription = challenge.description;
-			editType = challenge.type as ChallengeType;
-			editGoalValue = metersToDisplayValue(challenge.goalDistance, unit);
-			editSegmentId = challenge.segmentId?.toString() ?? '';
-			editStartDate = formatDatetimeForInput(challenge.startDate);
-			editEndDate = formatDatetimeForInput(challenge.endDate);
-			editStatus = challenge.status as ChallengeStatus;
-		}
-	});
+	function startEditing() {
+		editTitle = challenge.title;
+		editDescription = challenge.description;
+		editType = challenge.type as ChallengeType;
+		editGoalValue = metersToDisplayValue(challenge.goalDistance, unit);
+		editSegmentId = challenge.segmentId?.toString() ?? '';
+		editStartDate = formatDatetimeForInput(challenge.startDate);
+		editEndDate = formatDatetimeForInput(challenge.endDate);
+		editStatus = challenge.status as ChallengeStatus;
+		isEditing = true;
+	}
 
 	const typeLabels: Record<string, string> = {
 		[CHALLENGE_TYPE.CUMULATIVE]: 'Cumulative',
@@ -134,13 +133,17 @@
 			</div>
 		{/if}
 		{#if editType === CHALLENGE_TYPE.SEGMENT_RACE}
-			<input
-				type="number"
-				name="segmentId"
-				bind:value={editSegmentId}
-				min="1"
-				class="rounded border border-white/20 bg-black/40 px-3 py-2 font-mono text-sm text-white"
-			/>
+			<div class="flex flex-col gap-1">
+				<label for="edit-segment" class="font-mono text-xs text-white/80">Segment ID</label>
+				<input
+					id="edit-segment"
+					type="number"
+					name="segmentId"
+					bind:value={editSegmentId}
+					min="1"
+					class="rounded border border-white/20 bg-black/40 px-3 py-2 font-mono text-sm text-white"
+				/>
+			</div>
 		{/if}
 		<p class="font-mono text-[10px] text-white/50">Dates in Eastern Time (EST/EDT)</p>
 		<input
@@ -200,10 +203,7 @@
 			</div>
 			<div class="flex items-center gap-2">
 				<button
-					onclick={() => {
-						editGoalValue = metersToDisplayValue(challenge.goalDistance, unit);
-						isEditing = true;
-					}}
+					onclick={startEditing}
 					class="font-mono text-[10px] text-(--accent-lime) hover:underline">Edit</button
 				>
 				<form
