@@ -5,7 +5,7 @@
 	import { PACE_UNIT_LABEL } from '$lib/constants';
 	import { fly } from 'svelte/transition';
 	import type { LeaderboardRowData } from '$lib/types/dashboard.js';
-	import { getDashboardContext } from '../_logic/context.js';
+	import { getDashboardContext } from '../../_logic/context.js';
 
 	type Props = {
 		row: LeaderboardRowData;

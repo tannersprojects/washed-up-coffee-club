@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { cubicOut } from 'svelte/easing';
 	import { fade, fly } from 'svelte/transition';
-	import { getDashboardContext } from '../_logic/context.js';
+	import { getDashboardContext } from '../../_logic/context.js';
 	import ChallengeListItems from './ChallengeListItems.svelte';
 	import type { Profile } from '$lib/db/schema.js';
 

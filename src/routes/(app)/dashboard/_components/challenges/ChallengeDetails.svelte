@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { formatDate } from '$lib/utils/datetime.js';
 	import { formatDistanceDisplay } from '$lib/utils/distance.js';
-	import { getDashboardContext } from '../_logic/context.js';
+	import { getDashboardContext } from '../../_logic/context.js';
 
 	const dashboard = getDashboardContext();
 	const challenge = $derived(dashboard.selectedChallenge);

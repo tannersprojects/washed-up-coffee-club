@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getDashboardContext } from '../_logic/context.js';
+	import { getDashboardContext } from '../../_logic/context.js';
 
 	let dashboard = getDashboardContext();
 	let challenge = $derived(dashboard.selectedChallenge);

@@ -2,7 +2,7 @@
 	import { enhance } from '$app/forms';
 	import { formatDate } from '$lib/utils/datetime.js';
 	import { CHALLENGE_STATUS } from '$lib/constants';
-	import { getDashboardContext } from '../_logic/context.js';
+	import { getDashboardContext } from '../../_logic/context.js';
 	import CountdownTimer from './CountdownTimer.svelte';
 	import ChallengeStatsGrid from './ChallengeStatsGrid.svelte';
 	import JoinChallengeButton from './JoinChallengeButton.svelte';

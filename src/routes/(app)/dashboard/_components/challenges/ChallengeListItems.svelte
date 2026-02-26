@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { CHALLENGE_STATUS } from '$lib/constants';
 	import { formatDateRange } from '$lib/utils/datetime.js';
-	import type { ChallengeUI } from '../_logic/ChallengeUI.svelte.js';
+	import type { ChallengeUI } from '../../_logic/ChallengeUI.svelte.js';
 	import type { Profile } from '$lib/db/schema.js';
 
 	let {

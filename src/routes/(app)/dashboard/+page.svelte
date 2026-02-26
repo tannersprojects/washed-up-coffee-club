@@ -2,15 +2,17 @@
 	import { untrack } from 'svelte';
 	import { DASHBOARD_TAB } from '$lib/constants';
 
-	import ChallengeHero from './_components/ChallengeHero.svelte';
-	import LeaderboardSection from './_components/LeaderboardSection.svelte';
-	import DashboardChallengesSidebar from './_components/DashboardChallengesSidebar.svelte';
-	import ChallengesDrawer from './_components/ChallengesDrawer.svelte';
-	import EmptyState from './_components/EmptyState.svelte';
-	import DashboardFooter from './_components/DashboardFooter.svelte';
+	import {
+		ChallengesDrawer,
+		DashboardChallengesSidebar,
+		ChallengeHero,
+		LeaderboardSection,
+		EmptyState,
+		DashboardFooter,
+		DashboardTabs
+	} from './_components';
 	import { setDashboardContext } from './_logic/context.js';
 	import { Menu } from 'lucide-svelte';
-	import DashboardTabs from './_components/DashboardTabs.svelte';
 
 	let { data } = $props();
 

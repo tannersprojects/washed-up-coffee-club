@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { getDashboardContext } from '../_logic/context.js';
+	import { getDashboardContext } from '../../_logic/context.js';
 	import LeaderboardRow from './LeaderboardRow.svelte';
-	import EmptyState from './EmptyState.svelte';
+	import EmptyState from '../EmptyState.svelte';
 
 	const dashboard = getDashboardContext();
 	let challenge = $derived(dashboard.selectedChallenge);

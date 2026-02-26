@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getDashboardContext } from '../_logic/context.js';
+	import { getDashboardContext } from '../../_logic/context.js';
 	import Tabs from '$lib/components/Tabs.svelte';
 	import { LEADERBOARD_TAB, LEADERBOARD_TAB_LABEL, type LeaderboardTab } from '$lib/constants';
 

@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { getDashboardContext } from '../_logic/context.js';
+	import { getDashboardContext } from '../../_logic/context.js';
 	import LeaderboardTabs from './LeaderboardTabs.svelte';
 	import LeaderboardTable from './LeaderboardTable.svelte';
-	import ChallengeDetails from './ChallengeDetails.svelte';
+	import ChallengeDetails from '../challenges/ChallengeDetails.svelte';
 	import { LEADERBOARD_TAB } from '$lib/constants';
 
 	const dashboard = getDashboardContext();
