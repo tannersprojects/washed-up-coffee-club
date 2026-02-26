@@ -15,16 +15,16 @@ import { metersToKm, metersToMiles } from '$lib/utils/distance.js';
 // TODO: Does this just add together the goal value for each participant? Should it?
 export function calculateTotalDistance(
 	challengeParticipantsWithRelations: ChallengeParticipantWithRelations[],
-	goalValueMeters: number | null,
+	goalDistanceMeters: number | null,
 	unit: DistanceUnit
 ): string {
-	if (!goalValueMeters) {
+	if (!goalDistanceMeters) {
 		return unit === DISTANCE_UNIT.MILES ? '0.0 mi' : '0.0 km';
 	}
 
 	const totalMeters = challengeParticipantsWithRelations.reduce((acc, participant) => {
-		if (participant.status === 'completed' && goalValueMeters) {
-			return acc + goalValueMeters;
+		if (participant.status === 'completed' && goalDistanceMeters) {
+			return acc + goalDistanceMeters;
 		}
 		return acc;
 	}, 0);
