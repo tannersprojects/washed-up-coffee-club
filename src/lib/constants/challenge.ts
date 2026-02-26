@@ -14,6 +14,11 @@ export const CHALLENGE_TYPE = {
 
 export type ChallengeType = (typeof CHALLENGE_TYPE)[keyof typeof CHALLENGE_TYPE];
 
+export const CHALLENGE_TYPES_WITH_GOAL_DISTANCE: readonly ChallengeType[] = [
+	CHALLENGE_TYPE.CUMULATIVE,
+	CHALLENGE_TYPE.BEST_EFFORT
+];
+
 export const CHALLENGE_JOIN_DISPLAY_STATE = {
 	JOINABLE: 'joinable' as const,
 	PARTICIPATING: 'participating' as const,

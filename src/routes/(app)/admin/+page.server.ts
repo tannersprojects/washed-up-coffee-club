@@ -1,6 +1,12 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { eq, desc } from 'drizzle-orm';
-import { PROFILE_ROLE, CHALLENGE_TYPE, CHALLENGE_STATUS } from '$lib/constants';
+import {
+	PROFILE_ROLE,
+	CHALLENGE_TYPE,
+	CHALLENGE_STATUS,
+	CHALLENGE_TYPES_WITH_GOAL_DISTANCE,
+	type ChallengeType
+} from '$lib/constants';
 import { parseEasternToUtc } from '$lib/utils/datetime.js';
 import { db } from '$lib/db';
 import { memoriesTable, routineSchedulesTable, challengesTable } from '$lib/db/schema';
@@ -503,7 +509,7 @@ export const actions: Actions = {
 		const endDate = endDateRaw ? parseEasternToUtc(endDateRaw) : null;
 
 		if (
-			(type === CHALLENGE_TYPE.CUMULATIVE || type === CHALLENGE_TYPE.BEST_EFFORT) &&
+			CHALLENGE_TYPES_WITH_GOAL_DISTANCE.includes(type as ChallengeType) &&
 			(goalDistance === null || isNaN(goalDistance) || goalDistance <= 0)
 		) {
 			return fail(400, {
@@ -592,7 +598,7 @@ export const actions: Actions = {
 		const endDate = endDateRaw ? parseEasternToUtc(endDateRaw) : null;
 
 		if (
-			(type === CHALLENGE_TYPE.CUMULATIVE || type === CHALLENGE_TYPE.BEST_EFFORT) &&
+			CHALLENGE_TYPES_WITH_GOAL_DISTANCE.includes(type as ChallengeType) &&
 			(goalDistance === null || isNaN(goalDistance) || goalDistance <= 0)
 		) {
 			return fail(400, {

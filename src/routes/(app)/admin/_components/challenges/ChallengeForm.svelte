@@ -4,6 +4,7 @@
 	import {
 		CHALLENGE_TYPE,
 		CHALLENGE_STATUS,
+		CHALLENGE_TYPES_WITH_GOAL_DISTANCE,
 		DISTANCE_LABEL,
 		DISTANCE_UNIT,
 		type ChallengeType,
@@ -57,7 +58,7 @@
 		!!title.trim() &&
 			!!startDate &&
 			!!endDate &&
-			(type === CHALLENGE_TYPE.CUMULATIVE || type === CHALLENGE_TYPE.BEST_EFFORT
+			(CHALLENGE_TYPES_WITH_GOAL_DISTANCE.includes(type)
 				? !!goalValue && parseFloat(goalValue) > 0
 				: true) &&
 			(type === CHALLENGE_TYPE.SEGMENT_RACE ? !!segmentId && parseInt(segmentId, 10) > 0 : true)
@@ -75,8 +76,7 @@
 		const end = endDate
 			? (parseEasternToUtc(endDate) ?? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000))
 			: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-		const isDistanceType =
-			type === CHALLENGE_TYPE.CUMULATIVE || type === CHALLENGE_TYPE.BEST_EFFORT;
+		const isDistanceType = CHALLENGE_TYPES_WITH_GOAL_DISTANCE.includes(type);
 		const displayVal = isDistanceType && goalValue ? parseFloat(goalValue) : null;
 		const meters =
 			displayVal != null
@@ -154,7 +154,7 @@
 			{/each}
 		</select>
 	</div>
-	{#if type === CHALLENGE_TYPE.CUMULATIVE || type === CHALLENGE_TYPE.BEST_EFFORT}
+	{#if CHALLENGE_TYPES_WITH_GOAL_DISTANCE.includes(type)}
 		<div class="flex flex-col gap-1">
 			<label for="challenge-goal" class="font-mono text-xs text-white/80"
 				>Goal Distance ({DISTANCE_LABEL[unit]})</label
@@ -164,7 +164,7 @@
 				type="number"
 				name="goalDistance"
 				bind:value={goalValue}
-				required={type === CHALLENGE_TYPE.CUMULATIVE || type === CHALLENGE_TYPE.BEST_EFFORT}
+				required={CHALLENGE_TYPES_WITH_GOAL_DISTANCE.includes(type)}
 				min="0.1"
 				step="0.1"
 				class="rounded border border-white/20 bg-black/40 px-3 py-2 font-mono text-sm text-white"

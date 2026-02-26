@@ -4,6 +4,7 @@
 	import {
 		CHALLENGE_TYPE,
 		CHALLENGE_STATUS,
+		CHALLENGE_TYPES_WITH_GOAL_DISTANCE,
 		DISTANCE_LABEL,
 		DISTANCE_UNIT,
 		type ChallengeStatus,
@@ -70,11 +71,8 @@
 		method="POST"
 		action="?/updateChallenge"
 		use:enhance={({ formData }) => {
-			const displayVal = editGoalValue ? parseFloat(editGoalValue) : null;
-			if (
-				displayVal != null &&
-				(editType === CHALLENGE_TYPE.CUMULATIVE || editType === CHALLENGE_TYPE.BEST_EFFORT)
-			) {
+			if (CHALLENGE_TYPES_WITH_GOAL_DISTANCE.includes(editType)) {
+				const displayVal = parseFloat(editGoalValue);
 				const meters =
 					unit === DISTANCE_UNIT.MILES ? milesToMeters(displayVal) : kmToMeters(displayVal);
 				formData.set('goalDistance', String(meters));
@@ -116,7 +114,7 @@
 			<option value={CHALLENGE_TYPE.BEST_EFFORT}>Best Effort</option>
 			<option value={CHALLENGE_TYPE.SEGMENT_RACE}>Segment Race</option>
 		</select>
-		{#if editType === CHALLENGE_TYPE.CUMULATIVE || editType === CHALLENGE_TYPE.BEST_EFFORT}
+		{#if CHALLENGE_TYPES_WITH_GOAL_DISTANCE.includes(editType)}
 			<div class="flex flex-col gap-1">
 				<label for="edit-goal" class="font-mono text-xs text-white/80"
 					>Goal Distance ({DISTANCE_LABEL[unit]})</label
