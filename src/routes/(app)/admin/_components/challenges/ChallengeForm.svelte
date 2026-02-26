@@ -23,7 +23,7 @@
 	let title = $state('');
 	let description = $state('');
 	let type = $state<ChallengeType>(CHALLENGE_TYPE.CUMULATIVE);
-	let goalValue = $state<string>('');
+	let goalDistance = $state<string>('');
 	let segmentId = $state<string>('');
 	let startDate = $state('');
 	let endDate = $state('');
@@ -46,7 +46,7 @@
 		title = '';
 		description = '';
 		type = CHALLENGE_TYPE.CUMULATIVE;
-		goalValue = '';
+		goalDistance = '';
 		segmentId = '';
 		startDate = '';
 		endDate = '';
@@ -59,7 +59,7 @@
 			!!startDate &&
 			!!endDate &&
 			(CHALLENGE_TYPES_WITH_GOAL_DISTANCE.includes(type)
-				? !!goalValue && parseFloat(goalValue) > 0
+				? !!goalDistance && parseFloat(goalDistance) > 0
 				: true) &&
 			(type === CHALLENGE_TYPE.SEGMENT_RACE ? !!segmentId && parseInt(segmentId, 10) > 0 : true)
 	);
@@ -77,10 +77,12 @@
 			? (parseEasternToUtc(endDate) ?? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000))
 			: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 		const isDistanceType = CHALLENGE_TYPES_WITH_GOAL_DISTANCE.includes(type);
-		const displayVal = isDistanceType && goalValue ? parseFloat(goalValue) : null;
+		const displayVal = isDistanceType && goalDistance ? parseFloat(goalDistance) : null;
 		const meters =
 			displayVal != null
-				? (unit === DISTANCE_UNIT.MILES ? milesToMeters(displayVal) : kmToMeters(displayVal))
+				? unit === DISTANCE_UNIT.MILES
+					? milesToMeters(displayVal)
+					: kmToMeters(displayVal)
 				: null;
 		formData.set('goalDistance', isDistanceType && meters != null ? String(meters) : '');
 		const segId = segmentId ? parseInt(segmentId, 10) : null;
@@ -163,7 +165,7 @@
 				id="challenge-goal"
 				type="number"
 				name="goalDistance"
-				bind:value={goalValue}
+				bind:value={goalDistance}
 				required={CHALLENGE_TYPES_WITH_GOAL_DISTANCE.includes(type)}
 				min="0.1"
 				step="0.1"

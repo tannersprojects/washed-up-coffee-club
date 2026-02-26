@@ -36,7 +36,7 @@
 	let editTitle = $state('');
 	let editDescription = $state('');
 	let editType = $state<ChallengeType>(CHALLENGE_TYPE.CUMULATIVE);
-	let editGoalValue = $state('');
+	let editGoalDistance = $state('');
 	let editSegmentId = $state('');
 	let editStartDate = $state('');
 	let editEndDate = $state('');
@@ -46,7 +46,7 @@
 		editTitle = challenge.title;
 		editDescription = challenge.description;
 		editType = challenge.type as ChallengeType;
-		editGoalValue = metersToDisplayValue(challenge.goalDistance, unit);
+		editGoalDistance = metersToDisplayValue(challenge.goalDistance, unit);
 		editSegmentId = challenge.segmentId?.toString() ?? '';
 		editStartDate = formatDatetimeForInput(challenge.startDate);
 		editEndDate = formatDatetimeForInput(challenge.endDate);
@@ -72,7 +72,7 @@
 		action="?/updateChallenge"
 		use:enhance={({ formData }) => {
 			if (CHALLENGE_TYPES_WITH_GOAL_DISTANCE.includes(editType)) {
-				const displayVal = parseFloat(editGoalValue);
+				const displayVal = parseFloat(editGoalDistance);
 				const meters =
 					unit === DISTANCE_UNIT.MILES ? milesToMeters(displayVal) : kmToMeters(displayVal);
 				formData.set('goalDistance', String(meters));
@@ -123,7 +123,7 @@
 					id="edit-goal"
 					type="number"
 					name="goalDistance"
-					bind:value={editGoalValue}
+					bind:value={editGoalDistance}
 					min="0.1"
 					step="0.1"
 					class="rounded border border-white/20 bg-black/40 px-3 py-2 font-mono text-sm text-white"
