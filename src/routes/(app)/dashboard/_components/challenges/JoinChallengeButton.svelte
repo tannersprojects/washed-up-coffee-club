@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { toast } from 'svelte-sonner';
 	import type { ChallengeParticipantWithRelations } from '$lib/types/dashboard.js';
+	import { getFormActionError } from '$lib/utils/form-action.js';
 	import { formatDate } from '$lib/utils/datetime.js';
 	import { CHALLENGE_JOIN_DISPLAY_STATE, CHALLENGE_STATUS } from '$lib/constants';
 	import { getDashboardContext } from '../../_logic/context.js';
@@ -29,6 +31,8 @@
 							await update();
 						} else {
 							challenge.isSubmitting = false;
+							const errorMsg = getFormActionError(result);
+							toast.error(errorMsg ?? 'Something went wrong. Please try again.');
 						}
 					};
 				}}

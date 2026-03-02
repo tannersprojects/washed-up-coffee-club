@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { toast } from 'svelte-sonner';
+	import { getFormActionError } from '$lib/utils/form-action.js';
 	import type { MemoryAdmin } from '../../_logic/MemoryAdmin.svelte.js';
 	import { getAdminContext } from '../../_logic/context.js';
 
@@ -35,10 +36,8 @@
 					await update();
 					isEditing = false;
 				} else {
-					const message =
-						(result.type === 'failure' ? (result.data as { error?: string })?.error : undefined) ??
-						'Failed to update memory.';
-					toast.error(message);
+					const errorMsg = getFormActionError(result) ?? 'Failed to update memory.';
+					toast.error(errorMsg);
 				}
 			}}
 		class="flex flex-col gap-3 rounded-lg border border-white/10 bg-white/5 p-4"
@@ -108,11 +107,7 @@
 							if (result.type === 'success') {
 								await update();
 							} else {
-								const msg =
-									(result.type === 'failure'
-										? (result.data as { error?: string })?.error
-										: undefined) ?? 'Failed to delete.';
-								toast.error(msg);
+								toast.error(getFormActionError(result) ?? 'Failed to delete.');
 								await update();
 							}
 						};

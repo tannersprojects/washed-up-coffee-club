@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { page } from '$app/state';
 	import AppNav from '$lib/components/AppNav.svelte';
 	import { getPageName } from '$lib/utils/page.js';
@@ -7,7 +8,7 @@
 
 	let { data, children } = $props();
 
-	setUserPreferencesContext();
+	untrack(() => setUserPreferencesContext());
 
 	let pageName: PageName = $derived(getPageName(page.url.pathname));
 </script>

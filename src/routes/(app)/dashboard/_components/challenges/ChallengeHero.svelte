@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { toast } from 'svelte-sonner';
+	import { getFormActionError } from '$lib/utils/form-action.js';
 	import { formatDate } from '$lib/utils/datetime.js';
 	import { CHALLENGE_STATUS } from '$lib/constants';
 	import { getDashboardContext } from '../../_logic/context.js';
@@ -60,8 +62,10 @@
 										// Background sync: ensure server state is reflected
 										await update();
 									} else {
-										// Reset submitting state on error
 										challenge.isSubmitting = false;
+										const errorMsg =
+											getFormActionError(result) ?? 'Something went wrong. Please try again.';
+										toast.error(errorMsg);
 									}
 								};
 							}}

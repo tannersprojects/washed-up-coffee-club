@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { toast } from 'svelte-sonner';
+	import { getFormActionError } from '$lib/utils/form-action.js';
 	import type { RoutineScheduleAdmin } from '../../_logic/RoutineScheduleAdmin.svelte.js';
 	import { getAdminContext } from '../../_logic/context.js';
 
@@ -38,10 +39,8 @@
 					await update();
 					isEditing = false;
 				} else {
-					toast.error(
-						(result.type === 'failure' ? (result.data as { error?: string })?.error : undefined) ??
-							'Failed to update schedule.'
-					);
+					const errorMsg = getFormActionError(result) ?? 'Failed to update schedule.';
+					toast.error(errorMsg);
 				}
 			}}
 		class="flex flex-col gap-3 rounded-lg border bg-white/5 p-4 {!schedule.isActive
@@ -136,11 +135,8 @@
 						if (result.type === 'success') {
 							await update();
 						} else {
-							toast.error(
-								(result.type === 'failure'
-									? (result.data as { error?: string })?.error
-									: undefined) ?? 'Failed to delete.'
-							);
+							const errorMsg = getFormActionError(result) ?? 'Failed to delete.';
+							toast.error(errorMsg);
 							await update();
 						}
 					};

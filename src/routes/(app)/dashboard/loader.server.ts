@@ -1,11 +1,7 @@
 import { db } from '$lib/db';
 import { challengeParticipantsTable, challengesTable } from '$lib/db/schema';
 import { eq, and, inArray } from 'drizzle-orm';
-import type {
-	ChallengeWithParticipation,
-	DashboardContextData,
-	LeaderboardRowData
-} from '$lib/types/dashboard.js';
+import type { ChallengeWithParticipation, DashboardContextData } from '$lib/types/dashboard.js';
 import type { ChallengeParticipantWithRelations } from '$lib/types/dashboard.js';
 import { PARTICIPANT_STATUS } from '$lib/constants';
 

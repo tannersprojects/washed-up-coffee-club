@@ -84,7 +84,7 @@ export const actions = {
 
 		// Validate user is authenticated
 		if (!session || !user || !profile) {
-			return fail(401, { error: 'You must be logged in to join a challenge' });
+			return fail(401, { error: 'You must be logged in to leave a challenge' });
 		}
 
 		// Parse form data
@@ -118,7 +118,8 @@ export const actions = {
 
 			return { success: true, challengeId };
 		} catch (error) {
-			return fail(500, { error: `Failed to leave challenge: ${error}. \nPlease try again.` });
+			console.error('Error leaving challenge:', error);
+			return fail(500, { error: 'Failed to leave challenge. Please try again.' });
 		}
 	}
 };

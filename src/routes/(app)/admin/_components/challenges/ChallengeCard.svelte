@@ -13,6 +13,7 @@
 	} from '$lib/constants';
 	import { getUserPreferencesContext } from '$lib/state/user-preferences.svelte.js';
 	import { getChallengeTimeStateFromDates } from '$lib/utils/challenge.js';
+	import { getFormActionError } from '$lib/utils/form-action.js';
 	import { formatDatetimeForInput, formatDate } from '$lib/utils/datetime.js';
 	import { kmToMeters, metersToKm, metersToMiles, milesToMeters } from '$lib/utils/distance.js';
 	import type { ChallengeAdmin } from '../../_logic/ChallengeAdmin.svelte.js';
@@ -82,10 +83,8 @@
 					await update();
 					isEditing = false;
 				} else {
-					toast.error(
-						(result.type === 'failure' ? (result.data as { error?: string })?.error : undefined) ??
-							'Failed to update challenge.'
-					);
+					const errorMsg = getFormActionError(result) ?? 'Failed to update challenge.';
+					toast.error(errorMsg);
 				}
 			};
 		}}
@@ -214,11 +213,7 @@
 							if (result.type === 'success') {
 								await update();
 							} else {
-								toast.error(
-									(result.type === 'failure'
-										? (result.data as { error?: string })?.error
-										: undefined) ?? 'Failed to delete.'
-								);
+								toast.error(getFormActionError(result) ?? 'Failed to delete.');
 								await update();
 							}
 						};

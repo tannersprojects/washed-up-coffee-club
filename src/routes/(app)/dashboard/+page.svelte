@@ -23,12 +23,19 @@
 	$effect(() => {
 		dashboard.updateFromServerData(data);
 	});
+
+	// Stop countdown timers when navigating away
+	$effect(() => {
+		return () => dashboard.cleanup();
+	});
+
+	let drawerTriggerRef = $state<HTMLButtonElement | undefined>(undefined);
 </script>
 
 <!-- Outer wrapper: fill viewport so content area has height for centering / scroll -->
 <div class="flex min-h-0 w-full flex-1 flex-col">
 	<!-- Mobile drawer -->
-	<ChallengesDrawer profile={data.profile} />
+	<ChallengesDrawer profile={data.profile} onClose={() => drawerTriggerRef?.focus()} />
 
 	<!-- Tab bar -->
 	<nav class="flex shrink-0 flex-col px-6">
@@ -42,6 +49,7 @@
 			<div class="flex py-3 md:hidden">
 				<button
 					type="button"
+					bind:this={drawerTriggerRef}
 					onclick={() => dashboard.openChallengesDrawer()}
 					class="flex items-center gap-1 font-mono text-sm tracking-wider text-(--grey-olive) uppercase transition-colors hover:text-white"
 				>

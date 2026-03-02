@@ -44,12 +44,7 @@ export class DashboardUI {
 			return this.challenges.find((c) => c.id === this.selectedChallengeId) || null;
 		});
 
-		// TODO: Should this be done when the selected challenge is changed?
-		// Select first challenge by default
-		if (this.challenges.length > 0) {
-			// Start countdown for first challenge
-			this.challenges[0].startCountdown();
-		}
+		this.challenges.forEach((c) => c.startCountdown());
 	}
 
 	static fromServerData(
