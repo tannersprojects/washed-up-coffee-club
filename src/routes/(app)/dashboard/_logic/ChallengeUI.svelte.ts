@@ -1,11 +1,13 @@
 import { formatTimeRemaining } from '$lib/utils/timer.js';
 import type {
 	ChallengeParticipantWithRelations,
-	ChallengeWithParticipation
+	DashboardChallenge
 } from '$lib/types/dashboard.js';
-import type { ChallengeParticipant } from '$lib/db/schema.js';
 import { LeaderboardUI } from './LeaderboardUI.svelte';
-import { getChallengeJoinDisplayState, getChallengeTimeStateFromDates } from '$lib/utils/challenge';
+import {
+	getChallengeTimeStateFromDates,
+	getJoinDisplayStateFromTimeState
+} from '$lib/utils/challenge';
 import {
 	LEADERBOARD_TAB,
 	type ChallengeType,
@@ -17,102 +19,100 @@ import {
 import type { ChallengeTimeState } from '$lib/types/challenge.js';
 
 export class ChallengeUI {
-	// Challenge fields from database
-	id: string;
-	title: string;
-	description: string;
-	type: ChallengeType;
-	startDate: Date;
-	endDate: Date;
-	goalDistance: number | null;
-	segmentId: number | null;
-	status: ChallengeStatus;
-	isActive: boolean;
-	createdAt: Date;
+	// Challenge data (immutable)
+	readonly id: string;
+	readonly title: string;
+	readonly description: string;
+	readonly type: ChallengeType;
+	readonly startDate: Date;
+	readonly endDate: Date;
+	readonly goalDistance: number | null;
+	readonly segmentId: number | null;
+	readonly status: ChallengeStatus;
+	readonly isActive: boolean;
+	readonly createdAt: Date;
 
-	// Participation fields
+	// Participation
+	participant: ChallengeParticipantWithRelations | null;
 	isParticipating: boolean;
-	participant: ChallengeParticipant | null;
 
-	// Reactive state
+	// UI state
 	leaderboard: LeaderboardUI;
 	activeTab: LeaderboardTab;
 	challengeTimeState: ChallengeTimeState;
 	joinDisplayState: ChallengeJoinDisplayState;
 	isSubmitting: boolean;
 	timeLeft: string;
-	private countdownInterval: ReturnType<typeof setInterval> | null;
 
-	constructor(
-		challengeWithParticipation: ChallengeWithParticipation,
-		challengeParticipantsWithRelations: ChallengeParticipantWithRelations[],
-		distanceUnit: DistanceUnit
-	) {
-		this.id = challengeWithParticipation.id;
-		this.title = challengeWithParticipation.title;
-		this.description = challengeWithParticipation.description;
-		this.type = challengeWithParticipation.type;
-		this.startDate = challengeWithParticipation.startDate;
-		this.endDate = challengeWithParticipation.endDate;
-		this.goalDistance = challengeWithParticipation.goalDistance;
-		this.segmentId = challengeWithParticipation.segmentId;
-		this.status = challengeWithParticipation.status;
-		this.isActive = challengeWithParticipation.isActive;
-		this.createdAt = challengeWithParticipation.createdAt;
+	// Private
+	private countdownTick: number;
+	private countdownInterval: ReturnType<typeof setInterval>;
+	private profileId: string;
 
-		this.isParticipating = $state(challengeWithParticipation.isParticipating);
-		this.participant = $state(challengeWithParticipation.participant);
+	constructor(challenge: DashboardChallenge, profileId: string, distanceUnit: DistanceUnit) {
+		this.profileId = profileId;
 
-		const initialState = getChallengeTimeStateFromDates(this.startDate, this.endDate);
-		this.timeLeft = $state(formatTimeRemaining(initialState.targetDate));
-		this.countdownInterval = null;
+		// Challenge fields
+		this.id = challenge.id;
+		this.title = challenge.title;
+		this.description = challenge.description;
+		this.type = challenge.type;
+		this.startDate = challenge.startDate;
+		this.endDate = challenge.endDate;
+		this.goalDistance = challenge.goalDistance;
+		this.segmentId = challenge.segmentId;
+		this.status = challenge.status;
+		this.isActive = challenge.isActive;
+		this.createdAt = challenge.createdAt;
+
+		// Participation
+		this.participant = $state(this.findParticipant(challenge));
+		this.isParticipating = $derived(this.participant !== null);
+
+		// Countdown (always runs; cleanup() stops it)
+		this.countdownTick = $state(0);
+		this.countdownInterval = setInterval(() => {
+			this.countdownTick++;
+			if (formatTimeRemaining(this.challengeTimeState.targetDate) === '00:00:00') {
+				this.stopCountdown();
+			}
+		}, 1000);
+
+		// Leaderboard
 		this.leaderboard = new LeaderboardUI(
-			challengeParticipantsWithRelations,
+			challenge.participants,
 			this.goalDistance,
 			this.type,
 			distanceUnit
 		);
+
+		// Derived state
 		this.activeTab = $state(LEADERBOARD_TAB.Leaderboard);
 		this.challengeTimeState = $derived.by(() => {
-			void this.timeLeft; // dependency: re-run when countdown ticks
+			void this.countdownTick;
 			return getChallengeTimeStateFromDates(this.startDate, this.endDate);
 		});
-		this.joinDisplayState = $derived.by(() => {
-			void this.timeLeft;
-			return getChallengeJoinDisplayState(this);
-		});
+		this.timeLeft = $derived(formatTimeRemaining(this.challengeTimeState.targetDate));
+		this.joinDisplayState = $derived(
+			getJoinDisplayStateFromTimeState(this.challengeTimeState, this.isParticipating)
+		);
 		this.isSubmitting = $state(false);
 	}
 
-	startCountdown() {
-		// Don't start if already running
-		if (this.countdownInterval) return;
-
-		// Update immediately using current target date
-		this.timeLeft = formatTimeRemaining(this.challengeTimeState.targetDate);
-
-		// Update every second
-		this.countdownInterval = setInterval(() => {
-			const targetDate = this.challengeTimeState.targetDate;
-			const formatted = formatTimeRemaining(targetDate);
-			this.timeLeft = formatted;
-
-			// Stop when time expires
-			if (formatted === '00:00:00') {
-				this.stopCountdown();
-			}
-		}, 1000);
+	private findParticipant(challenge: DashboardChallenge): ChallengeParticipantWithRelations | null {
+		return challenge.participants.find((p) => p.profileId === this.profileId) ?? null;
 	}
 
-	stopCountdown() {
-		if (this.countdownInterval) {
-			clearInterval(this.countdownInterval);
-			this.countdownInterval = null;
-		}
+	private stopCountdown() {
+		clearInterval(this.countdownInterval);
 	}
 
+	cleanup() {
+		this.stopCountdown();
+	}
+
+	// Participation
 	join(challengeParticipantWithRelations: ChallengeParticipantWithRelations) {
-		this.isParticipating = true;
 		this.participant = challengeParticipantWithRelations;
 		this.leaderboard.addChallengeParticipantWithRelations(challengeParticipantWithRelations);
 		this.isSubmitting = false;
@@ -122,35 +122,22 @@ export class ChallengeUI {
 		if (!this.participant) return;
 
 		this.leaderboard.removeChallengeParticipantWithRelations(this.participant.id);
-		this.isParticipating = false;
 		this.participant = null;
 		this.isSubmitting = false;
 	}
 
+	// Tabs
 	setActiveTab(tab: LeaderboardTab) {
 		this.activeTab = tab;
 	}
 
-	/**
-	 * Update challenge from fresh server data
-	 * Syncs participation state and leaderboard participants
-	 */
-	updateFromServerData(
-		challengeWithParticipation: ChallengeWithParticipation,
-		challengeParticipantsWithRelations: ChallengeParticipantWithRelations[]
-	) {
-		// Update participation state from server
-		this.isParticipating = challengeWithParticipation.isParticipating;
-		this.participant = challengeWithParticipation.participant;
-
-		// Update leaderboard with fresh participant data
-		this.leaderboard.updateChallengeParticipantsWithRelations(challengeParticipantsWithRelations);
+	// Server sync
+	updateFromServerData(challenge: DashboardChallenge) {
+		this.participant = this.findParticipant(challenge);
+		this.leaderboard.updateChallengeParticipantsWithRelations(challenge.participants);
 	}
 
-	/**
-	 * Get the current user's rank in this challenge
-	 * Returns null if user is not participating or hasn't finished
-	 */
+	// Queries
 	getCurrentUserRank(profileId: string): number | null {
 		if (!this.isParticipating) return null;
 

@@ -1,139 +1,95 @@
 import { ChallengeUI } from './ChallengeUI.svelte.js';
-import type { DashboardContextData } from '$lib/types/dashboard.js';
-import type {
-	ChallengeParticipantWithRelations,
-	ChallengeWithParticipation
-} from '$lib/types/dashboard.js';
+import type { DashboardContextData, DashboardChallenge } from '$lib/types/dashboard.js';
 import { DASHBOARD_TAB, type DashboardTab, type DistanceUnit } from '$lib/constants';
 
 export class DashboardUI {
+	// Data
 	challenges: ChallengeUI[];
 	selectedChallengeId: string | null;
 	selectedChallenge: ChallengeUI | null;
+
+	// UI state
 	activeTab: DashboardTab;
 	drawerOpen: boolean;
 	sidebarPinned: boolean;
 	sidebarHovered: boolean;
-	distanceUnit: DistanceUnit;
+
+	// Config
+	readonly distanceUnit: DistanceUnit;
 
 	constructor(
-		challengesWithParticipation: ChallengeWithParticipation[],
-		challengeParticipantsWithRelationsByChallenge: Record<
-			string,
-			ChallengeParticipantWithRelations[]
-		>,
+		dashboardChallenges: DashboardChallenge[],
+		profileId: string,
 		distanceUnit: DistanceUnit
 	) {
 		this.distanceUnit = distanceUnit;
-		// Hydrate challenges into class instances
-		const challenges = challengesWithParticipation.map(
-			(c) => new ChallengeUI(c, challengeParticipantsWithRelationsByChallenge[c.id], distanceUnit)
-		);
+
+		// Challenges
+		const challenges = dashboardChallenges.map((c) => new ChallengeUI(c, profileId, distanceUnit));
 		this.challenges = $state(challenges);
 
-		// Initialize UI state
-		this.selectedChallengeId = $state(challengesWithParticipation[0]?.id || null);
+		// Selection
+		this.selectedChallengeId = $state(challenges[0]?.id || null);
+
+		// UI state
 		this.activeTab = $state(DASHBOARD_TAB.Challenges);
 		this.drawerOpen = $state(false);
 		this.sidebarPinned = $state(true);
 		this.sidebarHovered = $state(false);
 
-		// Initialize derived values
+		// Derived
 		this.selectedChallenge = $derived.by(() => {
 			if (!this.selectedChallengeId) return null;
-			return this.challenges.find((c) => c.id === this.selectedChallengeId) || null;
+			return this.findChallengeById(this.selectedChallengeId!) ?? null;
 		});
-
-		this.challenges.forEach((c) => c.startCountdown());
 	}
 
-	static fromServerData(
-		{
-			challengesWithParticipation,
-			challengeParticipantsWithRelationsByChallenge
-		}: DashboardContextData,
-		distanceUnit: DistanceUnit
-	) {
-		return new DashboardUI(
-			challengesWithParticipation,
-			challengeParticipantsWithRelationsByChallenge,
-			distanceUnit
-		);
+	private findChallengeById(id: string): ChallengeUI | undefined {
+		return this.challenges.find((c) => c.id === id);
 	}
 
-	/**
-	 * Set the active tab (Challenges or Club Leaderboard)
-	 */
+	static fromServerData(data: DashboardContextData, distanceUnit: DistanceUnit) {
+		return new DashboardUI(data.dashboardChallenges, data.profile.id, distanceUnit);
+	}
+
+	// Selection
+	selectChallenge(id: string) {
+		this.selectedChallengeId = id;
+	}
+
+	// Tabs
 	setActiveTab(tab: DashboardTab) {
 		this.activeTab = tab;
 	}
 
-	/**
-	 * Open the challenges drawer (mobile)
-	 */
+	// Drawer
 	openChallengesDrawer() {
 		this.drawerOpen = true;
 	}
 
-	/**
-	 * Close the challenges drawer (mobile)
-	 */
 	closeChallengesDrawer() {
 		this.drawerOpen = false;
 	}
 
-	/**
-	 * Toggle sidebar pin state (desktop)
-	 */
+	// Sidebar
 	toggleSidebarPin() {
 		this.sidebarPinned = !this.sidebarPinned;
 	}
 
-	/**
-	 * Set sidebar hover state (desktop)
-	 */
 	setSidebarHovered(hovered: boolean) {
 		this.sidebarHovered = hovered;
 	}
 
-	/**
-	 * Select a different challenge
-	 * Stops countdown on previous, starts on new
-	 */
-	selectChallenge(id: string) {
-		// Stop countdown on currently selected challenge
-		if (this.selectedChallenge) {
-			this.selectedChallenge.stopCountdown();
-		}
-
-		// Update selection
-		this.selectedChallengeId = id;
-
-		// Start countdown on newly selected challenge
-		if (this.selectedChallenge) {
-			this.selectedChallenge.startCountdown();
-		}
-	}
-
-	/**
-	 * Update dashboard from fresh server data
-	 * Syncs all challenges with their latest participation and leaderboard data
-	 */
-	updateFromServerData({
-		challengesWithParticipation,
-		challengeParticipantsWithRelationsByChallenge
-	}: DashboardContextData) {
-		// Update each existing challenge
-		challengesWithParticipation.forEach((challengeData) => {
-			const existingChallenge = this.challenges.find((c) => c.id === challengeData.id);
-			if (existingChallenge) {
-				const participants = challengeParticipantsWithRelationsByChallenge[challengeData.id] || [];
-				existingChallenge.updateFromServerData(challengeData, participants);
-			}
+	// Server sync
+	updateFromServerData({ dashboardChallenges }: DashboardContextData) {
+		dashboardChallenges.forEach((dashboardChallenge) => {
+			const existing = this.findChallengeById(dashboardChallenge.id);
+			if (existing) existing.updateFromServerData(dashboardChallenge);
 		});
 	}
 
+	// Lifecycle
 	cleanup() {
-		this.challenges.forEach((c) => c.stopCountdown());
+		this.challenges.forEach((c) => c.cleanup());
 	}
 }

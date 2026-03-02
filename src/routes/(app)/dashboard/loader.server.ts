@@ -1,8 +1,7 @@
 import { db } from '$lib/db';
 import { challengeParticipantsTable, challengesTable } from '$lib/db/schema';
 import { eq, and, inArray } from 'drizzle-orm';
-import type { ChallengeWithParticipation, DashboardContextData } from '$lib/types/dashboard.js';
-import type { ChallengeParticipantWithRelations } from '$lib/types/dashboard.js';
+import type { DashboardChallenge, ChallengeParticipantWithRelations } from '$lib/types/dashboard.js';
 import { PARTICIPANT_STATUS } from '$lib/constants';
 
 // Challenge Queries
@@ -81,25 +80,11 @@ export async function checkUserParticipation(
 	return participant ?? null;
 }
 
-export async function loadDashboardData(profileId: string): Promise<DashboardContextData> {
-	const challengeParticipantsWithRelationsByChallenge: Record<
-		string,
-		ChallengeParticipantWithRelations[]
-	> = {};
-	const challengesWithParticipation: ChallengeWithParticipation[] = [];
-
+export async function loadDashboardData(): Promise<DashboardChallenge[]> {
 	const challenges = await loadActiveChallenges();
-	if (challenges.length === 0) {
-		return { challengesWithParticipation, challengeParticipantsWithRelationsByChallenge };
-	}
+	if (challenges.length === 0) return [];
 
 	const challengeIds = challenges.map((c) => c.id);
-
-	// Ensure every challenge has an array (empty if no participants)
-	for (const challenge of challenges) {
-		challengeParticipantsWithRelationsByChallenge[challenge.id] = [];
-	}
-
 	const allParticipants = await db.query.challengeParticipantsTable.findMany({
 		where: inArray(challengeParticipantsTable.challengeId, challengeIds),
 		with: {
@@ -108,24 +93,15 @@ export async function loadDashboardData(profileId: string): Promise<DashboardCon
 		}
 	});
 
-	for (const participant of allParticipants) {
-		const challengeId = participant.challengeId;
-		challengeParticipantsWithRelationsByChallenge[challengeId].push(participant);
+	const participantsByChallengeId = new Map<string, ChallengeParticipantWithRelations[]>();
+	for (const p of allParticipants) {
+		const arr = participantsByChallengeId.get(p.challengeId) ?? [];
+		arr.push(p);
+		participantsByChallengeId.set(p.challengeId, arr);
 	}
 
-	for (const challenge of challenges) {
-		const challengeParticipants = challengeParticipantsWithRelationsByChallenge[challenge.id] || [];
-		const userParticipant = challengeParticipants.find((p) => p.profileId === profileId);
-
-		challengesWithParticipation.push({
-			...challenge,
-			isParticipating: userParticipant !== undefined,
-			participant: userParticipant || null
-		});
-	}
-
-	return {
-		challengesWithParticipation,
-		challengeParticipantsWithRelationsByChallenge
-	};
+	return challenges.map((challenge) => ({
+		...challenge,
+		participants: participantsByChallengeId.get(challenge.id) ?? []
+	}));
 }

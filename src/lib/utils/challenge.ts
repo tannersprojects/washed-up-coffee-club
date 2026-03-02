@@ -5,14 +5,18 @@ import {
 	CHALLENGE_JOIN_DISPLAY_STATE,
 	COUNTDOWN_LABEL,
 	DISTANCE_UNIT,
+	PARTICIPANT_STATUS,
 	type ChallengeJoinDisplayState,
 	type DistanceUnit
 } from '$lib/constants';
-import type { Challenge } from '$lib/db/schema';
-import type { ChallengeUI } from '../../routes/(app)/dashboard/_logic/ChallengeUI.svelte';
 import { metersToKm, metersToMiles } from '$lib/utils/distance.js';
 
-// TODO: Does this just add together the goal value for each participant? Should it?
+export type ChallengeWithDates = {
+	isActive?: boolean;
+	endDate: Date | string;
+};
+
+/** Sums goalDistanceMeters per completed participant (total "distance completed" for display). */
 export function calculateTotalDistance(
 	challengeParticipantsWithRelations: ChallengeParticipantWithRelations[],
 	goalDistanceMeters: number | null,
@@ -23,7 +27,7 @@ export function calculateTotalDistance(
 	}
 
 	const totalMeters = challengeParticipantsWithRelations.reduce((acc, participant) => {
-		if (participant.status === 'completed' && goalDistanceMeters) {
+		if (participant.status === PARTICIPANT_STATUS.COMPLETED && goalDistanceMeters) {
 			return acc + goalDistanceMeters;
 		}
 		return acc;
@@ -66,37 +70,25 @@ export function getChallengeTimeStateFromDates(
 	};
 }
 
-export function isChallengeJoinable(challenge: ChallengeUI | Challenge | null): boolean {
-	if (!challenge || !challenge.isActive) {
-		return false;
-	}
-
+export function isChallengeJoinable(challenge: ChallengeWithDates | null): boolean {
+	if (!challenge || !challenge.isActive) return false;
 	const now = new Date();
 	const endDate = new Date(challenge.endDate);
-	if (now >= endDate) {
-		return false;
-	}
-
-	return true;
+	return now < endDate;
 }
 
-export function getChallengeJoinDisplayState(challenge: ChallengeUI): ChallengeJoinDisplayState {
-	if (challenge.isParticipating) {
-		return CHALLENGE_JOIN_DISPLAY_STATE.PARTICIPATING;
-	}
-
-	const timeState = getChallengeTimeStateFromDates(challenge.startDate, challenge.endDate);
-
-	if (timeState.status === CHALLENGE_STATUS.COMPLETED) {
+export function getJoinDisplayStateFromTimeState(
+	timeState: ChallengeTimeState,
+	isParticipating: boolean
+): ChallengeJoinDisplayState {
+	if (isParticipating) return CHALLENGE_JOIN_DISPLAY_STATE.PARTICIPATING;
+	if (timeState.status === CHALLENGE_STATUS.COMPLETED)
 		return CHALLENGE_JOIN_DISPLAY_STATE.ENDED;
-	}
 	if (
 		timeState.status === CHALLENGE_STATUS.ACTIVE ||
 		timeState.status === CHALLENGE_STATUS.UPCOMING
-	) {
+	)
 		return CHALLENGE_JOIN_DISPLAY_STATE.JOINABLE;
-	}
-
 	return CHALLENGE_JOIN_DISPLAY_STATE.NOT_ACTIVE;
 }
 

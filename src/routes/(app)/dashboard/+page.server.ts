@@ -17,13 +17,11 @@ export const load: PageServerLoad = async ({ parent }) => {
 		throw redirect(302, '/');
 	}
 
-	const { challengesWithParticipation, challengeParticipantsWithRelationsByChallenge } =
-		await loadDashboardData(profile.id);
+	const dashboardChallenges = await loadDashboardData();
 
 	return {
-		profile,
-		challengesWithParticipation,
-		challengeParticipantsWithRelationsByChallenge
+		dashboardChallenges,
+		profile
 	};
 };
 
