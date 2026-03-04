@@ -6,9 +6,13 @@ import type {
 import { LeaderboardUI } from './LeaderboardUI.svelte';
 import {
 	getChallengeTimeStateFromDates,
-	getJoinDisplayStateFromTimeState
+	getJoinDisplayStateFromTimeState,
+	getChallengeStatusColor,
+	getChallengeStatusBadgeLabel,
+	getChallengeStatusBadgeClasses
 } from '$lib/utils/challenge';
 import {
+	CHALLENGE_STATUS,
 	LEADERBOARD_TAB,
 	type ChallengeType,
 	type ChallengeStatus,
@@ -41,6 +45,10 @@ export class ChallengeUI {
 	activeTab: LeaderboardTab;
 	challengeTimeState: ChallengeTimeState;
 	joinDisplayState: ChallengeJoinDisplayState;
+	badgeLabel: string;
+	badgeClasses: string;
+	statusDotColor: string;
+	isActiveOrUpcoming: boolean;
 	isSubmitting: boolean;
 	timeLeft: string;
 
@@ -71,6 +79,11 @@ export class ChallengeUI {
 
 		// Countdown (always runs; cleanup() stops it)
 		this.countdownTick = $state(0);
+		this.challengeTimeState = $derived.by(() => {
+			void this.countdownTick;
+			return getChallengeTimeStateFromDates(this.startDate, this.endDate);
+		});
+		this.timeLeft = $derived(formatTimeRemaining(this.challengeTimeState.targetDate));
 		this.countdownInterval = setInterval(() => {
 			this.countdownTick++;
 			if (formatTimeRemaining(this.challengeTimeState.targetDate) === '00:00:00') {
@@ -88,13 +101,15 @@ export class ChallengeUI {
 
 		// Derived state
 		this.activeTab = $state(LEADERBOARD_TAB.Leaderboard);
-		this.challengeTimeState = $derived.by(() => {
-			void this.countdownTick;
-			return getChallengeTimeStateFromDates(this.startDate, this.endDate);
-		});
-		this.timeLeft = $derived(formatTimeRemaining(this.challengeTimeState.targetDate));
 		this.joinDisplayState = $derived(
 			getJoinDisplayStateFromTimeState(this.challengeTimeState, this.isParticipating)
+		);
+		this.badgeLabel = $derived(getChallengeStatusBadgeLabel(this.challengeTimeState.status));
+		this.badgeClasses = $derived(getChallengeStatusBadgeClasses(this.challengeTimeState.status));
+		this.statusDotColor = $derived(getChallengeStatusColor(this.challengeTimeState.status));
+		this.isActiveOrUpcoming = $derived(
+			this.challengeTimeState.status === CHALLENGE_STATUS.ACTIVE ||
+				this.challengeTimeState.status === CHALLENGE_STATUS.UPCOMING
 		);
 		this.isSubmitting = $state(false);
 	}

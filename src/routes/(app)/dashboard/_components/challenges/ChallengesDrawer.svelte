@@ -2,6 +2,7 @@
 	import { cubicOut } from 'svelte/easing';
 	import { fade, fly } from 'svelte/transition';
 	import { getDashboardContext } from '../../_logic/context.js';
+	import { X } from 'lucide-svelte';
 	import ChallengeListItems from './ChallengeListItems.svelte';
 	import type { Profile } from '$lib/db/schema.js';
 
@@ -39,7 +40,6 @@
 		transition:fade={{ duration: 200 }}
 		class="fixed inset-0 z-50 bg-black/60"
 		onclick={handleClose}
-		onkeydown={(e) => e.key === 'Escape' && handleClose()}
 		role="presentation"
 	></div>
 
@@ -51,6 +51,8 @@
 		role="dialog"
 		aria-modal="true"
 		aria-labelledby="drawer-challenges-title"
+		tabindex="-1"
+		onkeydown={(e) => e.key === 'Escape' && handleClose()}
 	>
 		<!-- Header -->
 		<div class="flex shrink-0 items-center justify-between border-b border-white/10 px-4 py-4">
@@ -63,16 +65,7 @@
 				class="flex h-8 w-8 items-center justify-center rounded transition-colors hover:bg-white/10"
 				aria-label="Close drawer"
 			>
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					fill="none"
-					viewBox="0 0 24 24"
-					stroke-width="2"
-					stroke="currentColor"
-					class="h-5 w-5 text-(--grey-olive)"
-				>
-					<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-				</svg>
+				<X size={20} class="text-(--grey-olive)" />
 			</button>
 		</div>
 

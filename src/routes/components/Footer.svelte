@@ -1,5 +1,7 @@
 <script lang="ts">
 	import stravaConnectButton from '$lib/assets/strava_buttons/connect_with_strava_orange/btn_strava_connect_with_orange.svg';
+	import AppFooter from '$lib/components/AppFooter.svelte';
+	import { APP_FOOTER_VARIANT } from '$lib/constants';
 
 	let { isLoggedIn } = $props();
 
@@ -90,13 +92,5 @@
 		</div>
 	</div>
 
-	<footer
-		class="absolute bottom-8 w-full px-6 text-center font-mono text-[10px] tracking-widest text-white/30 uppercase"
-	>
-		<div class="flex flex-col items-center justify-center gap-2 md:flex-row md:gap-4">
-			<span>EST. 2024</span>
-			<span class="hidden md:inline">///</span>
-			<span>Charleston, SC</span>
-		</div>
-	</footer>
+	<AppFooter variant={APP_FOOTER_VARIANT.STANDARD} />
 </section>

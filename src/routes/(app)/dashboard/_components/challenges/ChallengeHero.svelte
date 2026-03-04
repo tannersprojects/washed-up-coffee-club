@@ -3,22 +3,13 @@
 	import { toast } from 'svelte-sonner';
 	import { getFormActionError } from '$lib/utils/form-action.js';
 	import { formatDate } from '$lib/utils/datetime.js';
-	import { CHALLENGE_STATUS } from '$lib/constants';
 	import { getDashboardContext } from '../../_logic/context.js';
 	import CountdownTimer from './CountdownTimer.svelte';
 	import ChallengeStatsGrid from './ChallengeStatsGrid.svelte';
 	import JoinChallengeButton from './JoinChallengeButton.svelte';
 
 	const dashboard = getDashboardContext();
-	const challenge = $derived(dashboard.selectedChallenge);
-
-	const badgeLabel = $derived(
-		challenge?.challengeTimeState.status === CHALLENGE_STATUS.UPCOMING
-			? 'Upcoming Challenge'
-			: challenge?.challengeTimeState.status === CHALLENGE_STATUS.ACTIVE
-				? 'Active Challenge'
-				: 'Challenge Ended'
-	);
+	let challenge = $derived(dashboard.selectedChallenge);
 </script>
 
 {#if challenge}
@@ -39,9 +30,9 @@
 					<div class="flex flex-wrap items-center gap-3">
 						<!-- Challenge status badge -->
 						<span
-							class="inline-block rounded-full border border-(--accent-lime)/40 bg-(--accent-lime)/5 px-3 py-1 text-[10px] tracking-widest text-(--accent-lime) uppercase"
+							class="inline-block rounded-full border px-3 py-1 text-[10px] tracking-widest uppercase {challenge.badgeClasses}"
 						>
-							{badgeLabel}
+							{challenge.badgeLabel}
 						</span>
 						<span class="text-[10px] tracking-widest text-gray-500 uppercase">
 							{formatDate(challenge.startDate || new Date())}
@@ -50,6 +41,7 @@
 
 					{#if challenge.isParticipating}
 						<!-- Leave button: secondary/destructive action -->
+						<!-- challenge is a ChallengeUI instance from context; mutating its properties is intentional for optimistic UI -->
 						<form
 							method="POST"
 							action="?/leaveChallenge"

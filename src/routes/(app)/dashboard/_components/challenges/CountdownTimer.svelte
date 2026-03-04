@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { getDashboardContext } from '../../_logic/context.js';
 
-	let dashboard = getDashboardContext();
+	const dashboard = getDashboardContext();
 </script>
 
 {#if dashboard.selectedChallenge}

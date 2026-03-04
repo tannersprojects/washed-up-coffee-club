@@ -7,7 +7,7 @@
 	import { CHALLENGE_JOIN_DISPLAY_STATE, CHALLENGE_STATUS } from '$lib/constants';
 	import { getDashboardContext } from '../../_logic/context.js';
 
-	let dashboard = getDashboardContext();
+	const dashboard = getDashboardContext();
 	let challenge = $derived(dashboard.selectedChallenge);
 
 	type JoinChallengeResultData = {

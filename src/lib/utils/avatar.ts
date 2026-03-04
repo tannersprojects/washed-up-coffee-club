@@ -1,0 +1,8 @@
+/** Derives a deterministic hex color from a string ID for consistent avatar backgrounds. */
+export function idToHexColor(id: string): string {
+	let hash = 0;
+	for (let i = 0; i < id.length; i++) {
+		hash = id.charCodeAt(i) + ((hash << 5) - hash);
+	}
+	return (Math.abs(hash) & 0x00ffffff).toString(16).padStart(6, '0');
+}

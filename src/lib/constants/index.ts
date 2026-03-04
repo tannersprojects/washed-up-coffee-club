@@ -1,5 +1,7 @@
 export * from './admin';
+export * from './app-footer';
 export * from './challenge';
+export * from './empty-state';
 export * from './dashboard';
 export * from './distance';
 export * from './page';

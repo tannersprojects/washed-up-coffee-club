@@ -7,6 +7,7 @@ import {
 	DISTANCE_UNIT,
 	PARTICIPANT_STATUS,
 	type ChallengeJoinDisplayState,
+	type ChallengeStatus,
 	type DistanceUnit
 } from '$lib/constants';
 import { metersToKm, metersToMiles } from '$lib/utils/distance.js';
@@ -75,6 +76,55 @@ export function isChallengeJoinable(challenge: ChallengeWithDates | null): boole
 	const now = new Date();
 	const endDate = new Date(challenge.endDate);
 	return now < endDate;
+}
+
+/** Returns Tailwind class for challenge status dot (active=green, upcoming=yellow, completed=gray). */
+export function getChallengeStatusColor(status: ChallengeStatus | string): string {
+	switch (status) {
+		case CHALLENGE_STATUS.ACTIVE:
+			return 'bg-(--accent-lime)';
+		case CHALLENGE_STATUS.UPCOMING:
+			return 'bg-yellow-500';
+		case CHALLENGE_STATUS.COMPLETED:
+			return 'bg-(--grey-olive)';
+		default:
+			return 'bg-(--grey-olive)';
+	}
+}
+
+/** Returns display label for challenge status badge. */
+export function getChallengeStatusBadgeLabel(status: ChallengeStatus | string): string {
+	switch (status) {
+		case CHALLENGE_STATUS.UPCOMING:
+			return 'Upcoming Challenge';
+		case CHALLENGE_STATUS.ACTIVE:
+			return 'Active Challenge';
+		case CHALLENGE_STATUS.COMPLETED:
+			return 'Challenge Ended';
+		default:
+			return 'Challenge Ended';
+	}
+}
+
+/** Returns Tailwind classes for challenge status badge (border, bg, text). */
+export function getChallengeStatusBadgeClasses(status: ChallengeStatus | string): string {
+	switch (status) {
+		case CHALLENGE_STATUS.ACTIVE:
+			return 'border-(--accent-lime)/40 bg-(--accent-lime)/5 text-(--accent-lime)';
+		case CHALLENGE_STATUS.UPCOMING:
+			return 'border-yellow-500/40 bg-yellow-500/5 text-yellow-500';
+		case CHALLENGE_STATUS.COMPLETED:
+			return 'border-(--grey-olive)/40 bg-(--grey-olive)/5 text-(--grey-olive)';
+		default:
+			return 'border-(--grey-olive)/40 bg-(--grey-olive)/5 text-(--grey-olive)';
+	}
+}
+
+export function isChallengeActiveOrUpcoming(timeState: ChallengeTimeState): boolean {
+	return (
+		timeState.status === CHALLENGE_STATUS.ACTIVE ||
+		timeState.status === CHALLENGE_STATUS.UPCOMING
+	);
 }
 
 export function getJoinDisplayStateFromTimeState(

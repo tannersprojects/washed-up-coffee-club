@@ -2,7 +2,13 @@
 	import { formatDate } from '$lib/utils/datetime.js';
 	import { formatResultDisplay } from '$lib/utils/challenge.js';
 	import { formatDistanceDisplay } from '$lib/utils/distance.js';
-	import { PACE_UNIT_LABEL, PARTICIPANT_STATUS, type ParticipantStatus } from '$lib/constants';
+	import {
+		CHALLENGE_TYPE,
+		PACE_UNIT_LABEL,
+		PARTICIPANT_STATUS,
+		type ParticipantStatus
+	} from '$lib/constants';
+	import { idToHexColor } from '$lib/utils/avatar.js';
 	import { fly } from 'svelte/transition';
 	import type { LeaderboardRowData } from '$lib/types/dashboard.js';
 	import { getDashboardContext } from '../../_logic/context.js';
@@ -21,6 +27,15 @@
 		challenge?.goalDistance ? formatDistanceDisplay(challenge.goalDistance, unit) : null
 	);
 	const resultDisplay = $derived(formatResultDisplay(row.participant.resultTime));
+	const progressPercent = $derived(
+		challenge?.type === CHALLENGE_TYPE.CUMULATIVE &&
+			challenge?.goalDistance &&
+			row.participant.resultDistance != null
+			? Math.min(100, (row.participant.resultDistance / challenge.goalDistance) * 100)
+			: row.participant.status === PARTICIPANT_STATUS.COMPLETED
+				? 100
+				: 0
+	);
 
 	// Helper function for status color
 	const getStatusColor = (status: ParticipantStatus | null) => {
@@ -76,7 +91,7 @@
 				class="relative h-12 w-12 shrink-0 overflow-hidden rounded-full border-2 border-white/20 bg-gray-800 shadow-lg transition-all group-hover:border-(--accent-lime)/50 group-hover:shadow-[0_0_20px_rgba(0,255,0,0.3)]"
 			>
 				<img
-					src={`https://ui-avatars.com/api/?name=${row.profile.firstname}+${row.profile.lastname}&background=random&color=fff`}
+					src={`https://ui-avatars.com/api/?name=${row.profile.firstname}+${row.profile.lastname}&background=${idToHexColor(row.profile.id)}&color=fff`}
 					alt={row.profile.firstname}
 					class="h-full w-full object-cover"
 				/>
@@ -123,11 +138,11 @@
 					--
 				{/if}
 			</span>
-			<!-- Simple Progress Bar -->
+			<!-- Progress Bar: partial for CUMULATIVE, full for COMPLETED -->
 			<div class="mt-2 h-1 w-full max-w-[80px] overflow-hidden rounded-full bg-gray-800">
 				<div
 					class="h-full bg-(--accent-lime) transition-all duration-1000"
-					style="width: {row.participant.status === PARTICIPANT_STATUS.COMPLETED ? '100%' : '0%'}"
+					style="width: {progressPercent}%"
 				></div>
 			</div>
 		</div>

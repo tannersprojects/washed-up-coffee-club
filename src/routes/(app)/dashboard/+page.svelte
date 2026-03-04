@@ -2,13 +2,14 @@
 	import { untrack } from 'svelte';
 	import { DASHBOARD_TAB } from '$lib/constants';
 
+	import EmptyState from '$lib/components/EmptyState.svelte';
+	import AppFooter from '$lib/components/AppFooter.svelte';
+	import { APP_FOOTER_VARIANT, EMPTY_STATE_VARIANT } from '$lib/constants';
 	import {
 		ChallengesDrawer,
 		DashboardChallengesSidebar,
 		ChallengeHero,
 		LeaderboardSection,
-		EmptyState,
-		DashboardFooter,
 		DashboardTabs
 	} from './_components';
 	import { setDashboardContext } from './_logic/context.js';
@@ -31,6 +32,13 @@
 
 	let drawerTriggerRef = $state<HTMLButtonElement | undefined>(undefined);
 </script>
+
+{#snippet challengeStage()}
+	{#if dashboard.selectedChallenge}
+		<ChallengeHero />
+		<LeaderboardSection />
+	{/if}
+{/snippet}
 
 <!-- Outer wrapper: fill viewport so content area has height for centering / scroll -->
 <div class="flex min-h-0 w-full flex-1 flex-col">
@@ -64,7 +72,7 @@
 	<div class="flex flex-1 flex-col">
 		{#if dashboard.activeTab === DASHBOARD_TAB.ClubLeaderboard}
 			<div class="flex min-h-0 flex-1 items-center justify-center">
-				<EmptyState title="Club Leaderboard" message="Coming soon." variant="no-challenge" />
+				<EmptyState title="Club Leaderboard" message="Coming soon." variant={EMPTY_STATE_VARIANT.FULL_PAGE} />
 			</div>
 		{:else}
 			<!-- Challenges tab content -->
@@ -74,17 +82,14 @@
 					<EmptyState
 						title="No Active Challenge"
 						message="Check back later for the next event."
-						variant="no-challenge"
+						variant={EMPTY_STATE_VARIANT.FULL_PAGE}
 					/>
 				</div>
 			{:else if dashboard.challenges.length === 1}
 				<!-- Single challenge: centered stage without sidebar -->
 				<div class="flex flex-1 flex-col">
 					<div class="mx-auto w-full max-w-7xl px-6">
-						{#if dashboard.selectedChallenge}
-							<ChallengeHero />
-							<LeaderboardSection />
-						{/if}
+						{@render challengeStage()}
 					</div>
 				</div>
 			{:else}
@@ -93,15 +98,12 @@
 
 				<div class="flex flex-1 flex-col">
 					<div class="mx-auto w-full max-w-7xl flex-1 px-6 pt-8">
-						{#if dashboard.selectedChallenge}
-							<ChallengeHero />
-							<LeaderboardSection />
-						{/if}
+						{@render challengeStage()}
 					</div>
 				</div>
 			{/if}
 		{/if}
 
-		<DashboardFooter />
+		<AppFooter variant={APP_FOOTER_VARIANT.STRAVA} />
 	</div>
 </div>

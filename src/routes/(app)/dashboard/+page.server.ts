@@ -1,4 +1,5 @@
 import { fail, redirect } from '@sveltejs/kit';
+import type { DashboardContextData } from '$lib/types/dashboard.js';
 import { isChallengeJoinable } from '$lib/utils/challenge.js';
 import {
 	checkUserParticipation,
@@ -10,7 +11,9 @@ import {
 } from './loader.server.js';
 import type { PageServerLoad } from './$types.js';
 
-export const load: PageServerLoad = async ({ parent }) => {
+export const load: PageServerLoad = async ({
+	parent
+}): Promise<DashboardContextData> => {
 	const { profile } = await parent();
 
 	if (!profile) {
@@ -20,8 +23,8 @@ export const load: PageServerLoad = async ({ parent }) => {
 	const dashboardChallenges = await loadDashboardData();
 
 	return {
-		dashboardChallenges,
-		profile
+		profile,
+		dashboardChallenges
 	};
 };
 
