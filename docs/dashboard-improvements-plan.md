@@ -1,34 +1,61 @@
 # Dashboard Improvements Plan
 
 **Created:** 2025-02-26  
-**Status:** Planning  
+**Status:** In Progress  
 **Scope:** Code review remediation, DTO/data flow optimization, reactive UX
 
 This document consolidates a detailed plan to address dashboard code review findings, analyze and improve data transfer objects (DTOs), and establish best practices for a reactive user experience from Supabase (via Drizzle) to the frontend.
 
 ---
 
+## Implementation Status (as of 2025-03-04)
+
+### Completed
+
+| Item | Phase |
+|------|-------|
+| 1.1 Error handling (Join/Leave forms) | Phase 1 |
+| 1.2 ChallengesDrawer ARIA and focus trap | Phase 2 |
+| 1.3 Dashboard cleanup on unmount | Phase 1 |
+| 1.4 User preferences: `untrack` in layout | Phase 2 |
+| 1.5 Server action error messages (leaveChallenge) | Phase 1 |
+| 1.6 PARTICIPANT_STATUS constants in LeaderboardRow | Phase 1 |
+| Option B: Single array `DashboardChallenge` with `participants` | Phase 3 |
+
+### Remaining
+
+| Item | Phase |
+|------|-------|
+| 1.4 User preferences: Make `setUserPreferencesContext` idempotent | Phase 2 |
+| 1.4 User preferences: localStorage persistence | Phase 2 |
+| Explicit date hydration in `DashboardUI` / `ChallengeUI` | Phase 3 |
+| Optional: Zod validation at load boundary | Phase 3 |
+| Optional: Extract `getStatusColor` / `getMobileStatusLabel` to utils | Phase 1 |
+| Make `distanceUnit` reactive from UserPreferences | Phase 4 |
+| Supabase Realtime for leaderboard | Phase 4 |
+
+---
+
 ## Table of Contents
 
-1. [Code Review Remediation Plan](#1-code-review-remediation-plan)
-2. [Data Transfer Objects (DTOs) Analysis](#2-data-transfer-objects-dtos-analysis)
-3. [Data Flow: Supabase → Frontend](#3-data-flow-supabase--frontend)
-4. [Reactive Experience Strategy](#4-reactive-experience-strategy)
-5. [Implementation Phases](#5-implementation-phases)
+1. [Implementation Status](#implementation-status-as-of-2025-03-04)
+2. [Code Review Remediation Plan](#1-code-review-remediation-plan)
+3. [Data Transfer Objects (DTOs) Analysis](#2-data-transfer-objects-dtos-analysis)
+4. [Data Flow: Supabase → Frontend](#3-data-flow-supabase--frontend)
+5. [Reactive Experience Strategy](#4-reactive-experience-strategy)
+6. [Implementation Phases](#5-implementation-phases)
 
 ---
 
 ## 1. Code Review Remediation Plan
 
-### 1.1 Error Handling (High Priority)
+### 1.1 Error Handling (High Priority) — DONE
 
 **Issue:** Form action errors (join/leave challenge) are not surfaced to users. On `fail(400)` or `fail(500)`, `challenge.isSubmitting` is reset but the user sees nothing.
 
-**Current state:**
-- `JoinChallengeButton.svelte` and `ChallengeHero.svelte` (leave form) only handle `result.type === 'success'`
-- In the `else` branch, `challenge.isSubmitting = false` is set but no error message is displayed
+**Current state:** Implemented. `JoinChallengeButton.svelte` and `LeaveChallengeButton.svelte` use `getFormActionError(result)` and `toast.error()` in the failure branch.
 
-**Remediation:**
+**Remediation (completed):**
 
 1. **Use existing toast system.** The app already uses `svelte-sonner` (see `src/routes/+layout.svelte` with `<Toaster />`, and admin components like `ChallengeCard.svelte`, `ScheduleForm.svelte`).
 
@@ -38,13 +65,11 @@ This document consolidates a detailed plan to address dashboard code review find
 
 4. **Reset `isSubmitting`** in the `else` branch (already done).
 
-**Files to change:**
-- `src/routes/(app)/dashboard/_components/challenges/JoinChallengeButton.svelte` — import `toast` from `svelte-sonner`, handle `result.type === 'failure'` with `toast.error()`
-- `src/routes/(app)/dashboard/_components/challenges/ChallengeHero.svelte` — same for leave form
+**Files changed:** `JoinChallengeButton.svelte`, `LeaveChallengeButton.svelte`
 
 ---
 
-### 1.2 Accessibility (Medium Priority)
+### 1.2 Accessibility (Medium Priority) — DONE
 
 **Issue:** ChallengesDrawer overlay and drawer lack proper ARIA and focus management.
 
@@ -60,13 +85,11 @@ This document consolidates a detailed plan to address dashboard code review find
 
 4. **Escape key:** Already handled; keep it.
 
-**Files to change:**
-- `src/routes/(app)/dashboard/_components/challenges/ChallengesDrawer.svelte`
-- `src/routes/(app)/dashboard/+page.svelte` — add `bind:this={drawerTriggerRef}` to the Menu button for focus restore
+**Files changed:** `ChallengesDrawer.svelte`, `+page.svelte`
 
 ---
 
-### 1.3 Lifecycle & Cleanup (Medium Priority)
+### 1.3 Lifecycle & Cleanup (Medium Priority) — DONE
 
 **Issue:** `DashboardUI.cleanup()` exists but is never called. Countdown timers continue running when the user navigates away.
 
@@ -88,35 +111,35 @@ $effect(() => {
 
 The second effect has no dependencies, so it runs once on mount and returns a cleanup. When the page unmounts, that cleanup runs and stops all countdown timers. The first effect continues to sync server data on `data` changes without touching countdowns.
 
-**Files to change:**
-- `src/routes/(app)/dashboard/+page.svelte`
+**Files changed:** `+page.svelte`
 
 ---
 
-### 1.4 User Preferences Context (Medium Priority)
+### 1.4 User Preferences Context (Medium Priority) — PARTIAL
 
 **Issue:** `setUserPreferencesContext()` is called on every layout render, creating a new `UserPreferences` instance each time. Any in-memory preference changes (e.g. `distanceUnit`) are lost on navigation.
 
+**Current state:** `untrack` is done in `(app)/+layout.svelte`. Idempotent and localStorage still pending.
+
 **Remediation:**
 
-1. **Use `untrack` like admin.** In `+layout.svelte`, mirror the pattern from `admin/+page.svelte`:
+1. **Use `untrack` like admin.** — DONE. In `+layout.svelte`:
    ```ts
    import { untrack } from 'svelte';
    untrack(() => setUserPreferencesContext());
    ```
    This ensures the context initialization is not reactive to layout re-renders.
 
-2. **Make `setUserPreferencesContext` idempotent.** Update `user-preferences.svelte.ts` so it returns the existing instance if already set (e.g. module-level singleton), rather than creating a new `UserPreferences` on every call. That way, even if the layout re-runs, the same instance is reused.
+2. **Make `setUserPreferencesContext` idempotent.** — PENDING. Update `user-preferences.svelte.ts` so it returns the existing instance if already set (e.g. module-level singleton), rather than creating a new `UserPreferences` on every call. That way, even if the layout re-runs, the same instance is reused.
 
-3. **Persist preferences.** See `docs/backlog/distance-unit-preference-localstorage.md`. Implement localStorage persistence so preferences survive reloads and navigation.
+3. **Persist preferences.** — PENDING. See `docs/backlog/distance-unit-preference-localstorage.md`. Implement localStorage persistence so preferences survive reloads and navigation.
 
 **Files to change:**
-- `src/routes/(app)/+layout.svelte` — use `untrack(() => setUserPreferencesContext())`
 - `src/lib/state/user-preferences.svelte.ts` — make idempotent (singleton or return-existing), localStorage read/write
 
 ---
 
-### 1.5 Server Action Error Messages (Low Priority)
+### 1.5 Server Action Error Messages (Low Priority) — DONE
 
 **Issue:** `leaveChallenge` returns `Failed to leave challenge: ${error}` — exposing internal error details. Also, 401 message says "join" instead of "leave".
 
@@ -128,12 +151,11 @@ The second effect has no dependencies, so it runs once on mount and returns a cl
 
 3. **Fix 401 message.** Use "You must be logged in to leave a challenge" in `leaveChallenge`.
 
-**Files to change:**
-- `src/routes/(app)/dashboard/+page.server.ts`
+**Files changed:** `+page.server.ts`
 
 ---
 
-### 1.6 Type Safety in LeaderboardRow (Low Priority)
+### 1.6 Type Safety in LeaderboardRow (Low Priority) — DONE
 
 **Issue:** `row.participant.status` is compared to string literals (`'completed'`, `'in_progress'`) instead of `PARTICIPANT_STATUS` constants.
 
@@ -141,11 +163,9 @@ The second effect has no dependencies, so it runs once on mount and returns a cl
 
 1. **Use constants.** Import `PARTICIPANT_STATUS` and use `PARTICIPANT_STATUS.COMPLETED`, etc.
 
-2. **Extract helpers.** Move `getStatusColor` and `getMobileStatusLabel` to `$lib/utils/participant.ts` or `$lib/utils/leaderboard.ts` for reuse.
+2. **Extract helpers.** — PENDING (optional). Move `getStatusColor` and `getMobileStatusLabel` to `$lib/utils/participant.ts` or `$lib/utils/leaderboard.ts` for reuse.
 
-**Files to change:**
-- `src/routes/(app)/dashboard/_components/leaderboard/LeaderboardRow.svelte`
-- Create `src/lib/utils/participant.ts` (optional)
+**Files changed:** `LeaderboardRow.svelte` (constants done). Optional: create `participant.ts`.
 
 ---
 
@@ -174,7 +194,7 @@ The dashboard uses **implicit DTOs** — types that mirror the database schema w
 
 1. **No explicit serialization contract.** SvelteKit serializes load data to JSON. Dates become ISO strings. The code assumes `getChallengeTimeStateFromDates(startDate, endDate)` accepts both `Date` and `string` — it does, but this is implicit.
 
-2. **Two parallel structures.** `challengesWithParticipation` (array) and `challengeParticipantsWithRelationsByChallenge` (record) must stay in sync. Risk of missing keys (see `docs/backlog/dashboard_data_structure_refactor.md`).
+2. **Two parallel structures.** — RESOLVED. Option B implemented: `DashboardChallenge` carries `participants` array; single array structure.
 
 3. **Over-fetching.** The loader fetches all participants for all challenges. For a user with many challenges, this could be large. No pagination or lazy-loading.
 
@@ -188,18 +208,17 @@ The dashboard uses **implicit DTOs** — types that mirror the database schema w
 - Add `hydrateDashboardData(data: DashboardLoadData): DashboardContextData` that converts dates and validates structure.
 - Use in `setDashboardContext`: `setDashboardContext(hydrateDashboardData(data))`.
 
-**Option B: Single array (from backlog)**
+**Option B: Single array (from backlog)** — DONE
 
-- Adopt `ChallengeWithParticipationAndParticipants` — each challenge carries its own `participants` array.
+- Adopted `DashboardChallenge` — each challenge carries its own `participants` array.
 - Eliminates the record; simplifies types and reduces sync bugs.
-- See `docs/backlog/dashboard_data_structure_refactor.md`.
 
 **Option C: Add Zod validation**
 
 - Define Zod schemas for `DashboardContextData` (or the load payload).
 - Validate in `load` or at hydration. Fail fast if shape is wrong.
 
-**Recommendation:** Combine A + B. Implement Option B (single array) for structural simplicity, then add Option A (explicit hydration with date parsing) for robustness.
+**Recommendation:** Combine A + B. Option B implemented. Option A (explicit hydration with date parsing) still pending.
 
 ---
 
@@ -286,20 +305,21 @@ ChallengeUI.updateFromServerData() — sync with server
 
 ### Phase 1: Quick Wins (1–2 days)
 
-- [ ] Add error handling to Join/Leave forms (1.1)
-- [ ] Call `dashboard.cleanup()` in `onDestroy` (1.3)
-- [ ] Fix leaveChallenge error message and 401 text (1.5)
-- [ ] Use PARTICIPANT_STATUS constants in LeaderboardRow (1.6)
+- [x] Add error handling to Join/Leave forms (1.1)
+- [x] Call `dashboard.cleanup()` in `$effect` on unmount (1.3)
+- [x] Fix leaveChallenge error message and 401 text (1.5)
+- [x] Use PARTICIPANT_STATUS constants in LeaderboardRow (1.6)
 
 ### Phase 2: Accessibility & Context (1–2 days)
 
-- [ ] ChallengesDrawer ARIA and focus trap (1.2)
-- [ ] User preferences context: initialize once (1.4)
+- [x] ChallengesDrawer ARIA and focus trap (1.2)
+- [x] User preferences context: `untrack` in layout (1.4.1)
+- [ ] User preferences: make `setUserPreferencesContext` idempotent (1.4.2)
 - [ ] User preferences: localStorage persistence (see backlog doc)
 
 ### Phase 3: DTO & Data Flow (2–3 days)
 
-- [ ] Implement Option B: single array `ChallengeWithParticipationAndParticipants` (see dashboard_data_structure_refactor.md)
+- [x] Implement Option B: single array `DashboardChallenge` with `participants`
 - [ ] Add explicit date hydration in `DashboardUI.fromServerData` / `ChallengeUI` constructor
 - [ ] Optional: Zod validation at load boundary
 
@@ -312,15 +332,15 @@ ChallengeUI.updateFromServerData() — sync with server
 
 ## Appendix: File Change Summary
 
-| File | Changes |
-|------|---------|
-| `JoinChallengeButton.svelte` | Handle `result.type === 'failure'`, call `toast.error()` |
-| `ChallengeHero.svelte` | Same for leave form |
-| `ChallengesDrawer.svelte` | ARIA, focus trap, role fixes |
-| `+page.svelte` | Add second `$effect` that returns `() => dashboard.cleanup()` for unmount |
-| `+page.server.ts` | Fix leaveChallenge error message, 401 text |
-| `+layout.svelte` | Use `untrack(() => setUserPreferencesContext())` |
-| `user-preferences.svelte.ts` | Make idempotent (singleton), localStorage, setDistanceUnit |
-| `LeaderboardRow.svelte` | Use PARTICIPANT_STATUS constants |
-| `loader.server.ts` | Option B refactor (if Phase 3) |
-| `types/dashboard.ts` | New types for Option B (if Phase 3) |
+| File | Changes | Status |
+|------|---------|--------|
+| `JoinChallengeButton.svelte` | Handle `result.type === 'failure'`, call `toast.error()` | Done |
+| `LeaveChallengeButton.svelte` | Same for leave form | Done |
+| `ChallengesDrawer.svelte` | ARIA, focus trap, role fixes | Done |
+| `+page.svelte` | Add second `$effect` that returns `() => dashboard.cleanup()` for unmount | Done |
+| `+page.server.ts` | Fix leaveChallenge error message, 401 text | Done |
+| `(app)/+layout.svelte` | Use `untrack(() => setUserPreferencesContext())` | Done |
+| `user-preferences.svelte.ts` | Make idempotent (singleton), localStorage, setDistanceUnit | Pending |
+| `LeaderboardRow.svelte` | Use PARTICIPANT_STATUS constants | Done |
+| `loader.server.ts` | Option B refactor (single array) | Done |
+| `types/dashboard.ts` | `DashboardChallenge` with `participants` | Done |
