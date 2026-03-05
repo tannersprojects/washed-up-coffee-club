@@ -6,7 +6,7 @@ import type {
 import { LeaderboardUI } from './LeaderboardUI.svelte';
 import {
 	getChallengeTimeStateFromDates,
-	getJoinDisplayStateFromTimeState,
+	getChallengeStatusBadge,
 	getChallengeStatusColor,
 	getChallengeStatusBadgeLabel,
 	getChallengeStatusBadgeClasses
@@ -16,7 +16,6 @@ import {
 	LEADERBOARD_TAB,
 	type ChallengeType,
 	type ChallengeStatus,
-	type ChallengeJoinDisplayState,
 	type LeaderboardTab,
 	type DistanceUnit
 } from '$lib/constants';
@@ -44,7 +43,9 @@ export class ChallengeUI {
 	leaderboard: LeaderboardUI;
 	activeTab: LeaderboardTab;
 	challengeTimeState: ChallengeTimeState;
-	joinDisplayState: ChallengeJoinDisplayState;
+	canJoin: boolean;
+	canLeave: boolean;
+	statusBadge: ReturnType<typeof getChallengeStatusBadge>;
 	badgeLabel: string;
 	badgeClasses: string;
 	statusDotColor: string;
@@ -101,8 +102,18 @@ export class ChallengeUI {
 
 		// Derived state
 		this.activeTab = $state(LEADERBOARD_TAB.Leaderboard);
-		this.joinDisplayState = $derived(
-			getJoinDisplayStateFromTimeState(this.challengeTimeState, this.isParticipating)
+		this.canJoin = $derived(
+			!this.isParticipating &&
+				this.isActive &&
+				(this.challengeTimeState.status === CHALLENGE_STATUS.ACTIVE ||
+					this.challengeTimeState.status === CHALLENGE_STATUS.UPCOMING)
+		);
+		this.canLeave = $derived(
+			this.isParticipating &&
+				this.challengeTimeState.status !== CHALLENGE_STATUS.COMPLETED
+		);
+		this.statusBadge = $derived(
+			getChallengeStatusBadge(this.challengeTimeState, this.isParticipating, this.isActive)
 		);
 		this.badgeLabel = $derived(getChallengeStatusBadgeLabel(this.challengeTimeState.status));
 		this.badgeClasses = $derived(getChallengeStatusBadgeClasses(this.challengeTimeState.status));

@@ -3,5 +3,6 @@ export { default as DashboardChallengesSidebar } from './DashboardChallengesSide
 export { default as ChallengeListItems } from './ChallengeListItems.svelte';
 export { default as ChallengeHero } from './ChallengeHero.svelte';
 export { default as ChallengeStatsGrid } from './ChallengeStatsGrid.svelte';
+export { default as ChallengeStatusBadge } from './ChallengeStatusBadge.svelte';
 export { default as CountdownTimer } from './CountdownTimer.svelte';
 export { default as JoinChallengeButton } from './JoinChallengeButton.svelte';

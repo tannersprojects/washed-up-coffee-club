@@ -19,16 +19,32 @@ export const CHALLENGE_TYPES_WITH_GOAL_DISTANCE: readonly ChallengeType[] = [
 	CHALLENGE_TYPE.BEST_EFFORT
 ];
 
-export const CHALLENGE_JOIN_DISPLAY_STATE = {
-	JOINABLE: 'joinable' as const,
-	PARTICIPATING: 'participating' as const,
+export const CHALLENGE_STATUS_BADGE = {
+	YOURE_IN: 'youre_in' as const,
 	ENDED: 'ended' as const,
-	UPCOMING: 'upcoming' as const,
 	NOT_ACTIVE: 'not_active' as const
 } as const;
 
-export type ChallengeJoinDisplayState =
-	(typeof CHALLENGE_JOIN_DISPLAY_STATE)[keyof typeof CHALLENGE_JOIN_DISPLAY_STATE];
+export type ChallengeStatusBadge =
+	(typeof CHALLENGE_STATUS_BADGE)[keyof typeof CHALLENGE_STATUS_BADGE];
+
+export const CHALLENGE_STATUS_BADGE_CONFIG: Record<
+	ChallengeStatusBadge,
+	{ label: string; classes: string }
+> = {
+	[CHALLENGE_STATUS_BADGE.YOURE_IN]: {
+		label: "You're In",
+		classes: 'border-(--accent-lime)/40 bg-(--accent-lime)/5 text-(--accent-lime)'
+	},
+	[CHALLENGE_STATUS_BADGE.ENDED]: {
+		label: 'Challenge Ended',
+		classes: 'border-gray-600 bg-gray-800/50 text-gray-400'
+	},
+	[CHALLENGE_STATUS_BADGE.NOT_ACTIVE]: {
+		label: 'Not Active',
+		classes: 'border-gray-600 bg-gray-800/50 text-gray-400'
+	}
+} as const;
 
 export const COUNTDOWN_LABEL = {
 	TIME_UNTIL: 'Time Until',

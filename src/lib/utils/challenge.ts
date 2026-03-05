@@ -2,12 +2,12 @@ import type { ChallengeParticipantWithRelations } from '$lib/types/dashboard.js'
 import type { ChallengeTimeState } from '$lib/types/challenge.js';
 import {
 	CHALLENGE_STATUS,
-	CHALLENGE_JOIN_DISPLAY_STATE,
+	CHALLENGE_STATUS_BADGE,
 	COUNTDOWN_LABEL,
 	DISTANCE_UNIT,
 	PARTICIPANT_STATUS,
-	type ChallengeJoinDisplayState,
 	type ChallengeStatus,
+	type ChallengeStatusBadge,
 	type DistanceUnit
 } from '$lib/constants';
 import { metersToKm, metersToMiles } from '$lib/utils/distance.js';
@@ -127,19 +127,21 @@ export function isChallengeActiveOrUpcoming(timeState: ChallengeTimeState): bool
 	);
 }
 
-export function getJoinDisplayStateFromTimeState(
+export function getChallengeStatusBadge(
 	timeState: ChallengeTimeState,
-	isParticipating: boolean
-): ChallengeJoinDisplayState {
-	if (isParticipating) return CHALLENGE_JOIN_DISPLAY_STATE.PARTICIPATING;
+	isParticipating: boolean,
+	isActive: boolean
+): ChallengeStatusBadge | null {
+	if (!isActive) return CHALLENGE_STATUS_BADGE.NOT_ACTIVE;
 	if (timeState.status === CHALLENGE_STATUS.COMPLETED)
-		return CHALLENGE_JOIN_DISPLAY_STATE.ENDED;
+		return CHALLENGE_STATUS_BADGE.ENDED;
 	if (
-		timeState.status === CHALLENGE_STATUS.ACTIVE ||
-		timeState.status === CHALLENGE_STATUS.UPCOMING
+		isParticipating &&
+		(timeState.status === CHALLENGE_STATUS.ACTIVE ||
+			timeState.status === CHALLENGE_STATUS.UPCOMING)
 	)
-		return CHALLENGE_JOIN_DISPLAY_STATE.JOINABLE;
-	return CHALLENGE_JOIN_DISPLAY_STATE.NOT_ACTIVE;
+		return CHALLENGE_STATUS_BADGE.YOURE_IN;
+	return null;
 }
 
 export function formatTime(seconds: number): string {
