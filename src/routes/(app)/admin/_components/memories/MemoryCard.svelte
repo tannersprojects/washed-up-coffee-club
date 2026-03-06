@@ -107,7 +107,8 @@
 							if (result.type === 'success') {
 								await update();
 							} else {
-								toast.error(getFormActionError(result) ?? 'Failed to delete.');
+								const errorMsg = getFormActionError(result) ?? 'Failed to delete.';
+								toast.error(errorMsg);
 								await update();
 							}
 						};
