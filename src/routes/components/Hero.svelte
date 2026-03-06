@@ -97,7 +97,7 @@
 					class="text-[15vh] leading-[0.85] font-black tracking-tighter whitespace-nowrap text-white uppercase will-change-transform md:text-[10vw]"
 					style="transform: translateX({(i % 2 === 0 ? -1 : 1) * smoothScroll * 0.08}px);"
 				>
-					Run. Dip. Sip.
+					Run. Dip. Sip. Run. Dip. Sip.
 				</div>
 			{/each}
 		</div>
