@@ -13,6 +13,7 @@
 	import { getAdminContext } from '../../_logic/context.js';
 	import { getUserPreferencesContext } from '$lib/state/user-preferences.svelte.js';
 	import { ChallengeAdmin } from '../../_logic/ChallengeAdmin.svelte.js';
+	import { getFormActionError } from '$lib/utils/form-action.js';
 	import { parseEasternToUtc } from '$lib/utils/datetime.js';
 	import { kmToMeters, milesToMeters } from '$lib/utils/distance.js';
 
@@ -111,10 +112,8 @@
 				resetForm();
 			} else {
 				admin.removeChallengeOptimistic(id);
-				toast.error(
-					(result.type === 'failure' ? (result.data as { error?: string })?.error : undefined) ??
-						'Failed to create challenge.'
-				);
+				const errorMsg = getFormActionError(result) ?? 'Failed to create challenge.';
+				toast.error(errorMsg);
 			}
 			isSubmitting = false;
 		};

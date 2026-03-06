@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getDashboardContext } from '../_logic/context.js';
+	import { getDashboardContext } from '../../_logic/context.js';
 	import ChallengeListItems from './ChallengeListItems.svelte';
 	import type { Profile } from '$lib/db/schema.js';
 	import { PanelLeftOpen, PanelRightOpen } from 'lucide-svelte';

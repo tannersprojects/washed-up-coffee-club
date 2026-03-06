@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { toast } from 'svelte-sonner';
+	import { getFormActionError } from '$lib/utils/form-action.js';
 	import { getAdminContext } from '../../_logic/context.js';
 	import { RoutineScheduleAdmin } from '../../_logic/RoutineScheduleAdmin.svelte.js';
 
@@ -52,10 +53,8 @@
 				resetForm();
 			} else {
 				admin.removeScheduleOptimistic(id);
-				const message =
-					(result.type === 'failure' ? (result.data as { error?: string })?.error : undefined) ??
-					'Failed to create schedule.';
-				toast.error(message);
+				const errorMsg = getFormActionError(result) ?? 'Failed to create schedule.';
+				toast.error(errorMsg);
 			}
 			isSubmitting = false;
 		};

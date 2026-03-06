@@ -1,7 +1,6 @@
 <script lang="ts">
-	import { CHALLENGE_STATUS } from '$lib/constants';
 	import { formatDateRange } from '$lib/utils/datetime.js';
-	import type { ChallengeUI } from '../_logic/ChallengeUI.svelte.js';
+	import type { ChallengeUI } from '../../_logic/ChallengeUI.svelte.js';
 	import type { Profile } from '$lib/db/schema.js';
 
 	let {
@@ -15,19 +14,6 @@
 		profile: Profile;
 		onSelect: (id: string) => void;
 	} = $props();
-
-	function getStatusColor(status: string): string {
-		switch (status) {
-			case CHALLENGE_STATUS.ACTIVE:
-				return 'bg-(--accent-lime)';
-			case CHALLENGE_STATUS.UPCOMING:
-				return 'bg-yellow-500';
-			case CHALLENGE_STATUS.COMPLETED:
-				return 'bg-(--grey-olive)';
-			default:
-				return 'bg-(--grey-olive)';
-		}
-	}
 </script>
 
 {#each challenges as challenge (challenge.id)}
@@ -44,7 +30,7 @@
 
 		<!-- Status dot -->
 		<div class="mt-1.5 shrink-0">
-			<div class="h-2 w-2 rounded-full {getStatusColor(challenge.challengeTimeState.status)}"></div>
+			<div class="h-2 w-2 rounded-full {challenge.statusDotColor}"></div>
 		</div>
 
 		<!-- Content -->
@@ -57,7 +43,7 @@
 			<!-- Meta info -->
 			<div class="mt-0.5 flex items-center gap-2 text-xs text-(--grey-olive)">
 				<span>{formatDateRange(challenge.startDate, challenge.endDate)}</span>
-				{#if (challenge.challengeTimeState.status === CHALLENGE_STATUS.ACTIVE || challenge.challengeTimeState.status === CHALLENGE_STATUS.UPCOMING) && challenge.timeLeft}
+				{#if challenge.isActiveOrUpcoming && challenge.timeLeft}
 					<span class="text-(--accent-lime)">• {challenge.timeLeft}</span>
 				{/if}
 			</div>

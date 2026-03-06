@@ -2,17 +2,22 @@ import type { ChallengeParticipantWithRelations } from '$lib/types/dashboard.js'
 import type { ChallengeTimeState } from '$lib/types/challenge.js';
 import {
 	CHALLENGE_STATUS,
-	CHALLENGE_JOIN_DISPLAY_STATE,
+	CHALLENGE_STATUS_BADGE,
 	COUNTDOWN_LABEL,
 	DISTANCE_UNIT,
-	type ChallengeJoinDisplayState,
+	PARTICIPANT_STATUS,
+	type ChallengeStatus,
+	type ChallengeStatusBadge,
 	type DistanceUnit
 } from '$lib/constants';
-import type { Challenge } from '$lib/db/schema';
-import type { ChallengeUI } from '../../routes/(app)/dashboard/_logic/ChallengeUI.svelte';
 import { metersToKm, metersToMiles } from '$lib/utils/distance.js';
 
-// TODO: Does this just add together the goal value for each participant? Should it?
+export type ChallengeWithDates = {
+	isActive?: boolean;
+	endDate: Date | string;
+};
+
+/** Sums goalDistanceMeters per completed participant (total "distance completed" for display). */
 export function calculateTotalDistance(
 	challengeParticipantsWithRelations: ChallengeParticipantWithRelations[],
 	goalDistanceMeters: number | null,
@@ -23,7 +28,7 @@ export function calculateTotalDistance(
 	}
 
 	const totalMeters = challengeParticipantsWithRelations.reduce((acc, participant) => {
-		if (participant.status === 'completed' && goalDistanceMeters) {
+		if (participant.status === PARTICIPANT_STATUS.COMPLETED && goalDistanceMeters) {
 			return acc + goalDistanceMeters;
 		}
 		return acc;
@@ -66,38 +71,77 @@ export function getChallengeTimeStateFromDates(
 	};
 }
 
-export function isChallengeJoinable(challenge: ChallengeUI | Challenge | null): boolean {
-	if (!challenge || !challenge.isActive) {
-		return false;
-	}
-
+export function isChallengeJoinable(challenge: ChallengeWithDates | null): boolean {
+	if (!challenge || !challenge.isActive) return false;
 	const now = new Date();
 	const endDate = new Date(challenge.endDate);
-	if (now >= endDate) {
-		return false;
-	}
-
-	return true;
+	return now < endDate;
 }
 
-export function getChallengeJoinDisplayState(challenge: ChallengeUI): ChallengeJoinDisplayState {
-	if (challenge.isParticipating) {
-		return CHALLENGE_JOIN_DISPLAY_STATE.PARTICIPATING;
+/** Returns Tailwind class for challenge status dot (active=green, upcoming=yellow, completed=gray). */
+export function getChallengeStatusColor(status: ChallengeStatus | string): string {
+	switch (status) {
+		case CHALLENGE_STATUS.ACTIVE:
+			return 'bg-(--accent-lime)';
+		case CHALLENGE_STATUS.UPCOMING:
+			return 'bg-yellow-500';
+		case CHALLENGE_STATUS.COMPLETED:
+			return 'bg-(--grey-olive)';
+		default:
+			return 'bg-(--grey-olive)';
 	}
+}
 
-	const timeState = getChallengeTimeStateFromDates(challenge.startDate, challenge.endDate);
-
-	if (timeState.status === CHALLENGE_STATUS.COMPLETED) {
-		return CHALLENGE_JOIN_DISPLAY_STATE.ENDED;
+/** Returns display label for challenge status badge. */
+export function getChallengeStatusBadgeLabel(status: ChallengeStatus | string): string {
+	switch (status) {
+		case CHALLENGE_STATUS.UPCOMING:
+			return 'Upcoming Challenge';
+		case CHALLENGE_STATUS.ACTIVE:
+			return 'Active Challenge';
+		case CHALLENGE_STATUS.COMPLETED:
+			return 'Challenge Ended';
+		default:
+			return 'Challenge Ended';
 	}
-	if (
+}
+
+/** Returns Tailwind classes for challenge status badge (border, bg, text). */
+export function getChallengeStatusBadgeClasses(status: ChallengeStatus | string): string {
+	switch (status) {
+		case CHALLENGE_STATUS.ACTIVE:
+			return 'border-(--accent-lime)/40 bg-(--accent-lime)/5 text-(--accent-lime)';
+		case CHALLENGE_STATUS.UPCOMING:
+			return 'border-yellow-500/40 bg-yellow-500/5 text-yellow-500';
+		case CHALLENGE_STATUS.COMPLETED:
+			return 'border-(--grey-olive)/40 bg-(--grey-olive)/5 text-(--grey-olive)';
+		default:
+			return 'border-(--grey-olive)/40 bg-(--grey-olive)/5 text-(--grey-olive)';
+	}
+}
+
+export function isChallengeActiveOrUpcoming(timeState: ChallengeTimeState): boolean {
+	return (
 		timeState.status === CHALLENGE_STATUS.ACTIVE ||
 		timeState.status === CHALLENGE_STATUS.UPCOMING
-	) {
-		return CHALLENGE_JOIN_DISPLAY_STATE.JOINABLE;
-	}
+	);
+}
 
-	return CHALLENGE_JOIN_DISPLAY_STATE.NOT_ACTIVE;
+export function getChallengeStatusBadge(
+	timeState: ChallengeTimeState,
+	isParticipating: boolean,
+	isActive: boolean
+): ChallengeStatusBadge | null {
+	if (!isActive) return CHALLENGE_STATUS_BADGE.NOT_ACTIVE;
+	if (timeState.status === CHALLENGE_STATUS.COMPLETED)
+		return CHALLENGE_STATUS_BADGE.ENDED;
+	if (
+		isParticipating &&
+		(timeState.status === CHALLENGE_STATUS.ACTIVE ||
+			timeState.status === CHALLENGE_STATUS.UPCOMING)
+	)
+		return CHALLENGE_STATUS_BADGE.YOURE_IN;
+	return null;
 }
 
 export function formatTime(seconds: number): string {

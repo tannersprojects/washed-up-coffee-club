@@ -1,22 +1,14 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
 	import { formatDate } from '$lib/utils/datetime.js';
-	import { CHALLENGE_STATUS } from '$lib/constants';
-	import { getDashboardContext } from '../_logic/context.js';
+	import { getDashboardContext } from '../../_logic/context.js';
 	import CountdownTimer from './CountdownTimer.svelte';
 	import ChallengeStatsGrid from './ChallengeStatsGrid.svelte';
+	import ChallengeStatusBadge from './ChallengeStatusBadge.svelte';
 	import JoinChallengeButton from './JoinChallengeButton.svelte';
+	import LeaveChallengeButton from './LeaveChallengeButton.svelte';
 
 	const dashboard = getDashboardContext();
-	const challenge = $derived(dashboard.selectedChallenge);
-
-	const badgeLabel = $derived(
-		challenge?.challengeTimeState.status === CHALLENGE_STATUS.UPCOMING
-			? 'Upcoming Challenge'
-			: challenge?.challengeTimeState.status === CHALLENGE_STATUS.ACTIVE
-				? 'Active Challenge'
-				: 'Challenge Ended'
-	);
+	let challenge = $derived(dashboard.selectedChallenge);
 </script>
 
 {#if challenge}
@@ -32,49 +24,22 @@
 
 			<!-- Content Container with Proper Padding -->
 			<div class="relative z-10 p-6 md:p-8 lg:p-10">
-				<!-- Top Row: Badges + Leave Button -->
+				<!-- Top Row: Badges + Status Badge -->
 				<div class="mb-6 flex flex-wrap items-center justify-between gap-4 md:mb-8">
 					<div class="flex flex-wrap items-center gap-3">
 						<!-- Challenge status badge -->
 						<span
-							class="inline-block rounded-full border border-(--accent-lime)/40 bg-(--accent-lime)/5 px-3 py-1 text-[10px] tracking-widest text-(--accent-lime) uppercase"
+							class="inline-block rounded-full border px-3 py-1 text-[10px] tracking-widest uppercase {challenge.badgeClasses}"
 						>
-							{badgeLabel}
+							{challenge.badgeLabel}
 						</span>
 						<span class="text-[10px] tracking-widest text-gray-500 uppercase">
 							{formatDate(challenge.startDate || new Date())}
 						</span>
 					</div>
 
-					{#if challenge.isParticipating}
-						<!-- Leave button: secondary/destructive action -->
-						<form
-							method="POST"
-							action="?/leaveChallenge"
-							use:enhance={() => {
-								challenge.isSubmitting = true;
-								return async ({ result, update }) => {
-									if (result.type === 'success') {
-										// Optimistic update: immediate UI feedback
-										challenge.leave();
-										// Background sync: ensure server state is reflected
-										await update();
-									} else {
-										// Reset submitting state on error
-										challenge.isSubmitting = false;
-									}
-								};
-							}}
-						>
-							<input type="hidden" name="challengeId" value={challenge.id} />
-							<button
-								type="submit"
-								disabled={challenge.isSubmitting}
-								class="cursor-pointer rounded-full border border-gray-600/80 bg-black/60 px-4 py-1.5 font-mono text-[10px] tracking-widest text-gray-300 uppercase transition-colors hover:border-red-400 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-60"
-							>
-								{challenge.isSubmitting ? 'Leaving...' : 'Leave Challenge'}
-							</button>
-						</form>
+					{#if challenge.statusBadge}
+						<ChallengeStatusBadge badge={challenge.statusBadge} />
 					{/if}
 				</div>
 
@@ -99,9 +64,13 @@
 						<CountdownTimer />
 					</div>
 
-					<!-- Join/Status Button -->
+					<!-- Join or Leave Button -->
 					<div class="w-full md:w-auto">
-						<JoinChallengeButton />
+						{#if challenge.canJoin}
+							<JoinChallengeButton {challenge} />
+						{:else if challenge.canLeave}
+							<LeaveChallengeButton {challenge} />
+						{/if}
 					</div>
 				</div>
 			</div>

@@ -1,4 +1,5 @@
 import { fail, redirect } from '@sveltejs/kit';
+import type { DashboardContextData } from '$lib/types/dashboard.js';
 import { isChallengeJoinable } from '$lib/utils/challenge.js';
 import {
 	checkUserParticipation,
@@ -10,20 +11,20 @@ import {
 } from './loader.server.js';
 import type { PageServerLoad } from './$types.js';
 
-export const load: PageServerLoad = async ({ parent }) => {
+export const load: PageServerLoad = async ({
+	parent
+}): Promise<DashboardContextData> => {
 	const { profile } = await parent();
 
 	if (!profile) {
 		throw redirect(302, '/');
 	}
 
-	const { challengesWithParticipation, challengeParticipantsWithRelationsByChallenge } =
-		await loadDashboardData(profile.id);
+	const dashboardChallenges = await loadDashboardData();
 
 	return {
 		profile,
-		challengesWithParticipation,
-		challengeParticipantsWithRelationsByChallenge
+		dashboardChallenges
 	};
 };
 
@@ -84,7 +85,7 @@ export const actions = {
 
 		// Validate user is authenticated
 		if (!session || !user || !profile) {
-			return fail(401, { error: 'You must be logged in to join a challenge' });
+			return fail(401, { error: 'You must be logged in to leave a challenge' });
 		}
 
 		// Parse form data
@@ -118,7 +119,8 @@ export const actions = {
 
 			return { success: true, challengeId };
 		} catch (error) {
-			return fail(500, { error: `Failed to leave challenge: ${error}. \nPlease try again.` });
+			console.error('Error leaving challenge:', error);
+			return fail(500, { error: 'Failed to leave challenge. Please try again.' });
 		}
 	}
 };

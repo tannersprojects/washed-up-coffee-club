@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { getDashboardContext } from '../_logic/context.js';
+	import { getDashboardContext } from '../../_logic/context.js';
 	import LeaderboardRow from './LeaderboardRow.svelte';
-	import EmptyState from './EmptyState.svelte';
+	import EmptyState from '$lib/components/EmptyState.svelte';
+	import { EMPTY_STATE_VARIANT } from '$lib/constants';
 
 	const dashboard = getDashboardContext();
 	let challenge = $derived(dashboard.selectedChallenge);
@@ -33,7 +34,7 @@
 			<EmptyState
 				title="No participants yet."
 				message="Be the first to toe the line."
-				variant="no-participants"
+				variant={EMPTY_STATE_VARIANT.INLINE}
 			/>
 		{/if}
 	</div>

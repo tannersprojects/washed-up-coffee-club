@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { getDashboardContext } from '../_logic/context.js';
+	import { getDashboardContext } from '../../_logic/context.js';
 
-	let dashboard = getDashboardContext();
-	let challenge = $derived(dashboard.selectedChallenge);
+	const dashboard = getDashboardContext();
+	const challenge = $derived(dashboard.selectedChallenge);
 	let leaderboard = $derived(challenge?.leaderboard);
 	let stats = $derived(leaderboard?.stats);
 
@@ -14,7 +14,7 @@
 	]);
 </script>
 
-{#if stats && statItems}
+{#if stats}
 	<div class="mt-12 grid grid-cols-2 gap-4 md:grid-cols-4">
 		{#each statItems as statItem (statItem.id)}
 			<div

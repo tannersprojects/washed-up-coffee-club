@@ -2,15 +2,18 @@
 	import { untrack } from 'svelte';
 	import { DASHBOARD_TAB } from '$lib/constants';
 
-	import ChallengeHero from './_components/ChallengeHero.svelte';
-	import LeaderboardSection from './_components/LeaderboardSection.svelte';
-	import DashboardChallengesSidebar from './_components/DashboardChallengesSidebar.svelte';
-	import ChallengesDrawer from './_components/ChallengesDrawer.svelte';
-	import EmptyState from './_components/EmptyState.svelte';
-	import DashboardFooter from './_components/DashboardFooter.svelte';
+	import EmptyState from '$lib/components/EmptyState.svelte';
+	import AppFooter from '$lib/components/AppFooter.svelte';
+	import { APP_FOOTER_VARIANT, EMPTY_STATE_VARIANT } from '$lib/constants';
+	import {
+		ChallengesDrawer,
+		DashboardChallengesSidebar,
+		ChallengeHero,
+		LeaderboardSection,
+		DashboardTabs
+	} from './_components';
 	import { setDashboardContext } from './_logic/context.js';
 	import { Menu } from 'lucide-svelte';
-	import DashboardTabs from './_components/DashboardTabs.svelte';
 
 	let { data } = $props();
 
@@ -21,12 +24,26 @@
 	$effect(() => {
 		dashboard.updateFromServerData(data);
 	});
+
+	// Stop countdown timers when navigating away
+	$effect(() => {
+		return () => dashboard.cleanup();
+	});
+
+	let drawerTriggerRef = $state<HTMLButtonElement | undefined>(undefined);
 </script>
+
+{#snippet challengeStage()}
+	{#if dashboard.selectedChallenge}
+		<ChallengeHero />
+		<LeaderboardSection />
+	{/if}
+{/snippet}
 
 <!-- Outer wrapper: fill viewport so content area has height for centering / scroll -->
 <div class="flex min-h-0 w-full flex-1 flex-col">
 	<!-- Mobile drawer -->
-	<ChallengesDrawer profile={data.profile} />
+	<ChallengesDrawer profile={data.profile} onClose={() => drawerTriggerRef?.focus()} />
 
 	<!-- Tab bar -->
 	<nav class="flex shrink-0 flex-col px-6">
@@ -40,6 +57,7 @@
 			<div class="flex py-3 md:hidden">
 				<button
 					type="button"
+					bind:this={drawerTriggerRef}
 					onclick={() => dashboard.openChallengesDrawer()}
 					class="flex items-center gap-1 font-mono text-sm tracking-wider text-(--grey-olive) uppercase transition-colors hover:text-white"
 				>
@@ -54,7 +72,7 @@
 	<div class="flex flex-1 flex-col">
 		{#if dashboard.activeTab === DASHBOARD_TAB.ClubLeaderboard}
 			<div class="flex min-h-0 flex-1 items-center justify-center">
-				<EmptyState title="Club Leaderboard" message="Coming soon." variant="no-challenge" />
+				<EmptyState title="Club Leaderboard" message="Coming soon." variant={EMPTY_STATE_VARIANT.FULL_PAGE} />
 			</div>
 		{:else}
 			<!-- Challenges tab content -->
@@ -64,17 +82,14 @@
 					<EmptyState
 						title="No Active Challenge"
 						message="Check back later for the next event."
-						variant="no-challenge"
+						variant={EMPTY_STATE_VARIANT.FULL_PAGE}
 					/>
 				</div>
 			{:else if dashboard.challenges.length === 1}
 				<!-- Single challenge: centered stage without sidebar -->
 				<div class="flex flex-1 flex-col">
 					<div class="mx-auto w-full max-w-7xl px-6">
-						{#if dashboard.selectedChallenge}
-							<ChallengeHero />
-							<LeaderboardSection />
-						{/if}
+						{@render challengeStage()}
 					</div>
 				</div>
 			{:else}
@@ -83,15 +98,12 @@
 
 				<div class="flex flex-1 flex-col">
 					<div class="mx-auto w-full max-w-7xl flex-1 px-6 pt-8">
-						{#if dashboard.selectedChallenge}
-							<ChallengeHero />
-							<LeaderboardSection />
-						{/if}
+						{@render challengeStage()}
 					</div>
 				</div>
 			{/if}
 		{/if}
 
-		<DashboardFooter />
+		<AppFooter variant={APP_FOOTER_VARIANT.STRAVA} />
 	</div>
 </div>

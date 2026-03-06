@@ -2,10 +2,16 @@
 	import { formatDate } from '$lib/utils/datetime.js';
 	import { formatResultDisplay } from '$lib/utils/challenge.js';
 	import { formatDistanceDisplay } from '$lib/utils/distance.js';
-	import { PACE_UNIT_LABEL } from '$lib/constants';
+	import {
+		CHALLENGE_TYPE,
+		PACE_UNIT_LABEL,
+		PARTICIPANT_STATUS,
+		type ParticipantStatus
+	} from '$lib/constants';
+	import { idToHexColor } from '$lib/utils/avatar.js';
 	import { fly } from 'svelte/transition';
 	import type { LeaderboardRowData } from '$lib/types/dashboard.js';
-	import { getDashboardContext } from '../_logic/context.js';
+	import { getDashboardContext } from '../../_logic/context.js';
 
 	type Props = {
 		row: LeaderboardRowData;
@@ -21,26 +27,34 @@
 		challenge?.goalDistance ? formatDistanceDisplay(challenge.goalDistance, unit) : null
 	);
 	const resultDisplay = $derived(formatResultDisplay(row.participant.resultTime));
+	const progressPercent = $derived(
+		challenge?.type === CHALLENGE_TYPE.CUMULATIVE &&
+			challenge?.goalDistance &&
+			row.participant.resultDistance != null
+			? Math.min(100, (row.participant.resultDistance / challenge.goalDistance) * 100)
+			: row.participant.status === PARTICIPANT_STATUS.COMPLETED
+				? 100
+				: 0
+	);
 
 	// Helper function for status color
-	const getStatusColor = (status: string | null) => {
+	const getStatusColor = (status: ParticipantStatus | null) => {
 		switch (status) {
-			case 'completed':
+			case PARTICIPANT_STATUS.COMPLETED:
 				return 'text-(--accent-lime)';
-			case 'in_progress':
+			case PARTICIPANT_STATUS.IN_PROGRESS:
 				return 'text-blue-400 animate-pulse';
-			case 'dnf':
-			case 'did_not_finish':
+			case PARTICIPANT_STATUS.DID_NOT_FINISH:
 				return 'text-red-500 line-through opacity-50';
 			default:
 				return 'text-gray-500';
 		}
 	};
 
-	function getMobileStatusLabel(status: string | null, display: string): string {
-		if (status === 'completed') return display;
-		if (status === 'did_not_finish') return 'DNF';
-		if (status === 'in_progress') return 'In progress';
+	function getMobileStatusLabel(status: ParticipantStatus | null, display: string): string {
+		if (status === PARTICIPANT_STATUS.COMPLETED) return display;
+		if (status === PARTICIPANT_STATUS.DID_NOT_FINISH) return 'DNF';
+		if (status === PARTICIPANT_STATUS.IN_PROGRESS) return 'In progress';
 		return display || status || '--';
 	}
 </script>
@@ -77,12 +91,12 @@
 				class="relative h-12 w-12 shrink-0 overflow-hidden rounded-full border-2 border-white/20 bg-gray-800 shadow-lg transition-all group-hover:border-(--accent-lime)/50 group-hover:shadow-[0_0_20px_rgba(0,255,0,0.3)]"
 			>
 				<img
-					src={`https://ui-avatars.com/api/?name=${row.profile.firstname}+${row.profile.lastname}&background=random&color=fff`}
+					src={`https://ui-avatars.com/api/?name=${row.profile.firstname}+${row.profile.lastname}&background=${idToHexColor(row.profile.id)}&color=fff`}
 					alt={row.profile.firstname}
 					class="h-full w-full object-cover"
 				/>
 				<!-- Status Ring with Pulse Animation -->
-				{#if row.participant.status === 'in_progress'}
+				{#if row.participant.status === PARTICIPANT_STATUS.IN_PROGRESS}
 					<div
 						class="absolute inset-0 animate-pulse rounded-full border-2 border-blue-500/50 shadow-[0_0_10px_rgba(59,130,246,0.8)]"
 					></div>
@@ -124,11 +138,11 @@
 					--
 				{/if}
 			</span>
-			<!-- Simple Progress Bar -->
+			<!-- Progress Bar: partial for CUMULATIVE, full for COMPLETED -->
 			<div class="mt-2 h-1 w-full max-w-[80px] overflow-hidden rounded-full bg-gray-800">
 				<div
 					class="h-full bg-(--accent-lime) transition-all duration-1000"
-					style="width: {row.participant.status === 'completed' ? '100%' : '0%'}"
+					style="width: {progressPercent}%"
 				></div>
 			</div>
 		</div>
@@ -144,7 +158,7 @@
 		<div
 			class="flex flex-col items-end justify-center text-right [grid-area:time] md:border-l md:border-white/10 md:pl-4"
 		>
-			{#if row.participant.status === 'completed'}
+			{#if row.participant.status === PARTICIPANT_STATUS.COMPLETED}
 				<span class="font-mono text-xl font-bold text-white">{resultDisplay}</span>
 				<span class="font-mono text-[10px] tracking-wider text-(--accent-lime) uppercase"
 					>Official</span

@@ -15,6 +15,22 @@ export type ChallengeParticipantWithRelations = ChallengeParticipant & {
 };
 
 /**
+ * Challenge with participants embedded. Participation status and current user's
+ * participant are derived from participants (e.g. participants.find(p => p.profileId === profileId))
+ */
+export type DashboardChallenge = Challenge & {
+	participants: ChallengeParticipantWithRelations[];
+};
+
+/**
+ * Page data shape for dashboard route
+ */
+export type DashboardContextData = {
+	profile: Profile;
+	dashboardChallenges: DashboardChallenge[];
+};
+
+/**
  * Leaderboard row structure matching buildLeaderboard() function
  */
 export type LeaderboardRowData = {
@@ -34,21 +50,3 @@ export interface ChallengeStats {
 	totalDistance: string;
 	totalDistanceLabel: LongDistanceLabel;
 }
-
-/**
- * Challenge with participation status attached
- * This allows each challenge to carry its own participation status,
- * supporting multiple simultaneous challenges
- */
-export type ChallengeWithParticipation = Challenge & {
-	isParticipating: boolean;
-	participant: ChallengeParticipant | null;
-};
-
-export type DashboardContextData = {
-	challengesWithParticipation: ChallengeWithParticipation[];
-	challengeParticipantsWithRelationsByChallenge: Record<
-		string,
-		ChallengeParticipantWithRelations[]
-	>;
-};
