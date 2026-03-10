@@ -1,17 +1,18 @@
 import { db } from '$lib/db';
-import { memoriesTable, routineSchedulesTable } from '$lib/db/schema';
+import { memoriesTable, routineSchedulesTable, landingCopyTable } from '$lib/db/schema';
 import { eq, asc } from 'drizzle-orm';
 import type { PageServerLoad } from './$types';
-import type { Memory, RoutineSchedule } from '$lib/db/schema';
+import type { Memory, RoutineSchedule, LandingCopy } from '$lib/db/schema';
 
 export const load: PageServerLoad = async ({ locals }: { locals: App.Locals }) => {
 	const { session } = await locals.safeGetSession();
 
 	let memories: Memory[] = [];
 	let routineSchedules: RoutineSchedule[] = [];
+	let landingCopy: LandingCopy[] = [];
 
 	try {
-		[memories, routineSchedules] = await Promise.all([
+		[memories, routineSchedules, landingCopy] = await Promise.all([
 			db
 				.select()
 				.from(memoriesTable)
@@ -21,7 +22,8 @@ export const load: PageServerLoad = async ({ locals }: { locals: App.Locals }) =
 				.select()
 				.from(routineSchedulesTable)
 				.where(eq(routineSchedulesTable.isActive, true))
-				.orderBy(asc(routineSchedulesTable.sortOrder))
+				.orderBy(asc(routineSchedulesTable.sortOrder)),
+			db.select().from(landingCopyTable).orderBy(asc(landingCopyTable.sortOrder))
 		]);
 	} catch (error) {
 		console.error(error);
@@ -30,6 +32,7 @@ export const load: PageServerLoad = async ({ locals }: { locals: App.Locals }) =
 	return {
 		session,
 		memories,
-		routineSchedules
+		routineSchedules,
+		landingCopy
 	};
 };

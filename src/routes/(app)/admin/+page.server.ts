@@ -5,11 +5,13 @@ import {
 	CHALLENGE_TYPE,
 	CHALLENGE_STATUS,
 	CHALLENGE_TYPES_WITH_GOAL_DISTANCE,
-	type ChallengeType
+	LANDING_COPY_KEY,
+	type ChallengeType,
+	type LandingCopyKey
 } from '$lib/constants';
 import { parseEasternToUtc } from '$lib/utils/datetime.js';
 import { db } from '$lib/db';
-import { memoriesTable, routineSchedulesTable, challengesTable } from '$lib/db/schema';
+import { memoriesTable, routineSchedulesTable, challengesTable, landingCopyTable } from '$lib/db/schema';
 import { PUBLIC_SUPABASE_URL } from '$env/static/public';
 import { loadAdminData } from './loader.server.js';
 import type { PageServerLoad, Actions } from './$types';
@@ -38,13 +40,14 @@ export const load: PageServerLoad = async ({ locals }: { locals: App.Locals }) =
 		throw redirect(302, '/dashboard');
 	}
 
-	const { memories, routineSchedules, challenges } = await loadAdminData();
+	const { memories, routineSchedules, challenges, landingCopy } = await loadAdminData();
 
 	return {
 		profile,
 		memories,
 		routineSchedules,
-		challenges
+		challenges,
+		landingCopy
 	};
 };
 
@@ -670,6 +673,36 @@ export const actions: Actions = {
 			return fail(500, {
 				error: 'Failed to delete challenge. Please try again.'
 			});
+		}
+
+		return { success: true };
+	},
+
+	// --- LANDING COPY ---
+	updateLandingCopy: async ({ request, locals }) => {
+		const authFail = requireAdmin(locals.profile);
+		if (authFail) return authFail;
+
+		const formData = await request.formData();
+		const key = formData.get('key')?.toString();
+		const value = formData.get('value')?.toString()?.trim() ?? '';
+
+		const validKeys = Object.values(LANDING_COPY_KEY);
+		if (!key || !validKeys.includes(key as LandingCopyKey)) {
+			return fail(400, { error: 'Invalid copy key.' });
+		}
+		if (!value || value.length > 1000) {
+			return fail(400, { error: 'Value is required and must be 1000 characters or less.' });
+		}
+
+		try {
+			await db
+				.update(landingCopyTable)
+				.set({ value, updatedAt: new Date() })
+				.where(eq(landingCopyTable.key, key as LandingCopyKey));
+		} catch (error) {
+			console.error('Update landing copy error:', error);
+			return fail(500, { error: 'Failed to update copy. Please try again.' });
 		}
 
 		return { success: true };

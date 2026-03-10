@@ -1,4 +1,5 @@
 export * from './admin';
+export * from './landing-copy';
 export * from './app-footer';
 export * from './challenge';
 export * from './empty-state';

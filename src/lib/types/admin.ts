@@ -1,4 +1,4 @@
-import type { Challenge, ChallengeParticipant, Memory, RoutineSchedule } from '$lib/db/schema';
+import type { Challenge, ChallengeParticipant, LandingCopy, Memory, RoutineSchedule } from '$lib/db/schema';
 
 /**
  * Canonical types for admin page data.
@@ -14,4 +14,5 @@ export type AdminContextData = {
 	memories: Memory[];
 	routineSchedules: RoutineSchedule[];
 	challenges: ChallengeWithParticipants[];
+	landingCopy: LandingCopy[];
 };

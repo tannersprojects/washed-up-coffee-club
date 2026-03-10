@@ -14,6 +14,7 @@
 	let isLoggedIn = $derived(!!data.session);
 	let memories = $derived(data.memories || []);
 	let routineSchedule = $derived(data.routineSchedules || []);
+	let landingCopy = $derived(data.landingCopy || []);
 
 	// Window binding state
 	let innerHeight = $state(0);
@@ -54,7 +55,7 @@
 >
 	<Navigation {scrollY} {isLoggedIn} />
 	<Hero smoothScroll={smoothScroll.current} {scrollY} {innerHeight} {innerWidth} />
-	<Manifesto />
+	<Manifesto {landingCopy} />
 	<CameraRoll {memories} {innerHeight} />
 	<Routine {routineSchedule} smoothScroll={smoothScroll.current} />
 	<Footer {isLoggedIn} />

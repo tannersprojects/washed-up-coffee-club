@@ -5,7 +5,9 @@ import {
 	PROFILE_ROLE,
 	WEBHOOK_OBJECT_TYPE,
 	WEBHOOK_ASPECT_TYPE,
-	WEBHOOK_STATUS
+	WEBHOOK_STATUS,
+	LANDING_COPY_SECTION,
+	LANDING_COPY_KEY
 } from '$lib/constants';
 import {
 	pgTable,
@@ -72,6 +74,18 @@ export const webhookStatusEnum = pgEnum('webhook_status', [
 	WEBHOOK_STATUS.PROCESSED,
 	WEBHOOK_STATUS.ERROR
 ]);
+
+// 7. Landing Copy Section: Groups editable copy by landing page section
+export const landingCopySectionEnum = pgEnum(
+	'landing_copy_section',
+	Object.values(LANDING_COPY_SECTION) as [string, ...string[]]
+);
+
+// 8. Landing Copy Key: The valid set of editable copy field identifiers
+export const landingCopyKeyEnum = pgEnum(
+	'landing_copy_key',
+	Object.values(LANDING_COPY_KEY) as [string, ...string[]]
+);
 
 // Reference to Supabase auth.users (not managed by Drizzle, just for FK)
 export const profileTable = pgTable(
@@ -236,6 +250,15 @@ export const stravaWebhookLogsTable = pgTable('strava_webhook_logs', {
 	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull()
 });
 
+export const landingCopyTable = pgTable('landing_copy', {
+	key: landingCopyKeyEnum('key').primaryKey(),
+	section: landingCopySectionEnum('section').notNull(),
+	label: text('label').notNull(),
+	value: text('value').notNull(),
+	sortOrder: integer('sort_order').notNull().default(0),
+	updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull()
+});
+
 // --- RELATIONS ---
 
 export const profileRelations = relations(profileTable, ({ many }) => ({
@@ -290,3 +313,4 @@ export type ChallengeParticipant = InferSelectModel<typeof challengeParticipants
 export type ChallengeContribution = InferSelectModel<typeof challengeContributionsTable>;
 export type StravaConnection = InferSelectModel<typeof stravaConnectionsTable>;
 export type StravaWebhookLog = InferSelectModel<typeof stravaWebhookLogsTable>;
+export type LandingCopy = InferSelectModel<typeof landingCopyTable>;

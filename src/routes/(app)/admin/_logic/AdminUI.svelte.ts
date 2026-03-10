@@ -3,17 +3,20 @@ import { ADMIN_TAB, type AdminTab } from '$lib/constants';
 import { MemoryAdmin } from './MemoryAdmin.svelte.js';
 import { RoutineScheduleAdmin } from './RoutineScheduleAdmin.svelte.js';
 import { ChallengeAdmin } from './ChallengeAdmin.svelte.js';
+import { LandingCopyAdmin } from './LandingCopyAdmin.svelte.js';
 
 export class AdminUI {
 	memories: MemoryAdmin[];
 	routineSchedules: RoutineScheduleAdmin[];
 	challenges: ChallengeAdmin[];
+	landingCopy: LandingCopyAdmin[];
 	activeTab: AdminTab;
 
 	constructor(data: AdminContextData) {
 		this.memories = $state(data.memories.map((m) => new MemoryAdmin(m)));
 		this.routineSchedules = $state(data.routineSchedules.map((s) => new RoutineScheduleAdmin(s)));
 		this.challenges = $state(data.challenges.map((c) => new ChallengeAdmin(c)));
+		this.landingCopy = $state(data.landingCopy.map((c) => new LandingCopyAdmin(c)));
 		this.activeTab = $state<AdminTab>(ADMIN_TAB.Memories);
 	}
 
@@ -25,6 +28,7 @@ export class AdminUI {
 		this.memories = data.memories.map((m) => new MemoryAdmin(m));
 		this.routineSchedules = data.routineSchedules.map((s) => new RoutineScheduleAdmin(s));
 		this.challenges = data.challenges.map((c) => new ChallengeAdmin(c));
+		this.landingCopy = data.landingCopy.map((c) => new LandingCopyAdmin(c));
 	}
 
 	setActiveTab(tab: AdminTab) {

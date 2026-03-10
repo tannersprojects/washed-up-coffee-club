@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { setAdminContext } from './_logic/context.js';
-	import { AdminTabs, MemoriesSection, SchedulesSection, ChallengesSection } from './_components';
+	import { AdminTabs, MemoriesSection, SchedulesSection, ChallengesSection, ContentSection } from './_components';
 	import { ADMIN_TAB } from '$lib/constants';
 
 	let { data } = $props();
@@ -21,5 +21,7 @@
 		<SchedulesSection />
 	{:else if admin.activeTab === ADMIN_TAB.Challenges}
 		<ChallengesSection />
+	{:else if admin.activeTab === ADMIN_TAB.Content}
+		<ContentSection />
 	{/if}
 </div>
