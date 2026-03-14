@@ -11,7 +11,12 @@ import {
 } from '$lib/constants';
 import { parseEasternToUtc } from '$lib/utils/datetime.js';
 import { db } from '$lib/db';
-import { memoriesTable, routineSchedulesTable, challengesTable, landingCopyTable } from '$lib/db/schema';
+import {
+	memoriesTable,
+	routineSchedulesTable,
+	challengesTable,
+	landingCopyTable
+} from '$lib/db/schema';
 import { PUBLIC_SUPABASE_URL } from '$env/static/public';
 import { loadAdminData } from './loader.server.js';
 import type { PageServerLoad, Actions } from './$types';
