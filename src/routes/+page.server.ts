@@ -13,17 +13,15 @@ export const load: PageServerLoad = async ({ locals }: { locals: App.Locals }) =
 
 	try {
 		[memories, routineSchedules, landingCopy] = await Promise.all([
-			db
-				.select()
-				.from(memoriesTable)
-				.where(eq(memoriesTable.isActive, true))
-				.orderBy(asc(memoriesTable.sortOrder)),
-			db
-				.select()
-				.from(routineSchedulesTable)
-				.where(eq(routineSchedulesTable.isActive, true))
-				.orderBy(asc(routineSchedulesTable.sortOrder)),
-			db.select().from(landingCopyTable).orderBy(asc(landingCopyTable.sortOrder))
+			db.query.memoriesTable.findMany({
+				where: eq(memoriesTable.isActive, true),
+				orderBy: asc(memoriesTable.sortOrder)
+			}),
+			db.query.routineSchedulesTable.findMany({
+				where: eq(routineSchedulesTable.isActive, true),
+				orderBy: asc(routineSchedulesTable.sortOrder)
+			}),
+			db.query.landingCopyTable.findMany({ orderBy: asc(landingCopyTable.sortOrder) })
 		]);
 	} catch (error) {
 		console.error(error);
