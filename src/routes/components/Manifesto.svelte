@@ -1,6 +1,14 @@
 <script lang="ts">
+	import { LANDING_COPY_KEY, type LandingCopyKey } from '$lib/constants';
+	import type { LandingCopy } from '$lib/db/schema';
 	import doHardThings from '$lib/assets/images/doHardThings.jpg';
 	import community from '$lib/assets/images/theCommunity3.jpg';
+
+	let { landingCopy }: { landingCopy: LandingCopy[] } = $props();
+
+	const copy = $derived(
+		Object.fromEntries(landingCopy.map((c) => [c.key, c.value])) as Record<LandingCopyKey, string>
+	);
 
 	// Basic Reveal Action
 	function reveal(node: HTMLElement) {
@@ -28,27 +36,25 @@
 	<div use:reveal class="reveal">
 		<div class="mb-8 flex items-center gap-4 opacity-50">
 			<div class="h-px w-8 bg-white"></div>
-			<span class="font-mono text-xs tracking-widest text-white uppercase">The Split</span>
+			<span class="font-mono text-xs tracking-widest text-white uppercase"
+				>{copy[LANDING_COPY_KEY.ManifestoEyebrow]}</span
+			>
 		</div>
 
 		<h2 class="mb-12 text-3xl leading-[1.1] font-medium tracking-tight text-white md:text-6xl">
-			We do hard things. <br class="hidden md:block" />We just prefer to do them
-			<span
-				class="bg-linear-to-r from-(--frosted-blue) to-white bg-clip-text text-transparent italic"
-				>together</span
-			>.
+			{copy[LANDING_COPY_KEY.ManifestoHeadline]}
 		</h2>
 
 		<div class="grid gap-12 border-t border-white/10 pt-12 md:grid-cols-2">
 			<p class="text-base leading-relaxed font-light text-gray-400 md:text-lg">
-				Washed Up Coffee Club is more than just miles. We are a community of friends pushing each
-				other to be our best selves. We celebrate the PRs, support through the injuries, and find
-				joy in the shared struggle of a hard workout.
+				{copy[LANDING_COPY_KEY.ManifestoDescription]}
 			</p>
 			<div class="border border-white/10 bg-white/5 p-6 backdrop-blur-sm">
-				<p class="mb-2 font-mono text-xs text-(--accent-lime)">CURRENT VIBE</p>
+				<p class="mb-2 font-mono text-xs text-(--accent-lime)"
+					>{copy[LANDING_COPY_KEY.ManifestoVibeLabel]}</p
+				>
 				<p class="text-lg leading-tight font-bold text-white italic md:text-xl">
-					"The miles don't get easier. The support just gets stronger."
+					"{copy[LANDING_COPY_KEY.ManifestoVibeQuote]}"
 				</p>
 			</div>
 		</div>

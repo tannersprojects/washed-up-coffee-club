@@ -8,7 +8,8 @@
 	const tabs = [
 		{ value: ADMIN_TAB.Memories, label: ADMIN_TAB_LABEL.Memories },
 		{ value: ADMIN_TAB.Schedules, label: ADMIN_TAB_LABEL.Schedules },
-		{ value: ADMIN_TAB.Challenges, label: ADMIN_TAB_LABEL.Challenges }
+		{ value: ADMIN_TAB.Challenges, label: ADMIN_TAB_LABEL.Challenges },
+		{ value: ADMIN_TAB.Content, label: ADMIN_TAB_LABEL.Content }
 	];
 </script>
 

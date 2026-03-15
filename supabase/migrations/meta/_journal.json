@@ -50,6 +50,13 @@
       "when": 1771981767521,
       "tag": "0006_huge_zuras",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1773110825273,
+      "tag": "0007_giant_master_mold",
+      "breakpoints": true
     }
   ]
 }

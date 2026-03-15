@@ -73,18 +73,9 @@ VALUES
 -- Delete existing entries first since vault secret names must be unique.
 DELETE FROM vault.secrets WHERE name IN ('webhook_url');
 SELECT vault.create_secret(
-  'https://1513-2600-382-bb88-23f4-d10d-92ef-e92a-9337.ngrok-free.app/api/strava/process-webhook',
+  'https://7e8c-2600-382-bb88-23f4-d10d-92ef-e92a-9337.ngrok-free.app/api/strava/process-webhook',
   'webhook_url',
   'Edge Function URL for the DB webhook trigger'
 );
--- SELECT vault.create_secret(
---   'http://host.docker.internal:54321/functions/v1/process-strava-webhook',
---   'webhook_url',
---   'Edge Function URL for the DB webhook trigger'
--- );
+
 -- TODO: Add custom JWT for Edge Function auth
--- SELECT vault.create_secret(
---   'LOCAL_SECRET_KEY',
---   'service_role_key',
---   'Supabase service role key for Edge Function auth'
--- );
