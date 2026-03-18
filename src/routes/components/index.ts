@@ -4,4 +4,4 @@ export { default as Manifesto } from './Manifesto.svelte';
 export { default as Navigation } from './Navigation.svelte';
 export { default as Routine } from './Routine.svelte';
 export { default as RoutineCard } from './RoutineCard.svelte';
-export { default as Footer } from './Footer.svelte';
+export { default as LandingCta } from './LandingCta.svelte';

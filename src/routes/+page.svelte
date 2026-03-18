@@ -4,10 +4,11 @@
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { AUTH_ERROR_MESSAGES } from '$lib/constants';
+	import { APP_FOOTER_VARIANT, AUTH_ERROR_MESSAGES } from '$lib/constants';
 
 	// Component Imports
-	import { Navigation, Hero, Manifesto, CameraRoll, Routine, Footer } from './components';
+	import { Navigation, Hero, Manifesto, CameraRoll, Routine, LandingCta } from './components';
+	import AppFooter from '$lib/components/AppFooter.svelte';
 
 	// --- PROPS & STATE ---
 	let { data } = $props();
@@ -56,7 +57,8 @@
 	<Navigation {scrollY} {isLoggedIn} />
 	<Hero smoothScroll={smoothScroll.current} {scrollY} {innerHeight} {innerWidth} />
 	<Manifesto {landingCopy} />
-	<CameraRoll {memories} {innerHeight} />
 	<Routine {routineSchedule} smoothScroll={smoothScroll.current} />
-	<Footer {isLoggedIn} />
+	<LandingCta {isLoggedIn} />
+	<CameraRoll {memories} {innerHeight} />
+	<AppFooter variant={APP_FOOTER_VARIANT.STANDARD} />
 </div>

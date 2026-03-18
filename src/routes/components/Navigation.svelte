@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
+	import { LayoutDashboard } from 'lucide-svelte';
 	import whiteStravaConnectButton from '$lib/assets/strava_buttons/connect_with_strava_white/btn_strava_connect_with_white.svg';
 
 	let { scrollY, isLoggedIn } = $props();
 </script>
 
 <nav
-	class="fixed top-0 z-40 flex w-full items-start justify-between px-6 py-6 transition-all duration-500 {scrollY >
+	class="fixed top-0 z-40 flex w-full items-center justify-between px-6 py-6 transition-all duration-500 {scrollY >
 	50
 		? 'bg-black/80 shadow-sm backdrop-blur-md'
 		: ''}"
@@ -23,30 +24,14 @@
 
 	<div class="flex items-center gap-6">
 		{#if isLoggedIn}
-			<button
-				class="hidden rounded-full border border-white/20 bg-white/5 px-4 py-1.5 text-xs font-bold tracking-widest text-white uppercase backdrop-blur-md transition-all hover:border-(--accent-lime) hover:text-(--accent-lime) md:block"
+			<a
+				href="/dashboard"
+				aria-label="Go to dashboard"
+				class="flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-4 py-1.5 text-xs font-bold tracking-widest text-white uppercase backdrop-blur-md transition-all hover:border-(--accent-lime) hover:text-(--accent-lime)"
 			>
-				<a href="/dashboard"> Dashboard </a></button
-			>
-			<button aria-label="Open dashboard menu" class="text-(--accent-lime) md:hidden">
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					width="20"
-					height="20"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					><line x1="18" x2="18" y1="20" y2="10" /><line x1="12" x2="12" y1="20" y2="4" /><line
-						x1="6"
-						x2="6"
-						y1="20"
-						y2="14"
-					/></svg
-				>
-			</button>
+				<LayoutDashboard class="h-5 w-5 shrink-0 text-(--accent-lime)" aria-hidden="true" />
+				<span class="hidden md:inline">Dashboard</span>
+			</a>
 		{:else if !isLoggedIn && scrollY < 50}
 			<a
 				href="/auth/strava/login"

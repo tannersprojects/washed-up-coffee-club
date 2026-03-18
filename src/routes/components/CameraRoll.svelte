@@ -32,7 +32,7 @@
 	});
 </script>
 
-<div bind:this={cameraRollSection} class="relative h-[300dvh] w-full bg-[#050505]">
+<div bind:this={cameraRollSection} class="relative h-[200dvh] w-full bg-[#050505]">
 	<!-- Sticky Container: Locks the view in place while we scroll through the 300dvh height -->
 	<!-- ALWAYS VERTICAL STACK (flex-col) -->
 	<div class="sticky top-0 flex h-dvh w-full flex-col overflow-hidden">
