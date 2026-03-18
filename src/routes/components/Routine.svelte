@@ -24,7 +24,7 @@
 	}
 </script>
 
-<section class="relative z-10 -mt-80 overflow-hidden bg-[#050505] px-6 py-24 md:mt-0 md:py-48">
+<section class="relative z-10 mt-0 overflow-hidden bg-[#050505] px-6 py-24 md:py-48">
 	<div
 		class="pointer-events-none absolute inset-0 z-0 flex items-center justify-center overflow-hidden opacity-[0.15] mix-blend-screen select-none"
 	>
@@ -39,9 +39,6 @@
 			{/each}
 		</div>
 	</div>
-
-	<!-- <div class="absolute top-0 bottom-0 left-4 w-px bg-white/5 md:left-10 md:bg-white/10"></div>
-	<div class="absolute top-0 right-4 bottom-0 w-px bg-white/5 md:right-10 md:bg-white/10"></div> -->
 
 	<!-- Top gradient fade -->
 	<div
