@@ -4,9 +4,12 @@ import {
 	PROFILE_ROLE,
 	CHALLENGE_TYPE,
 	CHALLENGE_STATUS,
+	RANKING_METRIC,
+	RANKING_METRIC_VALUES,
 	CHALLENGE_TYPES_WITH_GOAL_DISTANCE,
 	LANDING_COPY_KEY,
 	type ChallengeType,
+	type RankingMetric,
 	type LandingCopyKey
 } from '$lib/constants';
 import { parseEasternToUtc } from '$lib/utils/datetime.js';
@@ -30,6 +33,10 @@ const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12
 
 function isValidUuid(s: string): boolean {
 	return UUID_REGEX.test(s);
+}
+
+function parseRankingMetric(value: string): RankingMetric | null {
+	return RANKING_METRIC_VALUES.find((metric) => metric === value) ?? null;
 }
 
 export const load: PageServerLoad = async ({ locals }: { locals: App.Locals }) => {
@@ -498,6 +505,7 @@ export const actions: Actions = {
 		const startDateRaw = formData.get('startDate')?.toString();
 		const endDateRaw = formData.get('endDate')?.toString();
 		const status = formData.get('status')?.toString() ?? CHALLENGE_STATUS.UPCOMING;
+		const rankingMetricRaw = formData.get('rankingMetric')?.toString() ?? RANKING_METRIC.NONE;
 
 		if (!title || title.length > 200) {
 			return fail(400, {
@@ -509,6 +517,10 @@ export const actions: Actions = {
 		}
 		if (!VALID_CHALLENGE_STATUSES.includes(status as (typeof VALID_CHALLENGE_STATUSES)[number])) {
 			return fail(400, { error: 'Invalid challenge status.' });
+		}
+		const rankingMetric = parseRankingMetric(rankingMetricRaw);
+		if (!rankingMetric) {
+			return fail(400, { error: 'Invalid ranking metric.' });
 		}
 
 		const goalDistance = goalDistanceRaw ? parseFloat(goalDistanceRaw) : null;
@@ -550,7 +562,8 @@ export const actions: Actions = {
 				segmentId: segmentId ?? undefined,
 				startDate,
 				endDate,
-				status: status as (typeof VALID_CHALLENGE_STATUSES)[number]
+				status: status as (typeof VALID_CHALLENGE_STATUSES)[number],
+				rankingMetric
 			});
 		} catch (error) {
 			console.error('Create challenge error:', error);
@@ -576,6 +589,7 @@ export const actions: Actions = {
 		const startDateRaw = formData.get('startDate')?.toString();
 		const endDateRaw = formData.get('endDate')?.toString();
 		const status = formData.get('status')?.toString() ?? CHALLENGE_STATUS.UPCOMING;
+		const rankingMetricRaw = formData.get('rankingMetric')?.toString() ?? RANKING_METRIC.NONE;
 
 		if (!id || !isValidUuid(id)) {
 			return fail(400, { error: 'Invalid challenge ID.' });
@@ -598,6 +612,10 @@ export const actions: Actions = {
 		}
 		if (!VALID_CHALLENGE_STATUSES.includes(status as (typeof VALID_CHALLENGE_STATUSES)[number])) {
 			return fail(400, { error: 'Invalid challenge status.' });
+		}
+		const rankingMetric = parseRankingMetric(rankingMetricRaw);
+		if (!rankingMetric) {
+			return fail(400, { error: 'Invalid ranking metric.' });
 		}
 
 		const goalDistance = goalDistanceRaw ? parseFloat(goalDistanceRaw) : null;
@@ -640,6 +658,7 @@ export const actions: Actions = {
 					startDate,
 					endDate,
 					status: status as (typeof VALID_CHALLENGE_STATUSES)[number],
+					rankingMetric,
 					updatedAt: new Date()
 				})
 				.where(eq(challengesTable.id, id));

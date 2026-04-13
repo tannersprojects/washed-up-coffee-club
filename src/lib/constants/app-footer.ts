@@ -3,5 +3,4 @@ export const APP_FOOTER_VARIANT = {
 	STANDARD: 'standard' as const
 } as const;
 
-export type AppFooterVariant =
-	(typeof APP_FOOTER_VARIANT)[keyof typeof APP_FOOTER_VARIANT];
+export type AppFooterVariant = (typeof APP_FOOTER_VARIANT)[keyof typeof APP_FOOTER_VARIANT];

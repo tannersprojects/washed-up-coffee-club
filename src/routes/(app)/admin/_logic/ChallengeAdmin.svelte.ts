@@ -1,11 +1,13 @@
 import type { ChallengeParticipant } from '$lib/db/schema';
 import type { ChallengeWithParticipants } from '$lib/types/admin';
+import type { RankingMetric } from '$lib/constants';
 
 export class ChallengeAdmin {
 	id: string;
 	title: string;
 	description: string;
 	type: string;
+	rankingMetric: RankingMetric;
 	goalDistance: number | null;
 	segmentId: number | null;
 	startDate: Date;
@@ -21,6 +23,7 @@ export class ChallengeAdmin {
 		this.title = row.title;
 		this.description = row.description;
 		this.type = row.type;
+		this.rankingMetric = row.rankingMetric;
 		this.goalDistance = row.goalDistance;
 		this.segmentId = row.segmentId;
 		this.startDate = row.startDate;
@@ -42,6 +45,7 @@ export class ChallengeAdmin {
 			title: this.title,
 			description: this.description,
 			type: this.type,
+			rankingMetric: this.rankingMetric,
 			goalDistance: this.goalDistance,
 			segmentId: this.segmentId,
 			startDate: this.startDate,

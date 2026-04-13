@@ -15,6 +15,7 @@ import {
 	CHALLENGE_STATUS,
 	LEADERBOARD_TAB,
 	type ChallengeType,
+	type RankingMetric,
 	type ChallengeStatus,
 	type LeaderboardTab,
 	type DistanceUnit
@@ -27,6 +28,7 @@ export class ChallengeUI {
 	readonly title: string;
 	readonly description: string;
 	readonly type: ChallengeType;
+	readonly rankingMetric: RankingMetric;
 	readonly startDate: Date;
 	readonly endDate: Date;
 	readonly goalDistance: number | null;
@@ -66,6 +68,7 @@ export class ChallengeUI {
 		this.title = challenge.title;
 		this.description = challenge.description;
 		this.type = challenge.type;
+		this.rankingMetric = challenge.rankingMetric;
 		this.startDate = challenge.startDate;
 		this.endDate = challenge.endDate;
 		this.goalDistance = challenge.goalDistance;
@@ -97,6 +100,7 @@ export class ChallengeUI {
 			challenge.participants,
 			this.goalDistance,
 			this.type,
+			this.rankingMetric,
 			distanceUnit
 		);
 
@@ -109,8 +113,7 @@ export class ChallengeUI {
 					this.challengeTimeState.status === CHALLENGE_STATUS.UPCOMING)
 		);
 		this.canLeave = $derived(
-			this.isParticipating &&
-				this.challengeTimeState.status !== CHALLENGE_STATUS.COMPLETED
+			this.isParticipating && this.challengeTimeState.status !== CHALLENGE_STATUS.COMPLETED
 		);
 		this.statusBadge = $derived(
 			getChallengeStatusBadge(this.challengeTimeState, this.isParticipating, this.isActive)
@@ -178,6 +181,7 @@ export class ChallengeUI {
 			title: this.title,
 			description: this.description,
 			type: this.type,
+			rankingMetric: this.rankingMetric,
 			startDate: this.startDate,
 			endDate: this.endDate,
 			goalDistance: this.goalDistance,

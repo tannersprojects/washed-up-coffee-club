@@ -1,156 +1,159 @@
 {
-  "info": {
-    "name": "Washed Up Coffee Club - Strava API",
-    "description": "Strava API endpoints used by the running club leaderboard app",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-  },
-  "variable": [
-    { "key": "base_url", "value": "https://www.strava.com" },
-    { "key": "client_id", "value": "" },
-    { "key": "client_secret", "value": "" },
-    { "key": "access_token", "value": "" },
-    { "key": "refresh_token", "value": "" },
-    { "key": "activity_id", "value": "" }
-  ],
-  "item": [
-    {
-      "name": "OAuth",
-      "item": [
-        {
-          "name": "1. Token Exchange (authorization code)",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
-            "body": {
-              "mode": "urlencoded",
-              "urlencoded": [
-                { "key": "client_id", "value": "{{client_id}}" },
-                { "key": "client_secret", "value": "{{client_secret}}" },
-                { "key": "code", "value": "PASTE_CODE_FROM_OAUTH_REDIRECT" },
-                { "key": "grant_type", "value": "authorization_code" }
-              ]
-            },
-            "url": "{{base_url}}/oauth/token"
-          }
-        },
-        {
-          "name": "2. Refresh Token",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const res = pm.response.json();",
-                  "if (res.access_token) {",
-                  "  pm.collectionVariables.set('access_token', res.access_token);",
-                  "  if (res.refresh_token) pm.collectionVariables.set('refresh_token', res.refresh_token);",
-                  "}"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
-            "body": {
-              "mode": "urlencoded",
-              "urlencoded": [
-                { "key": "client_id", "value": "{{client_id}}" },
-                { "key": "client_secret", "value": "{{client_secret}}" },
-                { "key": "refresh_token", "value": "{{refresh_token}}" },
-                { "key": "grant_type", "value": "refresh_token" }
-              ]
-            },
-            "url": "{{base_url}}/oauth/token"
-          }
-        }
-      ]
-    },
-    {
-      "name": "Athlete",
-      "item": [
-        {
-          "name": "Get Authenticated Athlete",
-          "request": {
-            "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
-            "url": "{{base_url}}/api/v3/athlete"
-          }
-        },
-        {
-          "name": "List Athlete Activities",
-          "request": {
-            "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
-            "url": {
-              "raw": "{{base_url}}/api/v3/athlete/activities?per_page=10&page=1",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v3", "athlete", "activities"],
-              "query": [
-                { "key": "per_page", "value": "10" },
-                { "key": "page", "value": "1" },
-                { "key": "before", "value": "", "disabled": true },
-                { "key": "after", "value": "", "disabled": true }
-              ]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Activities",
-      "item": [
-        {
-          "name": "Get Activity by ID",
-          "request": {
-            "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
-            "url": {
-              "raw": "{{base_url}}/api/v3/activities/{{activity_id}}?include_all_efforts=true",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v3", "activities", "{{activity_id}}"],
-              "query": [{ "key": "include_all_efforts", "value": "true" }]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Webhooks",
-      "item": [
-        {
-          "name": "Get Push Subscriptions",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{base_url}}/api/v3/push_subscriptions?client_id={{client_id}}&client_secret={{client_secret}}",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v3", "push_subscriptions"],
-              "query": [
-                { "key": "client_id", "value": "{{client_id}}" },
-                { "key": "client_secret", "value": "{{client_secret}}" }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Create Push Subscription",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "formdata",
-              "formdata": [
-                { "key": "client_id", "value": "{{client_id}}" },
-                { "key": "client_secret", "value": "{{client_secret}}" },
-                { "key": "callback_url", "value": "https://YOUR_NGROK_OR_DOMAIN/api/strava/webhook" },
-                { "key": "verify_token", "value": "YOUR_VERIFY_TOKEN" }
-              ]
-            },
-            "url": "{{base_url}}/api/v3/push_subscriptions"
-          }
-        }
-      ]
-    }
-  ]
+	"info": {
+		"name": "Washed Up Coffee Club - Strava API",
+		"description": "Strava API endpoints used by the running club leaderboard app",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{ "key": "base_url", "value": "https://www.strava.com" },
+		{ "key": "client_id", "value": "" },
+		{ "key": "client_secret", "value": "" },
+		{ "key": "access_token", "value": "" },
+		{ "key": "refresh_token", "value": "" },
+		{ "key": "activity_id", "value": "" }
+	],
+	"item": [
+		{
+			"name": "OAuth",
+			"item": [
+				{
+					"name": "1. Token Exchange (authorization code)",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{ "key": "client_id", "value": "{{client_id}}" },
+								{ "key": "client_secret", "value": "{{client_secret}}" },
+								{ "key": "code", "value": "PASTE_CODE_FROM_OAUTH_REDIRECT" },
+								{ "key": "grant_type", "value": "authorization_code" }
+							]
+						},
+						"url": "{{base_url}}/oauth/token"
+					}
+				},
+				{
+					"name": "2. Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const res = pm.response.json();",
+									"if (res.access_token) {",
+									"  pm.collectionVariables.set('access_token', res.access_token);",
+									"  if (res.refresh_token) pm.collectionVariables.set('refresh_token', res.refresh_token);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{ "key": "client_id", "value": "{{client_id}}" },
+								{ "key": "client_secret", "value": "{{client_secret}}" },
+								{ "key": "refresh_token", "value": "{{refresh_token}}" },
+								{ "key": "grant_type", "value": "refresh_token" }
+							]
+						},
+						"url": "{{base_url}}/oauth/token"
+					}
+				}
+			]
+		},
+		{
+			"name": "Athlete",
+			"item": [
+				{
+					"name": "Get Authenticated Athlete",
+					"request": {
+						"method": "GET",
+						"header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+						"url": "{{base_url}}/api/v3/athlete"
+					}
+				},
+				{
+					"name": "List Athlete Activities",
+					"request": {
+						"method": "GET",
+						"header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+						"url": {
+							"raw": "{{base_url}}/api/v3/athlete/activities?per_page=10&page=1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v3", "athlete", "activities"],
+							"query": [
+								{ "key": "per_page", "value": "10" },
+								{ "key": "page", "value": "1" },
+								{ "key": "before", "value": "", "disabled": true },
+								{ "key": "after", "value": "", "disabled": true }
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Activities",
+			"item": [
+				{
+					"name": "Get Activity by ID",
+					"request": {
+						"method": "GET",
+						"header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+						"url": {
+							"raw": "{{base_url}}/api/v3/activities/{{activity_id}}?include_all_efforts=true",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v3", "activities", "{{activity_id}}"],
+							"query": [{ "key": "include_all_efforts", "value": "true" }]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Webhooks",
+			"item": [
+				{
+					"name": "Get Push Subscriptions",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/api/v3/push_subscriptions?client_id={{client_id}}&client_secret={{client_secret}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v3", "push_subscriptions"],
+							"query": [
+								{ "key": "client_id", "value": "{{client_id}}" },
+								{ "key": "client_secret", "value": "{{client_secret}}" }
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Push Subscription",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{ "key": "client_id", "value": "{{client_id}}" },
+								{ "key": "client_secret", "value": "{{client_secret}}" },
+								{
+									"key": "callback_url",
+									"value": "https://YOUR_NGROK_OR_DOMAIN/api/strava/webhook"
+								},
+								{ "key": "verify_token", "value": "YOUR_VERIFY_TOKEN" }
+							]
+						},
+						"url": "{{base_url}}/api/v3/push_subscriptions"
+					}
+				}
+			]
+		}
+	]
 }

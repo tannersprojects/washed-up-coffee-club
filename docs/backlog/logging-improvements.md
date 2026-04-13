@@ -6,12 +6,12 @@ Replace ad-hoc `console.log`/`console.error` usage across the Strava webhook pip
 
 ## Current State
 
-| File | Logging style | Notes |
-|------|--------------|-------|
-| `src/routes/api/strava/webhook/+server.ts` | Minimal | TODO for POST; only handshake + catch logged |
-| `src/routes/api/strava/process-webhook/+server.ts` | Moderate | Entry, skips, errors, progress |
-| `src/lib/server/strava-activity-processor.ts` | Verbose | Logs every step per challenge |
-| `src/lib/server/strava-activity-validators.ts` | Very verbose | Debug-level validation pass/fail on every call |
+| File                                               | Logging style | Notes                                          |
+| -------------------------------------------------- | ------------- | ---------------------------------------------- |
+| `src/routes/api/strava/webhook/+server.ts`         | Minimal       | TODO for POST; only handshake + catch logged   |
+| `src/routes/api/strava/process-webhook/+server.ts` | Moderate      | Entry, skips, errors, progress                 |
+| `src/lib/server/strava-activity-processor.ts`      | Verbose       | Logs every step per challenge                  |
+| `src/lib/server/strava-activity-validators.ts`     | Very verbose  | Debug-level validation pass/fail on every call |
 
 ## Issues
 

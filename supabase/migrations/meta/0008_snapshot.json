@@ -1,6 +1,6 @@
 {
-	"id": "ec6beb70-03e5-452c-96c0-304b4f473467",
-	"prevId": "00000000-0000-0000-0000-000000000000",
+	"id": "c34275c2-c84c-46e7-97a7-4ef6607f1fda",
+	"prevId": "765f352f-5890-4419-97b6-46d234e1b314",
 	"version": "7",
 	"dialect": "postgresql",
 	"tables": {
@@ -33,11 +33,53 @@
 					"primaryKey": false,
 					"notNull": false
 				},
-				"value": {
-					"name": "value",
+				"distance": {
+					"name": "distance",
+					"type": "real",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"moving_time": {
+					"name": "moving_time",
 					"type": "integer",
 					"primaryKey": false,
-					"notNull": true
+					"notNull": false
+				},
+				"elapsed_time": {
+					"name": "elapsed_time",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"best_efforts": {
+					"name": "best_efforts",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"splits_metric": {
+					"name": "splits_metric",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"splits_standard": {
+					"name": "splits_standard",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"laps": {
+					"name": "laps",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"activity_snapshot": {
+					"name": "activity_snapshot",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": false
 				},
 				"is_valid": {
 					"name": "is_valid",
@@ -138,16 +180,27 @@
 					"notNull": false,
 					"default": "now()"
 				},
-				"result_value": {
-					"name": "result_value",
+				"result_distance": {
+					"name": "result_distance",
+					"type": "real",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"result_moving_time_total": {
+					"name": "result_moving_time_total",
 					"type": "integer",
 					"primaryKey": false,
-					"notNull": false,
-					"default": 0
+					"notNull": false
 				},
-				"result_display": {
-					"name": "result_display",
-					"type": "text",
+				"ranking_value_seconds": {
+					"name": "ranking_value_seconds",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"ranking_computed_at": {
+					"name": "ranking_computed_at",
+					"type": "timestamp with time zone",
 					"primaryKey": false,
 					"notNull": false
 				},
@@ -194,8 +247,8 @@
 					"method": "btree",
 					"with": {}
 				},
-				"idx_participant_result": {
-					"name": "idx_participant_result",
+				"idx_participant_result_distance": {
+					"name": "idx_participant_result_distance",
 					"columns": [
 						{
 							"expression": "challenge_id",
@@ -204,7 +257,28 @@
 							"nulls": "last"
 						},
 						{
-							"expression": "result_value",
+							"expression": "result_distance",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"idx_participant_ranking_value": {
+					"name": "idx_participant_ranking_value",
+					"columns": [
+						{
+							"expression": "challenge_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "ranking_value_seconds",
 							"isExpression": false,
 							"asc": true,
 							"nulls": "last"
@@ -274,9 +348,17 @@
 					"notNull": true,
 					"default": "'cumulative'"
 				},
-				"goal_value": {
-					"name": "goal_value",
-					"type": "integer",
+				"ranking_metric": {
+					"name": "ranking_metric",
+					"type": "challenge_ranking_metric",
+					"typeSchema": "public",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'none'"
+				},
+				"goal_distance": {
+					"name": "goal_distance",
+					"type": "real",
 					"primaryKey": false,
 					"notNull": false
 				},
@@ -319,6 +401,59 @@
 					"primaryKey": false,
 					"notNull": true,
 					"default": "now()"
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.landing_copy": {
+			"name": "landing_copy",
+			"schema": "",
+			"columns": {
+				"key": {
+					"name": "key",
+					"type": "landing_copy_key",
+					"typeSchema": "public",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"section": {
+					"name": "section",
+					"type": "landing_copy_section",
+					"typeSchema": "public",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"label": {
+					"name": "label",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"value": {
+					"name": "value",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"sort_order": {
+					"name": "sort_order",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
 				},
 				"updated_at": {
 					"name": "updated_at",
@@ -694,9 +829,110 @@
 			"policies": {},
 			"checkConstraints": {},
 			"isRLSEnabled": false
+		},
+		"public.strava_webhook_logs": {
+			"name": "strava_webhook_logs",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "uuid",
+					"primaryKey": true,
+					"notNull": true,
+					"default": "gen_random_uuid()"
+				},
+				"payload": {
+					"name": "payload",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"strava_athlete_id": {
+					"name": "strava_athlete_id",
+					"type": "bigint",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"object_type": {
+					"name": "object_type",
+					"type": "webhook_object_type",
+					"typeSchema": "public",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"object_id": {
+					"name": "object_id",
+					"type": "bigint",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"aspect_type": {
+					"name": "aspect_type",
+					"type": "webhook_aspect_type",
+					"typeSchema": "public",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"event_time": {
+					"name": "event_time",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"status": {
+					"name": "status",
+					"type": "webhook_status",
+					"typeSchema": "public",
+					"primaryKey": false,
+					"notNull": false,
+					"default": "'pending'"
+				},
+				"error_message": {
+					"name": "error_message",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
 		}
 	},
 	"enums": {
+		"public.challenge_ranking_metric": {
+			"name": "challenge_ranking_metric",
+			"schema": "public",
+			"values": [
+				"none",
+				"activity_total",
+				"standard_400m",
+				"standard_800m",
+				"standard_1k",
+				"standard_1_mile",
+				"standard_2_mile",
+				"standard_5k",
+				"standard_10k",
+				"standard_15k",
+				"standard_10_mile",
+				"standard_20k",
+				"standard_half_marathon",
+				"standard_30k",
+				"standard_marathon",
+				"standard_50k"
+			]
+		},
 		"public.challenge_status": {
 			"name": "challenge_status",
 			"schema": "public",
@@ -707,6 +943,22 @@
 			"schema": "public",
 			"values": ["best_effort", "segment_race", "cumulative"]
 		},
+		"public.landing_copy_key": {
+			"name": "landing_copy_key",
+			"schema": "public",
+			"values": [
+				"manifesto.eyebrow",
+				"manifesto.headline",
+				"manifesto.description",
+				"manifesto.vibe_label",
+				"manifesto.vibe_quote"
+			]
+		},
+		"public.landing_copy_section": {
+			"name": "landing_copy_section",
+			"schema": "public",
+			"values": ["manifesto"]
+		},
 		"public.participant_status": {
 			"name": "participant_status",
 			"schema": "public",
@@ -716,6 +968,21 @@
 			"name": "profile_role",
 			"schema": "public",
 			"values": ["admin", "user"]
+		},
+		"public.webhook_aspect_type": {
+			"name": "webhook_aspect_type",
+			"schema": "public",
+			"values": ["create", "update", "delete"]
+		},
+		"public.webhook_object_type": {
+			"name": "webhook_object_type",
+			"schema": "public",
+			"values": ["activity", "athlete"]
+		},
+		"public.webhook_status": {
+			"name": "webhook_status",
+			"schema": "public",
+			"values": ["pending", "processed", "error"]
 		}
 	},
 	"schemas": {},

@@ -72,7 +72,11 @@
 	<div class="flex flex-1 flex-col">
 		{#if dashboard.activeTab === DASHBOARD_TAB.ClubLeaderboard}
 			<div class="flex min-h-0 flex-1 items-center justify-center">
-				<EmptyState title="Club Leaderboard" message="Coming soon." variant={EMPTY_STATE_VARIANT.FULL_PAGE} />
+				<EmptyState
+					title="Club Leaderboard"
+					message="Coming soon."
+					variant={EMPTY_STATE_VARIANT.FULL_PAGE}
+				/>
 			</div>
 		{:else}
 			<!-- Challenges tab content -->

@@ -1,4 +1,10 @@
-import type { Challenge, ChallengeParticipant, LandingCopy, Memory, RoutineSchedule } from '$lib/db/schema';
+import type {
+	Challenge,
+	ChallengeParticipant,
+	LandingCopy,
+	Memory,
+	RoutineSchedule
+} from '$lib/db/schema';
 
 /**
  * Canonical types for admin page data.

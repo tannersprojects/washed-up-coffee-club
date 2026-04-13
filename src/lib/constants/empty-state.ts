@@ -5,8 +5,7 @@ export const EMPTY_STATE_VARIANT = {
 	INLINE: 'inline' as const
 } as const;
 
-export type EmptyStateVariant =
-	(typeof EMPTY_STATE_VARIANT)[keyof typeof EMPTY_STATE_VARIANT];
+export type EmptyStateVariant = (typeof EMPTY_STATE_VARIANT)[keyof typeof EMPTY_STATE_VARIANT];
 
 export const EMPTY_STATE_CONTAINER_CLASS: Record<EmptyStateVariant, string> = {
 	[EMPTY_STATE_VARIANT.FULL_PAGE]: 'flex grow flex-1 w-full items-center justify-center',

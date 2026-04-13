@@ -2,8 +2,26 @@ import { RUN_SPORT_TYPES, type SportType } from '$lib/constants/strava';
 import { CHALLENGE_TYPE, type ChallengeType } from '$lib/constants';
 import type { Challenge } from '$lib/db/schema';
 import type { StravaDetailedActivityCamel } from '$lib/types/strava';
+import type {
+	ChallengeActivitySnapshot,
+	ChallengeBestEffortsSnapshot,
+	ChallengeLapsSnapshot,
+	ChallengeSplitsSnapshot
+} from '$lib/types/challenge-ranking';
 
-export type ValidationResult = { valid: true; distance: number; time: number } | { valid: false };
+export type ValidationResult =
+	| {
+			valid: true;
+			distance: number;
+			movingTime: number;
+			elapsedTime: number;
+			bestEfforts: ChallengeBestEffortsSnapshot | null;
+			splitsMetric: ChallengeSplitsSnapshot | null;
+			splitsStandard: ChallengeSplitsSnapshot | null;
+			laps: ChallengeLapsSnapshot | null;
+			activitySnapshot: ChallengeActivitySnapshot;
+	  }
+	| { valid: false };
 
 type ChallengeValidator = (
 	activity: StravaDetailedActivityCamel,
@@ -35,7 +53,17 @@ function validateActivityForBestEffortChallenge(
 	}
 
 	console.log(`Activity ${activity.id} is valid for challenge ${challenge.id}`);
-	return { valid: true, distance: activity.distance, time: activity.elapsedTime };
+	return {
+		valid: true,
+		distance: activity.distance,
+		movingTime: getPreferredTime(activity.movingTime, activity.elapsedTime) ?? 0,
+		elapsedTime: activity.elapsedTime,
+		bestEfforts: activity.bestEfforts ?? null,
+		splitsMetric: activity.splitsMetric ?? null,
+		splitsStandard: activity.splitsStandard ?? null,
+		laps: activity.laps ?? null,
+		activitySnapshot: buildActivitySnapshot(activity)
+	};
 }
 
 function validateActivityForCumulativeChallenge(
@@ -53,7 +81,17 @@ function validateActivityForCumulativeChallenge(
 	console.log(`Activity distance: ${activity.distance}`);
 	console.log(`Elapsed time: ${activity.elapsedTime}`);
 
-	return { valid: true, distance: activity.distance, time: activity.elapsedTime };
+	return {
+		valid: true,
+		distance: activity.distance,
+		movingTime: getPreferredTime(activity.movingTime, activity.elapsedTime) ?? 0,
+		elapsedTime: activity.elapsedTime,
+		bestEfforts: activity.bestEfforts ?? null,
+		splitsMetric: activity.splitsMetric ?? null,
+		splitsStandard: activity.splitsStandard ?? null,
+		laps: activity.laps ?? null,
+		activitySnapshot: buildActivitySnapshot(activity)
+	};
 }
 
 function validateActivityForSegmentRaceChallenge(
@@ -80,16 +118,26 @@ function validateActivityForSegmentRaceChallenge(
 	}
 
 	const effort = matchingEfforts.reduce((best, current) =>
-		(current.elapsedTime ?? Infinity) < (best.elapsedTime ?? Infinity) ? current : best
+		(getPreferredTime(current.movingTime, current.elapsedTime) ?? Infinity) <
+		(getPreferredTime(best.movingTime, best.elapsedTime) ?? Infinity)
+			? current
+			: best
 	);
-	if (effort.elapsedTime == null || effort.elapsedTime <= 0) {
+	const bestEffortMovingTime = getPreferredTime(effort.movingTime, effort.elapsedTime);
+	if (bestEffortMovingTime == null || bestEffortMovingTime <= 0) {
 		return { valid: false };
 	}
 
 	return {
 		valid: true,
 		distance: effort.distance,
-		time: effort.elapsedTime
+		movingTime: bestEffortMovingTime,
+		elapsedTime: effort.elapsedTime,
+		bestEfforts: activity.bestEfforts ?? null,
+		splitsMetric: activity.splitsMetric ?? null,
+		splitsStandard: activity.splitsStandard ?? null,
+		laps: activity.laps ?? null,
+		activitySnapshot: buildActivitySnapshot(activity)
 	};
 }
 
@@ -109,4 +157,31 @@ export function validateActivityForChallenge(
 		return { valid: false };
 	}
 	return validator(activity, challenge);
+}
+
+function getPreferredTime(
+	movingTime: number | null | undefined,
+	elapsedTime: number | null | undefined
+) {
+	if (movingTime != null && movingTime > 0) return movingTime;
+	if (elapsedTime != null && elapsedTime > 0) return elapsedTime;
+	return null;
+}
+
+function buildActivitySnapshot(activity: StravaDetailedActivityCamel): ChallengeActivitySnapshot {
+	return {
+		id: activity.id,
+		name: activity.name,
+		distance: activity.distance,
+		movingTime: activity.movingTime,
+		elapsedTime: activity.elapsedTime,
+		sportType: activity.sportType,
+		startDate: activity.startDate,
+		visibility: activity.visibility,
+		manual: activity.manual,
+		trainer: activity.trainer,
+		averageHeartrate: activity.averageHeartrate,
+		maxHeartrate: activity.maxHeartrate,
+		gearId: activity.gearId
+	};
 }

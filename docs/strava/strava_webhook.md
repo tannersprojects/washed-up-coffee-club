@@ -130,11 +130,11 @@ For local dev, use your ngrok URL. For production, use your production domain. U
 
 ## Key Files
 
-| Purpose | Path |
-|--------|------|
-| Webhook ingest (Strava → DB) | `src/routes/api/strava/webhook/+server.ts` |
+| Purpose                              | Path                                               |
+| ------------------------------------ | -------------------------------------------------- |
+| Webhook ingest (Strava → DB)         | `src/routes/api/strava/webhook/+server.ts`         |
 | Webhook processor (DB → leaderboard) | `src/routes/api/strava/process-webhook/+server.ts` |
-| Activity validation | `src/lib/server/strava-activity-validators.ts` |
-| Participant/contribution updates | `src/lib/server/strava-activity-processor.ts` |
-| DB trigger | `supabase/migrations/0003_previous_spot.sql` |
-| Subscription management | `scripts/manage-strava.ts` |
+| Activity validation                  | `src/lib/server/strava-activity-validators.ts`     |
+| Participant/contribution updates     | `src/lib/server/strava-activity-processor.ts`      |
+| DB trigger                           | `supabase/migrations/0003_previous_spot.sql`       |
+| Subscription management              | `scripts/manage-strava.ts`                         |

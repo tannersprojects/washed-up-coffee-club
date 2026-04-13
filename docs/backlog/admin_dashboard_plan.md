@@ -13,6 +13,7 @@ The admin dashboard will provide a centralized interface for managing all aspect
 **Concept**: Separate challenges into draft and published states using a dedicated drafts table or status flag.
 
 **Option A: Separate Table Approach**
+
 - Create `challenge_drafts` table with same schema as `challenges`
 - Benefits:
   - Clean separation between live and draft content
@@ -24,6 +25,7 @@ The admin dashboard will provide a centralized interface for managing all aspect
   - Draft is either deleted or marked as "published"
 
 **Option B: Status Flag Approach**
+
 - Add `draft_status` enum to existing `challenges` table: `draft`, `pending_review`, `published`
 - Benefits:
   - Single source of truth
@@ -38,6 +40,7 @@ The admin dashboard will provide a centralized interface for managing all aspect
 #### Challenge Builder Interface
 
 Features:
+
 - **Form Builder**:
   - Title, description input
   - Challenge type selector (cumulative, best_effort, segment_race)
@@ -45,11 +48,9 @@ Features:
   - Goal value input with unit selector (meters for distance, seconds for time)
   - Segment ID selector (with Strava segment search/integration?)
   - Status toggle (upcoming, active, completed)
-  
 - **Preview Mode**:
   - Live preview of how the challenge will look on the dashboard
   - Preview with mock leaderboard data
-  
 - **Validation**:
   - Ensure start date < end date
   - Validate goal value is appropriate for challenge type
@@ -67,11 +68,9 @@ Features:
   - Allow edits to description, end date (extend deadlines)
   - Restrict edits to critical fields once challenge is active (type, start date)
   - Show warning if edits affect participants
-  
 - **Archive Challenges**:
   - Move completed challenges to "archived" state
   - Keep data for historical records but hide from main views
-  
 - **Delete Challenges**:
   - Soft delete option (mark as deleted but keep data)
   - Hard delete for drafts only
@@ -80,19 +79,20 @@ Features:
 ### 2. Content Management
 
 #### Memories Section
+
 - **CRUD Operations**:
   - Upload new photos
   - Edit captions
   - Reorder via drag-and-drop (update `sortOrder`)
   - Toggle `isActive` to show/hide
   - Bulk actions (activate/deactivate multiple)
-  
 - **Image Management**:
   - Upload to Supabase Storage
   - Image optimization/compression
   - Preview before publish
 
 #### Routine Schedules
+
 - **Manage Weekly Runs**:
   - Add/edit/remove schedule entries
   - Update day, time, location
@@ -103,10 +103,10 @@ Features:
 ### 3. User Management
 
 #### User Profiles
+
 - **View All Users**:
   - List with search/filter (by name, role, Strava connection status)
   - Sort by join date, last activity
-  
 - **User Details**:
   - View profile information
   - See Strava connection status
@@ -126,11 +126,11 @@ Features:
 ### 4. Challenge Participation Management
 
 #### Monitor Participation
+
 - **Participant List per Challenge**:
   - View all participants for each challenge
   - See registration date, status, current result
   - Sort by performance, join date
-  
 - **Manual Actions**:
   - Manually add user to challenge (for special cases)
   - Remove user from challenge
@@ -138,15 +138,14 @@ Features:
   - Edit result values (for corrections/disputes)
 
 #### Contribution Management
+
 - **View Contributions**:
   - See all activities counting toward a challenge
   - Filter by user, date, validity
-  
 - **Validation**:
   - Mark contribution as invalid/valid (for disputes)
   - Manually add contribution (if sync failed)
   - Remove invalid contribution
-  
 - **Bulk Recalculation**:
   - Trigger recalculation of all results for a challenge
   - Useful after making data corrections
@@ -154,6 +153,7 @@ Features:
 ### 5. Analytics & Reporting
 
 #### Challenge Analytics
+
 - **Per-Challenge Stats**:
   - Total participants
   - Active vs inactive participants
@@ -161,19 +161,18 @@ Features:
   - Average distance/time
   - Daily participation graph
   - Top performers
-  
 - **Historical Trends**:
   - Compare challenges over time
   - Participation trends by month/season
   - Popular challenge types
 
 #### User Analytics
+
 - **Engagement Metrics**:
   - Total registered users
   - Active users (participated in last 30/60/90 days)
   - Strava connection rate
   - Average challenges per user
-  
 - **Activity Metrics**:
   - Total contributions tracked
   - Total distance/time logged
@@ -182,17 +181,18 @@ Features:
 ### 6. Strava Integration Management
 
 #### Webhook Management
+
 - **Monitor Webhook Status**:
   - View webhook subscription status
   - Test webhook delivery
   - View recent webhook events log
-  
 - **Manual Sync**:
   - Trigger manual activity sync for specific user
   - Bulk sync for all users (admin override)
   - View sync errors/logs
 
 #### Activity Processing
+
 - **Failed Activities**:
   - View activities that failed to process
   - Retry processing
@@ -201,22 +201,22 @@ Features:
 ### 7. System Administration
 
 #### Configuration
+
 - **Feature Flags**:
   - Toggle features on/off without deployment
   - Beta features for testing
-  
 - **Site Settings**:
   - Maintenance mode toggle
   - Announcement banner (global message)
   - Contact information updates
 
 #### Audit Logs
+
 - **Track Admin Actions**:
   - Log all admin operations (who, what, when)
   - Challenge modifications
   - User role changes
   - Data corrections
-  
 - **Security**:
   - View login history
   - Track failed authorization attempts
@@ -224,6 +224,7 @@ Features:
 ## Database Schema Additions
 
 ### Challenge Drafts (Option A)
+
 ```sql
 CREATE TABLE challenge_drafts (
   -- Same schema as challenges table
@@ -235,9 +236,10 @@ CREATE TABLE challenge_drafts (
 ```
 
 ### Challenge Status Enhancement (Option B - Recommended)
+
 ```sql
 -- Add to challenges table
-ALTER TABLE challenges 
+ALTER TABLE challenges
   ADD COLUMN draft_status TEXT DEFAULT 'published',
   ADD COLUMN created_by UUID REFERENCES profile(id),
   ADD COLUMN last_modified_by UUID REFERENCES profile(id),
@@ -247,6 +249,7 @@ CREATE TYPE draft_status_enum AS ENUM ('draft', 'pending_review', 'published', '
 ```
 
 ### Admin Audit Log
+
 ```sql
 CREATE TABLE admin_audit_log (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -262,6 +265,7 @@ CREATE TABLE admin_audit_log (
 ## UI/UX Considerations
 
 ### Navigation Structure
+
 ```
 Admin Dashboard
 ├── Overview (stats, recent activity)
@@ -286,11 +290,13 @@ Admin Dashboard
 ```
 
 ### Access Control
+
 - Only users with `role = 'admin'` can access admin dashboard
 - Use RLS policies to enforce admin-only access to sensitive operations
 - Add admin check middleware to all admin routes
 
 ### Design Principles
+
 - Keep consistent with main app design (coffee club aesthetic)
 - Mobile-responsive admin interface
 - Quick actions/shortcuts for common tasks
@@ -300,23 +306,27 @@ Admin Dashboard
 ## Implementation Priority
 
 ### Phase 1: Core Challenge Management (MVP)
+
 1. Challenge CRUD with draft status
 2. Basic challenge builder interface
 3. Publish/unpublish functionality
 4. Admin-only route protection
 
 ### Phase 2: Content Management
+
 1. Memories CRUD
 2. Routine schedules CRUD
 3. Image upload to Supabase Storage
 
 ### Phase 3: User & Participation Management
+
 1. User list and details
 2. Role management
 3. Participant list per challenge
 4. Manual participant actions
 
 ### Phase 4: Analytics & Advanced Features
+
 1. Challenge analytics dashboard
 2. User engagement metrics
 3. Audit logging

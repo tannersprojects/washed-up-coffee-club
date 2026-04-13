@@ -12,27 +12,27 @@ This document consolidates a detailed plan to address dashboard code review find
 
 ### Completed
 
-| Item | Phase |
-|------|-------|
-| 1.1 Error handling (Join/Leave forms) | Phase 1 |
-| 1.2 ChallengesDrawer ARIA and focus trap | Phase 2 |
-| 1.3 Dashboard cleanup on unmount | Phase 1 |
-| 1.4 User preferences: `untrack` in layout | Phase 2 |
-| 1.5 Server action error messages (leaveChallenge) | Phase 1 |
-| 1.6 PARTICIPANT_STATUS constants in LeaderboardRow | Phase 1 |
+| Item                                                            | Phase   |
+| --------------------------------------------------------------- | ------- |
+| 1.1 Error handling (Join/Leave forms)                           | Phase 1 |
+| 1.2 ChallengesDrawer ARIA and focus trap                        | Phase 2 |
+| 1.3 Dashboard cleanup on unmount                                | Phase 1 |
+| 1.4 User preferences: `untrack` in layout                       | Phase 2 |
+| 1.5 Server action error messages (leaveChallenge)               | Phase 1 |
+| 1.6 PARTICIPANT_STATUS constants in LeaderboardRow              | Phase 1 |
 | Option B: Single array `DashboardChallenge` with `participants` | Phase 3 |
 
 ### Remaining
 
-| Item | Phase |
-|------|-------|
-| 1.4 User preferences: Make `setUserPreferencesContext` idempotent | Phase 2 |
-| 1.4 User preferences: localStorage persistence | Phase 2 |
-| Explicit date hydration in `DashboardUI` / `ChallengeUI` | Phase 3 |
-| Optional: Zod validation at load boundary | Phase 3 |
+| Item                                                                 | Phase   |
+| -------------------------------------------------------------------- | ------- |
+| 1.4 User preferences: Make `setUserPreferencesContext` idempotent    | Phase 2 |
+| 1.4 User preferences: localStorage persistence                       | Phase 2 |
+| Explicit date hydration in `DashboardUI` / `ChallengeUI`             | Phase 3 |
+| Optional: Zod validation at load boundary                            | Phase 3 |
 | Optional: Extract `getStatusColor` / `getMobileStatusLabel` to utils | Phase 1 |
-| Make `distanceUnit` reactive from UserPreferences | Phase 4 |
-| Supabase Realtime for leaderboard | Phase 4 |
+| Make `distanceUnit` reactive from UserPreferences                    | Phase 4 |
+| Supabase Realtime for leaderboard                                    | Phase 4 |
 
 ---
 
@@ -101,11 +101,11 @@ Use `$effect` with a cleanup return. Svelte 5's `$effect` runs the returned func
 const dashboard = untrack(() => setDashboardContext(data));
 
 $effect(() => {
-  dashboard.updateFromServerData(data);
+	dashboard.updateFromServerData(data);
 });
 
 $effect(() => {
-  return () => dashboard.cleanup();
+	return () => dashboard.cleanup();
 });
 ```
 
@@ -124,10 +124,12 @@ The second effect has no dependencies, so it runs once on mount and returns a cl
 **Remediation:**
 
 1. **Use `untrack` like admin.** — DONE. In `+layout.svelte`:
+
    ```ts
    import { untrack } from 'svelte';
    untrack(() => setUserPreferencesContext());
    ```
+
    This ensures the context initialization is not reactive to layout re-renders.
 
 2. **Make `setUserPreferencesContext` idempotent.** — PENDING. Update `user-preferences.svelte.ts` so it returns the existing instance if already set (e.g. module-level singleton), rather than creating a new `UserPreferences` on every call. That way, even if the layout re-runs, the same instance is reused.
@@ -135,6 +137,7 @@ The second effect has no dependencies, so it runs once on mount and returns a cl
 3. **Persist preferences.** — PENDING. See `docs/backlog/distance-unit-preference-localstorage.md`. Implement localStorage persistence so preferences survive reloads and navigation.
 
 **Files to change:**
+
 - `src/lib/state/user-preferences.svelte.ts` — make idempotent (singleton or return-existing), localStorage read/write
 
 ---
@@ -175,14 +178,14 @@ The second effect has no dependencies, so it runs once on mount and returns a cl
 
 The dashboard uses **implicit DTOs** — types that mirror the database schema with extensions. There is no explicit DTO layer; types are derived from Drizzle schema + ad-hoc extensions.
 
-| Type | Source | Purpose |
-|------|--------|---------|
-| `Challenge` | Drizzle `InferSelectModel` | Raw DB row |
-| `ChallengeWithParticipation` | `Challenge & { isParticipating, participant }` | Challenge + user's participation status |
-| `ChallengeParticipantWithRelations` | `ChallengeParticipant & { profile, contributions }` | Participant with joined relations |
-| `LeaderboardRowData` | Manual type | Flattened row for leaderboard display |
-| `ChallengeStats` | Interface | Derived stats for stats grid |
-| `DashboardContextData` | Type | Loader payload shape |
+| Type                                | Source                                              | Purpose                                 |
+| ----------------------------------- | --------------------------------------------------- | --------------------------------------- |
+| `Challenge`                         | Drizzle `InferSelectModel`                          | Raw DB row                              |
+| `ChallengeWithParticipation`        | `Challenge & { isParticipating, participant }`      | Challenge + user's participation status |
+| `ChallengeParticipantWithRelations` | `ChallengeParticipant & { profile, contributions }` | Participant with joined relations       |
+| `LeaderboardRowData`                | Manual type                                         | Flattened row for leaderboard display   |
+| `ChallengeStats`                    | Interface                                           | Derived stats for stats grid            |
+| `DashboardContextData`              | Type                                                | Loader payload shape                    |
 
 ### 2.2 Strengths of Current Approach
 
@@ -204,7 +207,7 @@ The dashboard uses **implicit DTOs** — types that mirror the database schema w
 
 **Option A: Explicit DTO types with serialization helpers (recommended)**
 
-- Define `DashboardLoadData` as the *serialized* shape (dates as ISO strings).
+- Define `DashboardLoadData` as the _serialized_ shape (dates as ISO strings).
 - Add `hydrateDashboardData(data: DashboardLoadData): DashboardContextData` that converts dates and validates structure.
 - Use in `setDashboardContext`: `setDashboardContext(hydrateDashboardData(data))`.
 
@@ -291,13 +294,13 @@ ChallengeUI.updateFromServerData() — sync with server
 
 ### 4.3 Recommended Reactive Enhancements
 
-| Enhancement | Effort | Impact | Priority |
-|-------------|--------|--------|----------|
-| Form error display | Low | High | P1 |
-| User preferences persistence + reactive unit | Medium | Medium | P2 |
-| Supabase Realtime for leaderboard | High | High | P3 (future) |
-| Dashboard cleanup on unmount | Low | Low | P1 |
-| Explicit date hydration in DTOs | Low | Medium | P2 |
+| Enhancement                                  | Effort | Impact | Priority    |
+| -------------------------------------------- | ------ | ------ | ----------- |
+| Form error display                           | Low    | High   | P1          |
+| User preferences persistence + reactive unit | Medium | Medium | P2          |
+| Supabase Realtime for leaderboard            | High   | High   | P3 (future) |
+| Dashboard cleanup on unmount                 | Low    | Low    | P1          |
+| Explicit date hydration in DTOs              | Low    | Medium | P2          |
 
 ---
 
@@ -332,15 +335,15 @@ ChallengeUI.updateFromServerData() — sync with server
 
 ## Appendix: File Change Summary
 
-| File | Changes | Status |
-|------|---------|--------|
-| `JoinChallengeButton.svelte` | Handle `result.type === 'failure'`, call `toast.error()` | Done |
-| `LeaveChallengeButton.svelte` | Same for leave form | Done |
-| `ChallengesDrawer.svelte` | ARIA, focus trap, role fixes | Done |
-| `+page.svelte` | Add second `$effect` that returns `() => dashboard.cleanup()` for unmount | Done |
-| `+page.server.ts` | Fix leaveChallenge error message, 401 text | Done |
-| `(app)/+layout.svelte` | Use `untrack(() => setUserPreferencesContext())` | Done |
-| `user-preferences.svelte.ts` | Make idempotent (singleton), localStorage, setDistanceUnit | Pending |
-| `LeaderboardRow.svelte` | Use PARTICIPANT_STATUS constants | Done |
-| `loader.server.ts` | Option B refactor (single array) | Done |
-| `types/dashboard.ts` | `DashboardChallenge` with `participants` | Done |
+| File                          | Changes                                                                   | Status  |
+| ----------------------------- | ------------------------------------------------------------------------- | ------- |
+| `JoinChallengeButton.svelte`  | Handle `result.type === 'failure'`, call `toast.error()`                  | Done    |
+| `LeaveChallengeButton.svelte` | Same for leave form                                                       | Done    |
+| `ChallengesDrawer.svelte`     | ARIA, focus trap, role fixes                                              | Done    |
+| `+page.svelte`                | Add second `$effect` that returns `() => dashboard.cleanup()` for unmount | Done    |
+| `+page.server.ts`             | Fix leaveChallenge error message, 401 text                                | Done    |
+| `(app)/+layout.svelte`        | Use `untrack(() => setUserPreferencesContext())`                          | Done    |
+| `user-preferences.svelte.ts`  | Make idempotent (singleton), localStorage, setDistanceUnit                | Pending |
+| `LeaderboardRow.svelte`       | Use PARTICIPANT_STATUS constants                                          | Done    |
+| `loader.server.ts`            | Option B refactor (single array)                                          | Done    |
+| `types/dashboard.ts`          | `DashboardChallenge` with `participants`                                  | Done    |

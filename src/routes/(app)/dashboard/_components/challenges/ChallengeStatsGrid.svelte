@@ -10,7 +10,11 @@
 		{ id: 'totalRunners', label: 'Runners', value: stats?.totalRunners },
 		{ id: 'finishers', label: 'Finished', value: stats?.finishers },
 		{ id: 'activeRunners', label: 'On Course', value: stats?.activeRunners },
-		{ id: 'totalDistance', label: stats?.totalDistanceLabel ?? 'Total mi', value: stats?.totalDistance }
+		{
+			id: 'totalDistance',
+			label: stats?.totalDistanceLabel ?? 'Total mi',
+			value: stats?.totalDistance
+		}
 	]);
 </script>
 

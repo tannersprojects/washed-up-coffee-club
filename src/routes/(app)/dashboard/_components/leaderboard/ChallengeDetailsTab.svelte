@@ -18,17 +18,17 @@
 
 			{#if challenge.description}
 				<div>
-					<h3 class="mb-2 font-mono text-xs tracking-widest text-gray-500 uppercase"
-						>Description</h3
-					>
+					<h3 class="mb-2 font-mono text-xs tracking-widest text-gray-500 uppercase">
+						Description
+					</h3>
 					<p class="text-white">{challenge.description}</p>
 				</div>
 			{/if}
 
 			<div>
-				<h3 class="mb-2 font-mono text-xs tracking-widest text-gray-500 uppercase"
-					>Challenge Type</h3
-				>
+				<h3 class="mb-2 font-mono text-xs tracking-widest text-gray-500 uppercase">
+					Challenge Type
+				</h3>
 				<p class="font-mono text-sm text-white uppercase">{challenge.type}</p>
 			</div>
 
@@ -42,16 +42,12 @@
 			{/if}
 
 			<div>
-				<h3 class="mb-2 font-mono text-xs tracking-widest text-gray-500 uppercase"
-					>Start Date</h3
-				>
+				<h3 class="mb-2 font-mono text-xs tracking-widest text-gray-500 uppercase">Start Date</h3>
 				<p class="font-mono text-sm text-white">{formatDate(challenge.startDate)}</p>
 			</div>
 
 			<div>
-				<h3 class="mb-2 font-mono text-xs tracking-widest text-gray-500 uppercase"
-					>End Date</h3
-				>
+				<h3 class="mb-2 font-mono text-xs tracking-widest text-gray-500 uppercase">End Date</h3>
 				<p class="font-mono text-sm text-white">{formatDate(challenge.endDate)}</p>
 			</div>
 

@@ -6,10 +6,10 @@ Document the current behavior of the Strava webhook ingest endpoint when errors 
 
 ## Current Behavior
 
-| Location | Behavior |
-|----------|----------|
-| `src/routes/api/strava/webhook/+server.ts` | POST handler returns `200 EVENT_RECEIVED` even when DB insert fails |
-| Rationale | Strava retries webhooks on non-2xx responses. Returning 200 prevents duplicate processing and avoids Strava's retry storm if our DB or API is temporarily unavailable |
+| Location                                   | Behavior                                                                                                                                                              |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/routes/api/strava/webhook/+server.ts` | POST handler returns `200 EVENT_RECEIVED` even when DB insert fails                                                                                                   |
+| Rationale                                  | Strava retries webhooks on non-2xx responses. Returning 200 prevents duplicate processing and avoids Strava's retry storm if our DB or API is temporarily unavailable |
 
 ## Trade-offs
 

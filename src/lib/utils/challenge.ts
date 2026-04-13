@@ -122,8 +122,7 @@ export function getChallengeStatusBadgeClasses(status: ChallengeStatus | string)
 
 export function isChallengeActiveOrUpcoming(timeState: ChallengeTimeState): boolean {
 	return (
-		timeState.status === CHALLENGE_STATUS.ACTIVE ||
-		timeState.status === CHALLENGE_STATUS.UPCOMING
+		timeState.status === CHALLENGE_STATUS.ACTIVE || timeState.status === CHALLENGE_STATUS.UPCOMING
 	);
 }
 
@@ -133,12 +132,10 @@ export function getChallengeStatusBadge(
 	isActive: boolean
 ): ChallengeStatusBadge | null {
 	if (!isActive) return CHALLENGE_STATUS_BADGE.NOT_ACTIVE;
-	if (timeState.status === CHALLENGE_STATUS.COMPLETED)
-		return CHALLENGE_STATUS_BADGE.ENDED;
+	if (timeState.status === CHALLENGE_STATUS.COMPLETED) return CHALLENGE_STATUS_BADGE.ENDED;
 	if (
 		isParticipating &&
-		(timeState.status === CHALLENGE_STATUS.ACTIVE ||
-			timeState.status === CHALLENGE_STATUS.UPCOMING)
+		(timeState.status === CHALLENGE_STATUS.ACTIVE || timeState.status === CHALLENGE_STATUS.UPCOMING)
 	)
 		return CHALLENGE_STATUS_BADGE.YOURE_IN;
 	return null;
@@ -154,9 +151,9 @@ export function formatTime(seconds: number): string {
 	return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-export function formatResultDisplay(resultTime: number | null): string {
-	if (resultTime != null) {
-		return formatTime(resultTime);
+export function formatResultDisplay(rankingValueSeconds: number | null): string {
+	if (rankingValueSeconds != null) {
+		return formatTime(rankingValueSeconds);
 	}
 	return '--';
 }

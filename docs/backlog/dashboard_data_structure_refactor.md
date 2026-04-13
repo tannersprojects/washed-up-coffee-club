@@ -25,11 +25,11 @@ This doc records options for refactoring how dashboard challenge + participant d
 
 ```ts
 type ChallengeWithParticipationAndParticipants = ChallengeWithParticipation & {
-  participants: ChallengeParticipantWithRelations[];
+	participants: ChallengeParticipantWithRelations[];
 };
 
 type DashboardContextData = {
-  challengesWithParticipation: ChallengeWithParticipationAndParticipants[];
+	challengesWithParticipation: ChallengeWithParticipationAndParticipants[];
 };
 ```
 
@@ -75,16 +75,16 @@ type DashboardContextData = {
 
 - **Constructor:** Change from:
   - `(challengesWithParticipation, challengeParticipantsWithRelationsByChallenge)`  
-  to:
+    to:
   - `(challengesWithParticipation)` only (each item already has `.participants`).
 - **Hydration:** Change from:
   - `new ChallengeUI(c, challengeParticipantsWithRelationsByChallenge[c.id])`  
-  to:
+    to:
   - `new ChallengeUI(c, c.participants)` (or equivalent, e.g. `new ChallengeUI(c)` if `ChallengeUI` reads `c.participants` from the first arg).
 - **`fromServerData`:** Accept only `{ challengesWithParticipation }` and pass that single array into the constructor.
 - **`updateFromServerData`:** Change from:
   - Looking up `challengeParticipantsWithRelationsByChallenge[challengeData.id]`  
-  to:
+    to:
   - Using `challengeData.participants` (each item in `challengesWithParticipation` already has `participants`).
 
 ### 5. `src/routes/(app)/dashboard/_logic/ChallengeUI.svelte.ts`
@@ -104,12 +104,12 @@ type DashboardContextData = {
 
 ## Summary
 
-| Area              | Change |
-|-------------------|--------|
-| `$lib/types/dashboard.ts` | New/updated type; `DashboardContextData` = single array of challenge-with-participants. |
-| `loader.server.ts`        | Build one array; attach `participants` per challenge; return only that array. |
-| `context.ts`               | No API change; type import reflects new `DashboardContextData`. |
-| `DashboardUI.svelte.ts`    | Constructor and `fromServerData` take single array; use `c.participants` for `ChallengeUI`; `updateFromServerData` uses `challengeData.participants`. |
-| `ChallengeUI.svelte.ts`   | Optionally take single "challenge with participants" and pass `.participants` to `LeaderboardUI`. |
-| `LeaderboardUI.svelte.ts` | No change. |
-| `+page.server.ts`         | No change (loader return shape only). |
+| Area                      | Change                                                                                                                                                |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `$lib/types/dashboard.ts` | New/updated type; `DashboardContextData` = single array of challenge-with-participants.                                                               |
+| `loader.server.ts`        | Build one array; attach `participants` per challenge; return only that array.                                                                         |
+| `context.ts`              | No API change; type import reflects new `DashboardContextData`.                                                                                       |
+| `DashboardUI.svelte.ts`   | Constructor and `fromServerData` take single array; use `c.participants` for `ChallengeUI`; `updateFromServerData` uses `challengeData.participants`. |
+| `ChallengeUI.svelte.ts`   | Optionally take single "challenge with participants" and pass `.participants` to `LeaderboardUI`.                                                     |
+| `LeaderboardUI.svelte.ts` | No change.                                                                                                                                            |
+| `+page.server.ts`         | No change (loader return shape only).                                                                                                                 |

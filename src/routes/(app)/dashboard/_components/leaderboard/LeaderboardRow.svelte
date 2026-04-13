@@ -26,7 +26,7 @@
 	const goalDistanceDisplay = $derived(
 		challenge?.goalDistance ? formatDistanceDisplay(challenge.goalDistance, unit) : null
 	);
-	const resultDisplay = $derived(formatResultDisplay(row.participant.resultTime));
+	const resultDisplay = $derived(formatResultDisplay(row.participant.rankingValueSeconds));
 	const progressPercent = $derived(
 		challenge?.type === CHALLENGE_TYPE.CUMULATIVE &&
 			challenge?.goalDistance &&

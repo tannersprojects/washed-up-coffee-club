@@ -47,7 +47,7 @@
 	<div
 		bind:this={drawerRef}
 		transition:fly={{ x: -320, duration: 250, easing: cubicOut }}
-		class="fixed left-0 top-0 bottom-0 z-50 flex w-[80%] max-w-sm flex-col border-r border-white/10 bg-[#050505] shadow-2xl"
+		class="fixed top-0 bottom-0 left-0 z-50 flex w-[80%] max-w-sm flex-col border-r border-white/10 bg-[#050505] shadow-2xl"
 		role="dialog"
 		aria-modal="true"
 		aria-labelledby="drawer-challenges-title"
@@ -56,9 +56,12 @@
 	>
 		<!-- Header -->
 		<div class="flex shrink-0 items-center justify-between border-b border-white/10 px-4 py-4">
-			<h2 id="drawer-challenges-title" class="font-mono text-sm tracking-widest text-white uppercase"
-				>Challenges</h2
+			<h2
+				id="drawer-challenges-title"
+				class="font-mono text-sm tracking-widest text-white uppercase"
 			>
+				Challenges
+			</h2>
 			<button
 				type="button"
 				onclick={handleClose}
@@ -71,12 +74,7 @@
 
 		<!-- Challenge list -->
 		<div class="min-h-0 flex-1 overflow-y-auto">
-			<ChallengeListItems
-				{challenges}
-				{selectedChallengeId}
-				{profile}
-				onSelect={handleSelect}
-			/>
+			<ChallengeListItems {challenges} {selectedChallengeId} {profile} onSelect={handleSelect} />
 		</div>
 	</div>
 {/if}

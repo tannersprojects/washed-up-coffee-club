@@ -21,6 +21,7 @@ CHECK (
 ```
 
 **Semantics:**
+
 - **SEGMENT_RACE:** goal_distance may be null (unused)
 - **CUMULATIVE / BEST_EFFORT:** goal_distance must be NOT NULL and > 0
 

@@ -32,12 +32,24 @@ ON CONFLICT (id) DO NOTHING;
 
 -- 2. Seed The Challenge
 -- 'c' is a valid hex character, so this ID works fine.
-INSERT INTO challenges (id, title, description, type, goal_distance, start_date, end_date, status, is_active)
+INSERT INTO challenges (
+  id,
+  title,
+  description,
+  type,
+  ranking_metric,
+  goal_distance,
+  start_date,
+  end_date,
+  status,
+  is_active
+)
 VALUES (
   'c0000000-0000-0000-0000-000000000001', 
   'The "Sunday Scaries" Half', 
   'Shake off the weekend with a half marathon.',
   'cumulative', 
+  'activity_total',
   21097, -- 21.1 km in meters
   CURRENT_DATE::timestamp with time zone,    -- Today at 00:00:00+00
   (CURRENT_DATE + 1)::timestamp with time zone + TIME '23:59:59', -- Tomorrow at 23:59:59+00
@@ -47,26 +59,44 @@ VALUES (
 ON CONFLICT (id) DO NOTHING;
 
 -- 3. Seed Participants (The Scoreboard)
--- cumulative challenge: result_distance in meters, result_time in seconds (for completed)
-INSERT INTO challenge_participants (id, challenge_id, profile_id, status, result_distance, result_time)
+-- cumulative challenge: result_distance in meters, result_moving_time_total/ranking_value_seconds in seconds
+INSERT INTO challenge_participants (
+  id,
+  challenge_id,
+  profile_id,
+  status,
+  result_distance,
+  result_moving_time_total,
+  ranking_value_seconds,
+  ranking_computed_at
+)
 VALUES 
-  ('a0000000-0000-0000-0000-000000000001', 'c0000000-0000-0000-0000-000000000001', 'd0c2c0e0-1111-4444-8888-000000000001', 'completed', 21197, 5700),  -- 1:35:00
-  ('a0000000-0000-0000-0000-000000000002', 'c0000000-0000-0000-0000-000000000001', 'd0c2c0e0-1111-4444-8888-000000000002', 'completed', 21197, 6120),  -- 1:42:00
-  ('a0000000-0000-0000-0000-000000000003', 'c0000000-0000-0000-0000-000000000001', 'd0c2c0e0-1111-4444-8888-000000000003', 'completed', 21197, 6480),  -- 1:48:00
-  ('a0000000-0000-0000-0000-000000000004', 'c0000000-0000-0000-0000-000000000001', 'd0c2c0e0-1111-4444-8888-000000000004', 'in_progress', 15000, NULL),
-  ('a0000000-0000-0000-0000-000000000005', 'c0000000-0000-0000-0000-000000000001', 'd0c2c0e0-1111-4444-8888-000000000005', 'in_progress', 5200, NULL),
-  ('a0000000-0000-0000-0000-000000000006', 'c0000000-0000-0000-0000-000000000001', 'd0c2c0e0-1111-4444-8888-000000000006', 'did_not_finish', 8000, NULL),
-  ('a0000000-0000-0000-0000-000000000007', 'c0000000-0000-0000-0000-000000000001', 'd0c2c0e0-1111-4444-8888-000000000007', 'registered', NULL, NULL)
+  ('a0000000-0000-0000-0000-000000000001', 'c0000000-0000-0000-0000-000000000001', 'd0c2c0e0-1111-4444-8888-000000000001', 'completed',      21197, 5700, 5700, NOW()),  -- 1:35:00
+  ('a0000000-0000-0000-0000-000000000002', 'c0000000-0000-0000-0000-000000000001', 'd0c2c0e0-1111-4444-8888-000000000002', 'completed',      21197, 6120, 6120, NOW()),  -- 1:42:00
+  ('a0000000-0000-0000-0000-000000000003', 'c0000000-0000-0000-0000-000000000001', 'd0c2c0e0-1111-4444-8888-000000000003', 'completed',      21197, 6480, 6480, NOW()),  -- 1:48:00
+  ('a0000000-0000-0000-0000-000000000004', 'c0000000-0000-0000-0000-000000000001', 'd0c2c0e0-1111-4444-8888-000000000004', 'in_progress',    15000, NULL, NULL, NULL),
+  ('a0000000-0000-0000-0000-000000000005', 'c0000000-0000-0000-0000-000000000001', 'd0c2c0e0-1111-4444-8888-000000000005', 'in_progress',    5200,  NULL, NULL, NULL),
+  ('a0000000-0000-0000-0000-000000000006', 'c0000000-0000-0000-0000-000000000001', 'd0c2c0e0-1111-4444-8888-000000000006', 'did_not_finish', 8000,  NULL, NULL, NULL),
+  ('a0000000-0000-0000-0000-000000000007', 'c0000000-0000-0000-0000-000000000001', 'd0c2c0e0-1111-4444-8888-000000000007', 'registered',     NULL,  NULL, NULL, NULL)
 ON CONFLICT (id) DO NOTHING;
 
 -- 4. Seed Contributions (The Evidence)
--- cumulative: distance in meters, time in seconds
-INSERT INTO challenge_contributions (id, participant_id, strava_activity_id, activity_name, distance, time, occurred_at)
+-- cumulative: distance in meters, moving_time/elapsed_time in seconds
+INSERT INTO challenge_contributions (
+  id,
+  participant_id,
+  strava_activity_id,
+  activity_name,
+  distance,
+  moving_time,
+  elapsed_time,
+  occurred_at
+)
 VALUES
-  (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000001', 99001, 'Morning Half Marathon', 21197, 5700, '2026-01-18 07:30:00+00'),  -- 1:35:00
-  (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000002', 99002, 'Sunday Long Run', 21197, 6120, '2026-01-18 08:00:00+00'),   -- 1:42:00
-  (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000003', 99003, 'Easy Pace Half', 21197, 6480, '2026-01-18 09:15:00+00'),    -- 1:48:00
-  (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000004', 99004, 'Partial Run', 15000, NULL, '2026-01-18 10:00:00+00');
+  (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000001', 99001, 'Morning Half Marathon', 21197, 5700, 5700, '2026-01-18 07:30:00+00'),  -- 1:35:00
+  (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000002', 99002, 'Sunday Long Run',       21197, 6120, 6120, '2026-01-18 08:00:00+00'),  -- 1:42:00
+  (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000003', 99003, 'Easy Pace Half',        21197, 6480, 6480, '2026-01-18 09:15:00+00'),  -- 1:48:00
+  (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000004', 99004, 'Partial Run',           15000, NULL, NULL, '2026-01-18 10:00:00+00');
 
 -- 5. Webhook Vault Secrets (local dev)
 -- Uses vault.create_secret() to properly encrypt secrets at rest.

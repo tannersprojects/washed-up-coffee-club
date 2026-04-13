@@ -136,6 +136,9 @@ export interface StravaDetailedSegmentEffort {
 	start_index: number;
 	end_index: number;
 	average_cadence?: number;
+	average_heartrate?: number;
+	max_heartrate?: number;
+	heartrate_opt_out?: boolean;
 	device_watts?: boolean;
 	average_watts?: number;
 	segment: StravaSummarySegment;
@@ -154,6 +157,9 @@ export interface StravaSplit {
 	split: number;
 	average_speed: number;
 	pace_zone: number;
+	average_heartrate?: number;
+	max_heartrate?: number;
+	average_grade_adjusted_speed?: number;
 }
 
 /** Lap within an activity */
@@ -174,6 +180,8 @@ export interface StravaLap {
 	average_speed?: number;
 	max_speed?: number;
 	average_cadence?: number;
+	average_heartrate?: number;
+	max_heartrate?: number;
 	device_watts?: boolean;
 	average_watts?: number;
 	lap_index: number;
@@ -222,6 +230,7 @@ export interface StravaDetailedActivity {
 	commute: boolean;
 	manual: boolean;
 	private: boolean;
+	visibility?: string;
 	flagged: boolean;
 	workout_type: number | null;
 	upload_id_str?: string;
@@ -236,6 +245,8 @@ export interface StravaDetailedActivity {
 	max_watts?: number;
 	weighted_average_watts?: number;
 	average_cadence?: number;
+	average_heartrate?: number;
+	max_heartrate?: number;
 	average_temp?: number;
 	has_heartrate?: boolean;
 	pr_count?: number;
@@ -255,6 +266,9 @@ export interface StravaDetailedActivity {
 	from_accepted_tag?: boolean;
 	segment_leaderboard_opt_out?: boolean;
 	leaderboard_opt_out?: boolean;
+	location_city?: string | null;
+	location_state?: string | null;
+	location_country?: string | null;
 }
 
 // --- CamelCase variants (for front-end use) ---

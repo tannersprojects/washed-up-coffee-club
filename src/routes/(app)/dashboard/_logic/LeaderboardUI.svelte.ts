@@ -1,9 +1,11 @@
 import {
 	CHALLENGE_TYPE,
+	RANKING_METRIC,
 	LONG_DISTANCE_LABEL,
 	PARTICIPANT_STATUS,
 	type ChallengeType,
-	type DistanceUnit
+	type DistanceUnit,
+	type RankingMetric
 } from '$lib/constants';
 import type {
 	LeaderboardRowData,
@@ -33,6 +35,7 @@ export class LeaderboardUI {
 	private challengeParticipantsWithRelations: ChallengeParticipantWithRelations[];
 	private goalDistance: number | null;
 	private challengeType: ChallengeType;
+	private rankingMetric: RankingMetric;
 	private distanceUnit: DistanceUnit;
 
 	leaderboardRows: LeaderboardRowData[];
@@ -47,11 +50,13 @@ export class LeaderboardUI {
 		challengeParticipantsWithRelations: ChallengeParticipantWithRelations[],
 		goalDistance: number | null,
 		challengeType: ChallengeType,
+		rankingMetric: RankingMetric,
 		distanceUnit: DistanceUnit
 	) {
 		this.challengeParticipantsWithRelations = $state(challengeParticipantsWithRelations);
 		this.goalDistance = $state(goalDistance);
 		this.challengeType = challengeType;
+		this.rankingMetric = rankingMetric;
 		this.distanceUnit = distanceUnit;
 		this.leaderboardRows = $derived.by(() => {
 			const sorted = [...this.challengeParticipantsWithRelations].sort((a, b) => {
@@ -59,47 +64,26 @@ export class LeaderboardUI {
 				const statusB = STATUS_ORDER[b.status ?? ''] ?? 4;
 				if (statusA !== statusB) return statusA - statusB;
 
-				let cmp: number;
-				if (this.challengeType === CHALLENGE_TYPE.SEGMENT_RACE) {
-					const timeA = a.resultTime ?? Infinity;
-					const timeB = b.resultTime ?? Infinity;
-					cmp = timeA === Infinity && timeB === Infinity ? 0 : timeA - timeB;
-				} else if (this.challengeType === CHALLENGE_TYPE.CUMULATIVE) {
-					const isCompleted = statusA === STATUS_ORDER[PARTICIPANT_STATUS.COMPLETED];
-					if (isCompleted) {
-						// Completed: faster time = higher rank
-						const timeA = a.resultTime ?? Infinity;
-						const timeB = b.resultTime ?? Infinity;
-						cmp = timeA === Infinity && timeB === Infinity ? 0 : timeA - timeB;
-						if (cmp !== 0) return cmp;
-						// Tiebreaker: has time ranks above no time
-						const hasTimeA = a.resultTime != null ? 1 : 0;
-						const hasTimeB = b.resultTime != null ? 1 : 0;
-						return hasTimeB - hasTimeA;
-					} else {
-						// Incomplete: longer distance = higher rank
-						const distA = a.resultDistance ?? -1;
-						const distB = b.resultDistance ?? -1;
-						cmp = distB - distA;
+				const rankA = a.rankingValueSeconds;
+				const rankB = b.rankingValueSeconds;
+				if (rankA == null && rankB == null) {
+					if (this.rankingMetric !== RANKING_METRIC.NONE) return 0;
+					if (this.challengeType === CHALLENGE_TYPE.SEGMENT_RACE) {
+						const movingA = a.resultMovingTimeTotal ?? Infinity;
+						const movingB = b.resultMovingTimeTotal ?? Infinity;
+						return movingA - movingB;
 					}
-				} else {
-					// BEST_EFFORT: longer distance = higher rank
 					const distA = a.resultDistance ?? -1;
 					const distB = b.resultDistance ?? -1;
-					cmp = distB - distA;
+					return distB - distA;
 				}
-				if (cmp !== 0) return cmp;
-
-				// Tiebreaker for BEST_EFFORT: participants with time rank above those without
-				const hasEffectiveTime = (p: ChallengeParticipantWithRelations) =>
-					p.resultTime != null || (p.contributions?.some((c) => c.time != null) ?? false);
-				const hasTimeA = hasEffectiveTime(a) ? 1 : 0;
-				const hasTimeB = hasEffectiveTime(b) ? 1 : 0;
-				return hasTimeB - hasTimeA;
+				if (rankA == null) return 1;
+				if (rankB == null) return -1;
+				return rankA - rankB;
 			});
 
-			let currentRank = 1;
-			return sorted.map((participant) => {
+			return sorted.map((participant, idx) => {
+				const isRanked = participant.rankingValueSeconds != null;
 				const isFinished = participant.status === PARTICIPANT_STATUS.COMPLETED;
 
 				const row: LeaderboardRowData = {
@@ -107,7 +91,7 @@ export class LeaderboardUI {
 					profile: participant.profile,
 					//TODO: Should this be highlight activity?
 					contribution: participant.contributions?.[0] || null,
-					rank: isFinished ? currentRank++ : null
+					rank: isRanked && isFinished ? idx + 1 : null
 				};
 
 				return row;

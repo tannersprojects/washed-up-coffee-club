@@ -50,9 +50,9 @@
 				{copy[LANDING_COPY_KEY.ManifestoDescription]}
 			</p>
 			<div class="border border-white/10 bg-white/5 p-6 backdrop-blur-sm">
-				<p class="mb-2 font-mono text-xs text-(--accent-lime)"
-					>{copy[LANDING_COPY_KEY.ManifestoVibeLabel]}</p
-				>
+				<p class="mb-2 font-mono text-xs text-(--accent-lime)">
+					{copy[LANDING_COPY_KEY.ManifestoVibeLabel]}
+				</p>
 				<p class="text-lg leading-tight font-bold text-white italic md:text-xl">
 					"{copy[LANDING_COPY_KEY.ManifestoVibeQuote]}"
 				</p>
