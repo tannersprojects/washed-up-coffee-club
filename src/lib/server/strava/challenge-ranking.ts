@@ -6,7 +6,7 @@ import { eq } from 'drizzle-orm';
 
 const DISTANCE_TOLERANCE_RATIO = 0.01;
 
-type ContributionForRanking = {
+export type ContributionForRanking = {
 	stravaActivityId: number;
 	distance: number | null;
 	movingTime: number | null;
@@ -129,10 +129,78 @@ export async function recomputeParticipantRanking(
 	return rankingValueSeconds;
 }
 
+export function sumDistances(contributions: Array<{ distance: number | null }>): number {
+	return contributions.reduce((acc, c) => acc + (c.distance ?? 0), 0);
+}
+
+export function sumMovingTimes(contributions: Array<{ movingTime: number | null }>): number {
+	return contributions.reduce((acc, c) => acc + (c.movingTime ?? 0), 0);
+}
+
+export function getFastestContribution(
+	contributions: Array<{
+		stravaActivityId: number;
+		distance: number | null;
+		movingTime: number | null;
+		elapsedTime: number | null;
+	}>
+): { stravaActivityId: number; distance: number | null; movingTime: number } | null {
+	let best: { stravaActivityId: number; distance: number | null; movingTime: number } | null = null;
+	for (const contribution of contributions) {
+		const movingTime = contribution.movingTime ?? contribution.elapsedTime ?? null;
+		if (movingTime == null || movingTime <= 0) continue;
+		if (best == null || movingTime < best.movingTime) {
+			best = {
+				stravaActivityId: contribution.stravaActivityId,
+				distance: contribution.distance,
+				movingTime
+			};
+		}
+	}
+	return best;
+}
+
+export function getBestEffortHighlightContribution(
+	contributions: ContributionForRanking[],
+	rankingMetric: RankingMetric
+): { stravaActivityId: number; distance: number | null } | null {
+	if (rankingMetric === RANKING_METRIC.NONE) {
+		const bestDistance = selectBestDistanceContribution(contributions);
+		if (bestDistance.stravaActivityId == null) return null;
+		return { stravaActivityId: bestDistance.stravaActivityId, distance: bestDistance.distance };
+	}
+
+	let best: {
+		stravaActivityId: number;
+		distance: number | null;
+		rankingValueSeconds: number;
+	} | null = null;
+
+	for (const contribution of contributions) {
+		const rankingValueSeconds = computeRankingValueFromContributions([contribution], rankingMetric);
+		if (rankingValueSeconds == null) continue;
+		if (
+			best == null ||
+			rankingValueSeconds < best.rankingValueSeconds ||
+			(rankingValueSeconds === best.rankingValueSeconds &&
+				contribution.stravaActivityId < best.stravaActivityId)
+		) {
+			best = {
+				stravaActivityId: contribution.stravaActivityId,
+				distance: contribution.distance,
+				rankingValueSeconds
+			};
+		}
+	}
+
+	if (!best) return null;
+	return { stravaActivityId: best.stravaActivityId, distance: best.distance };
+}
+
 function getPreferredTime(
 	movingTime: number | null | undefined,
 	elapsedTime: number | null | undefined
-) {
+): number | null {
 	if (movingTime != null && movingTime > 0) return movingTime;
 	if (elapsedTime != null && elapsedTime > 0) return elapsedTime;
 	return null;

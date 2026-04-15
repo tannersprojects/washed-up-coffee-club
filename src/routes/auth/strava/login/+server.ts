@@ -1,5 +1,5 @@
 import { redirect } from '@sveltejs/kit';
-import { generateAuthUrl } from '$lib/server/strava';
+import { generateAuthUrl } from '$lib/server/strava/client';
 
 export const GET = async ({ cookies }) => {
 	// Generate CSRF state token

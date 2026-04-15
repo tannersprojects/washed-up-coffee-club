@@ -3,7 +3,7 @@ import { createServerClient } from '@supabase/ssr';
 import type { Handle } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { getStravaConnection, getUserProfile } from '$lib/server/auth';
-import { refreshConnectionIfNeeded } from '$lib/server/strava';
+import { refreshConnectionIfNeeded } from '$lib/server/strava/client';
 
 const supabaseHandle: Handle = async ({ event, resolve }) => {
 	event.locals.supabase = createServerClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY, {
