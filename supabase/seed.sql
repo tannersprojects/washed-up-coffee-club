@@ -103,7 +103,7 @@ VALUES
 -- Delete existing entries first since vault secret names must be unique.
 DELETE FROM vault.secrets WHERE name IN ('webhook_url');
 SELECT vault.create_secret(
-  'https://7e8c-2600-382-bb88-23f4-d10d-92ef-e92a-9337.ngrok-free.app/api/strava/process-webhook',
+  'https://fb2a-2600-382-b9f8-3387-5190-ae7b-125f-2766.ngrok-free.app/api/strava/process-webhook',
   'webhook_url',
   'Edge Function URL for the DB webhook trigger'
 );

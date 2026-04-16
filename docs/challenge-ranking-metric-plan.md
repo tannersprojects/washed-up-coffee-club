@@ -203,7 +203,7 @@ Unchanged goal rules; use **moving** time where time is part of completion logic
 
 ### 6.3 Optional module split
 
-`$lib/server/challenge-ranking.ts` — `recomputeParticipantRanking(participantId)` for webhooks, admin tools, and optional future data repairs (not required for empty-DB rollout).
+`$lib/server/strava/participant-state.ts` is the single writer of `ranking_value_seconds` on the participant row (via `computeNextParticipantState` + `updateChallengeParticipantAggregates` in `activity-create-processor.ts`). `$lib/server/strava/challenge-ranking.ts` stays as a pure-math helper library (no DB access).
 
 ---
 

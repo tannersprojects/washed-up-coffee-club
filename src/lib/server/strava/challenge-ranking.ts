@@ -1,18 +1,8 @@
 import { RANKING_METRIC, RANKING_METRIC_DISTANCES, type RankingMetric } from '$lib/constants';
-import { db } from '$lib/db';
-import { challengeContributionsTable, challengeParticipantsTable } from '$lib/db/schema';
+import type { ChallengeContribution } from '$lib/db/schema';
 import type { ChallengeBestEffortsSnapshot } from '$lib/types/challenge-ranking';
-import { eq } from 'drizzle-orm';
 
 const DISTANCE_TOLERANCE_RATIO = 0.01;
-
-export type ContributionForRanking = {
-	stravaActivityId: number;
-	distance: number | null;
-	movingTime: number | null;
-	elapsedTime: number | null;
-	bestEfforts: ChallengeBestEffortsSnapshot | null;
-};
 
 export function extractRankingValueFromBestEfforts(
 	bestEffortsJson: ChallengeBestEffortsSnapshot | null,
@@ -44,7 +34,7 @@ export function extractRankingValueFromBestEfforts(
 }
 
 export function computeRankingValueFromContributions(
-	contributions: ContributionForRanking[],
+	contributions: ChallengeContribution[],
 	metric: RankingMetric
 ): number | null {
 	if (metric === RANKING_METRIC.NONE) return null;
@@ -65,7 +55,7 @@ export function computeRankingValueFromContributions(
 	return bestTime;
 }
 
-export function selectBestDistanceContribution(contributions: ContributionForRanking[]): {
+export function selectBestDistanceContribution(contributions: ChallengeContribution[]): {
 	stravaActivityId: number | null;
 	distance: number | null;
 } {
@@ -104,31 +94,6 @@ export function selectBestDistanceContribution(contributions: ContributionForRan
 	return { stravaActivityId: bestActivityId, distance: bestDistance };
 }
 
-export async function recomputeParticipantRanking(
-	participantId: string,
-	challengeRankingMetric: RankingMetric
-): Promise<number | null> {
-	const contributions = await db.query.challengeContributionsTable.findMany({
-		where: eq(challengeContributionsTable.participantId, participantId)
-	});
-
-	const rankingValueSeconds = computeRankingValueFromContributions(
-		contributions,
-		challengeRankingMetric
-	);
-
-	await db
-		.update(challengeParticipantsTable)
-		.set({
-			rankingValueSeconds,
-			rankingComputedAt: new Date(),
-			updatedAt: new Date()
-		})
-		.where(eq(challengeParticipantsTable.id, participantId));
-
-	return rankingValueSeconds;
-}
-
 export function sumDistances(contributions: Array<{ distance: number | null }>): number {
 	return contributions.reduce((acc, c) => acc + (c.distance ?? 0), 0);
 }
@@ -137,6 +102,8 @@ export function sumMovingTimes(contributions: Array<{ movingTime: number | null 
 	return contributions.reduce((acc, c) => acc + (c.movingTime ?? 0), 0);
 }
 
+// TODO: Reserved for segment-race support — participant-state currently stubs segment metrics;
+// keep until segment ranking consumes this helper again.
 export function getFastestContribution(
 	contributions: Array<{
 		stravaActivityId: number;
@@ -161,7 +128,7 @@ export function getFastestContribution(
 }
 
 export function getBestEffortHighlightContribution(
-	contributions: ContributionForRanking[],
+	contributions: ChallengeContribution[],
 	rankingMetric: RankingMetric
 ): { stravaActivityId: number; distance: number | null } | null {
 	if (rankingMetric === RANKING_METRIC.NONE) {

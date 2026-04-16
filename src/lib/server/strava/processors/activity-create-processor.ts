@@ -1,4 +1,4 @@
-import { CHALLENGE_STATUS, CHALLENGE_TYPE } from '$lib/constants';
+import { CHALLENGE_STATUS } from '$lib/constants';
 import { db } from '$lib/db';
 import {
 	challengeContributionsTable,
@@ -9,9 +9,8 @@ import {
 } from '$lib/db/schema';
 import { and, eq, gte, lte } from 'drizzle-orm';
 import type { StravaDetailedActivityCamel } from '$lib/types/strava';
-import { validateActivityForChallenge, type ValidationResult } from './activity-validators';
-import { recomputeParticipantRanking } from './challenge-ranking';
-import { computeNextParticipantState, type NextParticipantState } from './participant-state';
+import { validateActivityForChallenge, type ValidationResult } from '../activity-validators';
+import { computeNextParticipantState, type NextParticipantState } from '../participant-state';
 
 type ParticipantChallengePair = {
 	participant: ChallengeParticipant;
@@ -41,7 +40,9 @@ export async function processCreateActivity(
 		const validation = validateActivityForChallenge(activity, challenge);
 
 		console.log(`Validation result: ${JSON.stringify(validation)}`);
-		if (!validation.valid) continue;
+		if (!validation.valid) {
+			continue;
+		}
 
 		const existingContribution = await findContributionForParticipantAndActivity(
 			participant.id,
@@ -66,10 +67,6 @@ export async function processCreateActivity(
 		console.log(`Next participant state: ${JSON.stringify(nextState)}`);
 
 		await updateChallengeParticipantAggregates(participant.id, nextState);
-
-		if (challenge.type !== CHALLENGE_TYPE.SEGMENT_RACE) {
-			await recomputeParticipantRanking(participant.id, challenge.rankingMetric);
-		}
 	}
 }
 

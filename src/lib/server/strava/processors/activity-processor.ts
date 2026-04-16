@@ -1,15 +1,15 @@
 import { WEBHOOK_ASPECT_TYPE, type WebhookAspectType } from '$lib/constants/strava';
 import type { StravaConnection } from '$lib/db/schema';
-import { getActivityById } from './client';
-import { processCreateActivity } from './activity-create';
+import { getActivityById } from '../client';
+import { processCreateActivity } from './activity-create-processor';
 
 type ActivityHandler = (activityId: number, connection: StravaConnection) => Promise<void>;
 
-const ACTIVITY_HANDLERS: Record<WebhookAspectType, ActivityHandler> = {
+const ACTIVITY_HANDLERS = {
 	[WEBHOOK_ASPECT_TYPE.CREATE]: handleCreateActivity,
 	[WEBHOOK_ASPECT_TYPE.UPDATE]: handleUpdateActivity,
 	[WEBHOOK_ASPECT_TYPE.DELETE]: handleDeleteActivity
-};
+} satisfies Record<WebhookAspectType, ActivityHandler>;
 
 export async function processActivity(
 	aspectType: WebhookAspectType,

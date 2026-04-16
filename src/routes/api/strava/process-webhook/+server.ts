@@ -3,7 +3,7 @@ import { db } from '$lib/db';
 import { stravaWebhookLogsTable, type StravaWebhookLog } from '$lib/db/schema';
 import { eq } from 'drizzle-orm';
 import type { RequestHandler } from './$types';
-import { processActivity } from '$lib/server/strava/activity-processor';
+import { processActivity } from '$lib/server/strava/processors/activity-processor';
 import { validateWebhookRecord } from './_logic/webhook-validator';
 
 type StravaProcessWebhookRequestBody = {

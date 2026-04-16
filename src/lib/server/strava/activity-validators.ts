@@ -9,9 +9,11 @@ import type {
 	ChallengeSplitsSnapshot
 } from '$lib/types/challenge-ranking';
 
-// =============================================================================
-// Public types
-// =============================================================================
+const CHALLENGE_VALIDATORS = {
+	[CHALLENGE_TYPE.BEST_EFFORT]: validateActivityForBestEffortChallenge,
+	[CHALLENGE_TYPE.CUMULATIVE]: validateActivityForCumulativeChallenge,
+	[CHALLENGE_TYPE.SEGMENT_RACE]: validateActivityForSegmentRaceChallenge
+} satisfies Record<ChallengeType, ChallengeValidator>;
 
 export type ValidationResult =
 	| {
@@ -27,9 +29,13 @@ export type ValidationResult =
 	  }
 	| { valid: false };
 
-// =============================================================================
-// Private — types & shared utilities
-// =============================================================================
+export function validateActivityForChallenge(
+	activity: StravaDetailedActivityCamel,
+	challenge: Challenge
+): ValidationResult {
+	const validator = CHALLENGE_VALIDATORS[challenge.type];
+	return validator(activity, challenge);
+}
 
 type ChallengeValidator = (
 	activity: StravaDetailedActivityCamel,
@@ -62,10 +68,6 @@ function buildActivitySnapshot(activity: StravaDetailedActivityCamel): Challenge
 		gearId: activity.gearId
 	};
 }
-
-// =============================================================================
-// Private — per-challenge-type validators
-// =============================================================================
 
 function validateActivityForBestEffortChallenge(
 	activity: StravaDetailedActivityCamel,
@@ -129,9 +131,14 @@ function validateActivityForCumulativeChallenge(
 }
 
 function validateActivityForSegmentRaceChallenge(
-	activity: StravaDetailedActivityCamel,
-	challenge: Challenge
+	_activity: StravaDetailedActivityCamel,
+	_challenge: Challenge
 ): ValidationResult {
+	// TODO: Segment race validation not supported — webhook pipeline must not count activities
+	// until segment flow is implemented. Previous implementation kept below for reference.
+	return { valid: false };
+
+	/* Previous implementation (disabled):
 	const isRun = isRunActivity(activity.sportType);
 
 	if (!isRun) {
@@ -173,31 +180,10 @@ function validateActivityForSegmentRaceChallenge(
 		laps: activity.laps ?? null,
 		activitySnapshot: buildActivitySnapshot(activity)
 	};
-}
-
-const CHALLENGE_VALIDATORS: Record<ChallengeType, ChallengeValidator> = {
-	[CHALLENGE_TYPE.BEST_EFFORT]: validateActivityForBestEffortChallenge,
-	[CHALLENGE_TYPE.CUMULATIVE]: validateActivityForCumulativeChallenge,
-	[CHALLENGE_TYPE.SEGMENT_RACE]: validateActivityForSegmentRaceChallenge
-};
-
-// =============================================================================
-// Public API
-// =============================================================================
-
-export function validateActivityForChallenge(
-	activity: StravaDetailedActivityCamel,
-	challenge: Challenge
-): ValidationResult {
-	const validator = CHALLENGE_VALIDATORS[challenge.type];
-	if (!validator) {
-		console.log(`No validator found for challenge type ${challenge.type}`);
-		return { valid: false };
-	}
-	return validator(activity, challenge);
+	*/
 }
 
 /** Returns true if sportType is in RUN_SPORT_TYPES (Run, VirtualRun, TrailRun) */
-export function isRunActivity(sportType: SportType): boolean {
+function isRunActivity(sportType: SportType): boolean {
 	return (RUN_SPORT_TYPES as readonly string[]).includes(sportType);
 }
