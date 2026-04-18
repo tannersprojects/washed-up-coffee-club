@@ -2,6 +2,8 @@ import { WEBHOOK_ASPECT_TYPE, type WebhookAspectType } from '$lib/constants/stra
 import type { StravaConnection } from '$lib/db/schema';
 import { getActivityById } from '../client';
 import { processCreateActivity } from './activity-create-processor';
+import { processDeleteActivity } from './activity-delete-processor';
+import { processUpdateActivity } from './activity-update-processor';
 
 type ActivityHandler = (activityId: number, connection: StravaConnection) => Promise<void>;
 
@@ -34,6 +36,7 @@ async function handleUpdateActivity(
 	_connection: StravaConnection
 ): Promise<void> {
 	console.log(`UPDATE for activity ${activityId} — not yet implemented`);
+	await processUpdateActivity();
 }
 
 async function handleDeleteActivity(
@@ -41,4 +44,5 @@ async function handleDeleteActivity(
 	_connection: StravaConnection
 ): Promise<void> {
 	console.log(`DELETE for activity ${activityId} — not yet implemented`);
+	await processDeleteActivity();
 }

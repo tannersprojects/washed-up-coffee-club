@@ -9,8 +9,14 @@ import {
 } from '$lib/db/schema';
 import { and, eq, gte, lte } from 'drizzle-orm';
 import type { StravaDetailedActivityCamel } from '$lib/types/strava';
-import { validateActivityForChallenge, type ValidationResult } from '../activity-validators';
-import { computeNextParticipantState, type NextParticipantState } from '../participant-state';
+import {
+	validateActivityForChallenge,
+	type ValidationResult
+} from '../validators/activity-validator';
+import {
+	computeNextParticipantState,
+	type NextParticipantState
+} from '../participant-state/participant-state';
 
 type ParticipantChallengePair = {
 	participant: ChallengeParticipant;
