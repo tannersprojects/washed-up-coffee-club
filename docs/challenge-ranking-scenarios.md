@@ -23,6 +23,8 @@ Two key responsibilities:
 
 The dispatcher in `participant-state.ts` reads `goalMet` from the strategy result and flips `status` to `COMPLETED` when true. Each strategy owns its own definition of "complete" — there is no shared `isGoalMet` ladder.
 
+BEST_EFFORT-specific ranking helpers (`getMetricTimeForContribution`, `selectFastestRanking`, `selectHighlightContribution`, `selectBestDistanceContribution`) are colocated inside `participant-state/best-effort-state.ts` rather than `challenge-ranking.ts`. The latter retains only shared data primitives (`extractRankingValueFromBestEfforts`, `getPreferredTime`, sums) and the CUMULATIVE-only reducer.
+
 ## Shared terminology
 
 - **Contribution** — a `challenge_contributions` row. Only passing activities become contributions.
@@ -50,11 +52,18 @@ Rejected activities never reach the state stage.
 Over the set of qualifying contributions:
 
 - `goalMet` = `contributions.some((c) => (c.distance ?? 0) >= goalDistance)`. Reads contributions directly so a metric-extraction failure cannot block completion.
-- `rankingValueSeconds` = fastest metric time via `computeRankingValueFromContributions(contributions, rankingMetric)`.
-- `highlightActivityId` + `resultDistance` = the contribution owning that fastest time via `getBestEffortHighlightContribution(contributions, rankingMetric)`.
+- `rankingValueSeconds` = fastest metric time via `selectFastestRanking(contributions, rankingMetric)`.
+- `highlightActivityId` + `resultDistance` = the contribution owning that fastest time via `selectHighlightContribution(contributions, rankingMetric)`.
 - `resultMovingTimeTotal` = `null` (not meaningful for BEST_EFFORT).
 
-Tie-break rules inside `getBestEffortHighlightContribution`:
+Both `selectFastestRanking` and `selectHighlightContribution` evaluate one contribution at a time through `getMetricTimeForContribution`, which:
+
+1. Returns `null` for `RANKING_METRIC.NONE` (the highlight selector handles NONE separately via distance ranking).
+2. For `RANKING_METRIC.ACTIVITY_TOTAL`, returns the activity's `movingTime` (or `elapsedTime` fallback).
+3. For a standard distance, first tries `extractRankingValueFromBestEfforts` against the contribution's `bestEfforts` snapshot.
+4. **Fallback (BEST_EFFORT only):** when splits are missing or unusable, if the activity's total `distance` is within `FALLBACK_TOTAL_TOLERANCE_RATIO` (2%) of the metric's target distance, use the activity's total `movingTime` (or `elapsedTime` fallback). This recovers ranking for activities whose total distance is essentially the target distance but whose `bestEfforts` payload is empty or out-of-tolerance.
+
+Tie-break rules inside `selectHighlightContribution`:
 
 1. Fastest `rankingValueSeconds` wins.
 2. Tie on time -> lowest `stravaActivityId` (deterministic).
@@ -70,11 +79,11 @@ Status legend: **OK** = current behavior matches expectation. **BUG** = current 
 | 1 | No contributions | Does not meet goal distance | Reject; do not compute or persist anything else. | Validator rejects in `best-effort-validator.ts:18-23`. `processCreateActivity` `continue`s; no insert, no state recompute. Participant row untouched. | OK |
 | 2 | No contributions | Meets goal distance | Insert contribution; compute `rankingValueSeconds` from its `best_efforts`; mark `COMPLETED`. | Validator passes, contribution inserted, state strategy runs on a single-element list. Highlight = the new contribution. Strategy returns `goalMet = true`; dispatcher flips status to `COMPLETED`. | OK |
 | 3 | Only failed attempts | Meets goal distance | Failed attempts must not pollute ranking; behave like Scenario 2. | Failed attempts were already rejected at validator time, so they are not in the contributions list at all. Identical path to Scenario 2. | OK (different mechanism than the user model: filtering happens at validator, not at state-compute) |
-| 4 | One or more qualifying contributions | Meets goal distance, slower than prior best | Preserve prior `rankingValueSeconds` and `highlightActivityId`. | New contribution inserted for history. `computeRankingValueFromContributions` keeps `bestTime` on the older/faster row (`time < bestTime` guard). Highlight unchanged. Status stays `COMPLETED`. | OK |
+| 4 | One or more qualifying contributions | Meets goal distance, slower than prior best | Preserve prior `rankingValueSeconds` and `highlightActivityId`. | New contribution inserted for history. `selectFastestRanking` keeps `bestTime` on the older/faster row (`time < bestTime` guard). Highlight unchanged. Status stays `COMPLETED`. | OK |
 | 5 | One or more qualifying contributions | Meets goal distance, faster than prior best | Replace `rankingValueSeconds` and `highlightActivityId` with the new contribution. | Same code path as 4; the `time < bestTime` guard now switches the winner. `resultDistance` updates to the new contribution's distance. | OK |
-| 6 | Any | Meets goal distance, but ranking metric time cannot be extracted from `best_efforts` (split missing, outside `DISTANCE_TOLERANCE_RATIO`, or `best_efforts = null`) | Mark `COMPLETED` regardless; record `rankingValueSeconds = null`. Highlight may be empty when no contribution has an extractable metric time, but completion must not depend on that. | `goalMet` is computed directly from `contributions.some((c) => (c.distance ?? 0) >= goalDistance)`, independent of ranking. Status flips to `COMPLETED`. `rankingValueSeconds` and `highlightActivityId` may still be `null` because the metric couldn't be extracted, but the participant is correctly counted as complete. | OK (resolved) — completion no longer depends on highlight-derived `resultDistance`. Open follow-up: surface "completed but unranked" cleanly in the leaderboard UI. |
+| 6 | Any | Meets goal distance, but ranking metric time cannot be extracted from `best_efforts` (split missing, outside `DISTANCE_TOLERANCE_RATIO`, or `best_efforts = null`) | Mark `COMPLETED` regardless; record a usable `rankingValueSeconds` whenever the activity's total distance is essentially the target distance, otherwise leave it `null`. | `goalMet` is computed directly from `contributions.some((c) => (c.distance ?? 0) >= goalDistance)`, independent of ranking. Status flips to `COMPLETED`. For ranking, `getMetricTimeForContribution` falls back to the activity's total `movingTime` (or `elapsedTime`) when total distance is within `FALLBACK_TOTAL_TOLERANCE_RATIO` (2%) of the target — so `rankingValueSeconds` and `highlightActivityId` are populated for typical race-distance runs even when splits are missing. Activities outside that 2% window remain "completed but unranked" (`rankingValueSeconds = null`). | OK (resolved) — completion never depends on ranking; the 2% fallback recovers ranking for the common "5050m run, no 5K split" case. Open follow-up: surface "completed but unranked" cleanly in the leaderboard UI for the residual cases outside the fallback window. |
 | 7 | Qualifying contributions inserted under previous `goal_distance` | Admin raises `goal_distance` above some/all of those contributions' distances | Either (a) freeze `goal_distance` once challenge is `ACTIVE`, or (b) drop newly-disqualified contributions from ranking. | Filtering happens only at validator time, so historical contributions remain in the contributions list and continue to drive `rankingValueSeconds` / highlight even though they no longer meet the new bar. | POLICY — options: freeze `goal_distance` on transition to `ACTIVE`; re-validate on challenge update; or add a defensive `contribution.distance >= challenge.goalDistance` filter inside `best-effort-state.ts`. |
-| 8 | Any | Meets goal distance, `challenge.rankingMetric === NONE` | Document that ranking is by longest distance, not time. | `computeRankingValueFromContributions` returns `null` immediately; `getBestEffortHighlightContribution` falls back to `selectBestDistanceContribution` (longest distance wins, tie-break: fastest total time, then lowest `stravaActivityId`). `resultDistance` is the longest contribution's distance. | OK (intended) — surface this in UI so "fastest" vs "longest" is unambiguous on `NONE` leaderboards. |
+| 8 | Any | Meets goal distance, `challenge.rankingMetric === NONE` | Document that ranking is by longest distance, not time. | `getMetricTimeForContribution` returns `null` immediately for NONE, so `selectFastestRanking` returns `null`. `selectHighlightContribution` detects NONE and falls back to `selectBestDistanceContribution` (longest distance wins, tie-break: fastest total time, then lowest `stravaActivityId`). `resultDistance` is the longest contribution's distance. | OK (intended) — surface this in UI so "fastest" vs "longest" is unambiguous on `NONE` leaderboards. |
 
 ---
 
@@ -137,3 +146,4 @@ Not functional. The validator and state strategy are stubs guarded by `TODO(segm
 
 - Initial draft: captures BEST_EFFORT in full, CUMULATIVE as a stub, SEGMENT_RACE as a TODO.
 - Removed shared `isGoalMet` ladder; each state strategy now returns `{ metrics, goalMet }`. Resolves Scenario 6 (BEST_EFFORT could complete a goal whose ranking metric was unextractable but had its status stuck at `IN_PROGRESS`).
+- BEST_EFFORT ranking helpers colocated in `participant-state/best-effort-state.ts` (`getMetricTimeForContribution`, `selectFastestRanking`, `selectHighlightContribution`, `selectBestDistanceContribution`). Added 2% total-distance fallback (`FALLBACK_TOTAL_TOLERANCE_RATIO`) for `rankingValueSeconds` when `bestEfforts` splits are missing. CUMULATIVE behavior unchanged.
