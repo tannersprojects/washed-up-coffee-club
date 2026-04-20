@@ -22,6 +22,7 @@ import {
 	integer,
 	boolean,
 	index,
+	uniqueIndex,
 	pgEnum,
 	real
 } from 'drizzle-orm/pg-core';
@@ -196,12 +197,15 @@ export const challengeParticipantsTable = pgTable(
 		status: participantStatusEnum('status').default(PARTICIPANT_STATUS.REGISTERED),
 		joinedAt: timestamp('joined_at', { withTimezone: true }).defaultNow(),
 
-		// THE CACHED TOTAL
-		// For 'cumulative': Sum of value_distance from contributions.
-		// For 'best_effort': best run distance for highlighted activity.
-		// For 'segment_race': segment distance for highlighted best segment effort.
+		// Cached result columns, semantics differ by challenge.type:
+		//   best_effort:  highlighted contribution's distance / moving / elapsed (single run).
+		//   cumulative:   sum of contribution distance / moving / elapsed across all contributions.
+		//   segment_race: highlighted best segment effort's distance / moving / elapsed.
+		// Both time columns are strict: they mirror the source value and may be null when
+		// Strava did not report it. UI layer owns any moving->elapsed fallback.
 		resultDistance: real('result_distance'),
-		resultMovingTimeTotal: integer('result_moving_time_total'),
+		resultMovingTimeSeconds: integer('result_moving_time_seconds'),
+		resultElapsedTimeSeconds: integer('result_elapsed_time_seconds'),
 		rankingValueSeconds: integer('ranking_value_seconds'),
 		rankingComputedAt: timestamp('ranking_computed_at', { withTimezone: true }),
 
@@ -252,7 +256,10 @@ export const challengeContributionsTable = pgTable(
 	},
 	(table) => [
 		// Ensure we don't accidentally double-count the same Strava activity for the same participant
-		index('idx_contribution_unique').on(table.participantId, table.stravaActivityId)
+		uniqueIndex('uniq_contribution_participant_activity').on(
+			table.participantId,
+			table.stravaActivityId
+		)
 	]
 );
 

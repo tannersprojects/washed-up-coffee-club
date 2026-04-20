@@ -74,6 +74,32 @@ export const RANKING_METRIC_DISTANCES: Record<RankingMetric, number | null> = {
 	[RANKING_METRIC.STANDARD_50K]: 50000
 };
 
+// TODO(strava-best-effort-names): Mapping is based on documented Strava labels
+// (https://support.strava.com/hc/en-us/articles/16601494390285) plus the casing
+// observed in sample webhook payloads. Validate against a few real `best_efforts`
+// arrays from production and tighten anything that does not match exactly.
+// `extractRankingValueFromBestEfforts` warns when distance-tolerance fallback
+// rescues a contribution whose `name` was not in this table — use those logs to
+// fix entries here.
+export const RANKING_METRIC_BEST_EFFORT_NAME: Record<RankingMetric, string | null> = {
+	[RANKING_METRIC.NONE]: null,
+	[RANKING_METRIC.ACTIVITY_TOTAL]: null,
+	[RANKING_METRIC.STANDARD_400M]: '400m',
+	[RANKING_METRIC.STANDARD_800M]: '1/2 mile', // TODO: Strava docs lump 800m and 1/2 mile; confirm or set null.
+	[RANKING_METRIC.STANDARD_1K]: '1k',
+	[RANKING_METRIC.STANDARD_1_MILE]: '1 mile',
+	[RANKING_METRIC.STANDARD_2_MILE]: '2 mile', // TODO: confirm singular vs "2 miles".
+	[RANKING_METRIC.STANDARD_5K]: '5k',
+	[RANKING_METRIC.STANDARD_10K]: '10k',
+	[RANKING_METRIC.STANDARD_15K]: '15k',
+	[RANKING_METRIC.STANDARD_10_MILE]: '10 mile', // TODO: confirm singular vs "10 miles".
+	[RANKING_METRIC.STANDARD_20K]: '20k',
+	[RANKING_METRIC.STANDARD_HALF_MARATHON]: 'Half-Marathon',
+	[RANKING_METRIC.STANDARD_30K]: '30k',
+	[RANKING_METRIC.STANDARD_MARATHON]: 'Marathon',
+	[RANKING_METRIC.STANDARD_50K]: '50k'
+};
+
 export const CHALLENGE_TYPES_WITH_GOAL_DISTANCE: readonly ChallengeType[] = [
 	CHALLENGE_TYPE.CUMULATIVE,
 	CHALLENGE_TYPE.BEST_EFFORT

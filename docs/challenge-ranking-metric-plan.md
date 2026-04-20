@@ -66,7 +66,7 @@ Strava documents the following **running** benchmark best efforts (see [Best Eff
 | Marathon           | `standard_marathon`      | same                                                                                      |
 | 50k                | `standard_50k`           | same                                                                                      |
 
-**Implementation note:** Strava’s API returns `best_efforts` with `name`, `distance` (meters), `moving_time`, `elapsed_time`, etc. **Prefer matching by `distance` in meters** (small tolerance, e.g. ±1%) so minor API naming changes do not break you. Log or snapshot unknown `best_efforts` entries in JSON for future enum additions. If Strava adds benchmarks later, extend the Postgres enum + TS constants in a follow-up migration.
+**Implementation note:** Strava's API returns `best_efforts` with `name`, `distance` (meters), `moving_time`, `elapsed_time`, etc. We now match on `name` first using `RANKING_METRIC_BEST_EFFORT_NAME` (see `src/lib/constants/challenge.ts`), with the historical 1% distance tolerance retained as a fallback. The fallback emits a `console.warn` when it fires, which is the signal that the name table is out of date. The earlier "distance-first" recommendation has been superseded — name is the canonical Strava field, distance was an indirect proxy.
 
 ---
 
@@ -112,14 +112,15 @@ Optional later: DB check constraints by `challenge_type` (not required for v1).
 
 ### 3.4 `challenge_participants` table — final column set
 
-| Column                     | Type          | Notes                                                                                                          |
-| -------------------------- | ------------- | -------------------------------------------------------------------------------------------------------------- |
-| `result_distance`          | `real`        | Same roles as today (max for best_effort **highlight run**, sum for cumulative, etc.—see processor §6).        |
-| `result_moving_time_total` | `integer`     | **Cumulative only:** sum of contribution `moving_time`. NULL for best_effort / segment_race if not applicable. |
-| `ranking_value_seconds`    | `integer`     | Nullable. Cached sort key for current `challenges.ranking_metric` (e.g. min best-5k moving time).              |
-| `ranking_computed_at`      | `timestamptz` | Optional. When this cache was last computed (helps if admin changes metric or you add admin “recalculate”).    |
+| Column                        | Type          | Notes                                                                                                                                                                                                                                                            |
+| ----------------------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `result_distance`             | `real`        | `best_effort`: highlighted contribution's distance. `cumulative`: sum of contribution distance. `segment_race`: highlighted best segment effort's distance.                                                                                                     |
+| `result_moving_time_seconds`  | `integer`     | `best_effort`: highlighted contribution's `moving_time` (strict passthrough; nullable). `cumulative`: sum of contribution `moving_time`. `segment_race`: highlighted best segment effort's moving time.                                                         |
+| `result_elapsed_time_seconds` | `integer`     | `best_effort`: highlighted contribution's `elapsed_time` (strict passthrough; nullable). `cumulative`: sum of contribution `elapsed_time`. `segment_race`: highlighted best segment effort's elapsed time. UI owns any moving->elapsed fallback for display.    |
+| `ranking_value_seconds`       | `integer`     | Nullable. Cached sort key for current `challenges.ranking_metric` (e.g. min best-5k moving time).                                                                                                                                                                |
+| `ranking_computed_at`         | `timestamptz` | Optional. When this cache was last computed (helps if admin changes metric or you add admin "recalculate").                                                                                                                                                      |
 
-**Replaces (greenfield migration):** legacy column `result_time` — use `result_moving_time_total` (cumulative), `ranking_value_seconds`, and contribution/highlight joins for time display (see §3.6).
+**Replaces (greenfield migration):** legacy column `result_time` — use `result_moving_time_seconds` / `result_elapsed_time_seconds`, `ranking_value_seconds`, and contribution/highlight joins for time display (see §3.6).
 
 **Unchanged:** `highlight_activity_id`, status/join fields, indexes as needed.
 
@@ -135,11 +136,11 @@ With **no rows** in the affected tables, the migration is **schema-only**:
 1. **Create** enum `challenge_ranking_metric` (all values from §2.2 plus `none` / `activity_total`).
 2. **`challenges`:** add `ranking_metric` NOT NULL DEFAULT `none`.
 3. **`challenge_contributions`:** add `moving_time`, `elapsed_time`, `best_efforts`, `splits_metric`, `splits_standard`, `laps`, `activity_snapshot`; **drop** `time` (if the previous schema had it).
-4. **`challenge_participants`:** add `result_moving_time_total`, `ranking_value_seconds`, `ranking_computed_at` (if using); **drop** `result_time` (if present); **drop** index on `result_time` if it exists and add/replace indexes per §3.5.
+4. **`challenge_participants`:** add `result_moving_time_seconds`, `result_elapsed_time_seconds`, `ranking_value_seconds`, `ranking_computed_at` (if using); **drop** `result_time` (if present); **drop** index on `result_time` if it exists and add/replace indexes per §3.5.
 
 **Deploy order:** Ship the migration **with** the app version that reads/writes the new columns (no expand-contract cycle required when there is no data).
 
-**If you later migrate an environment that already has rows:** add a one-off migration or script that (1) copies `time` → `moving_time` and `elapsed_time` with documented semantics, (2) aggregates cumulative `result_moving_time_total` from contributions, (3) drops legacy columns—see archived pattern in git history or reintroduce the backfill section from an older revision of this doc.
+**If you later migrate an environment that already has rows:** add a one-off migration or script that (1) copies `time` → `moving_time` and `elapsed_time` with documented semantics, (2) aggregates cumulative `result_moving_time_seconds` / `result_elapsed_time_seconds` from contributions, (3) drops legacy columns—see archived pattern in git history or reintroduce the backfill section from an older revision of this doc.
 
 ---
 
@@ -152,7 +153,7 @@ With **no rows** in the affected tables, the migration is **schema-only**:
 | **Rank / sort**       | Already implicit; ensure unranked rows sort last and show “—”.                                                                                                                    |
 | **Ranking value**     | Show the time (or distance if you ever rank on distance) used for sort—e.g. “5K: 22:14” with tooltip “Moving time (Strava)”.                                                      |
 | **Metric label**      | At challenge header: “Ranked by: 5K (moving)”.                                                                                                                                    |
-| **Cumulative totals** | If you show volume: **distance** + **total moving time** (`result_moving_time_total`) as separate from ranking cell so users see both “miles in challenge” and “your ranked 10K”. |
+| **Cumulative totals** | If you show volume: **distance** + **total moving time** (`result_moving_time_seconds`, falling back to `result_elapsed_time_seconds` in UI if null) as separate from ranking cell so users see both "miles in challenge" and "your ranked 10K". |
 
 Exact layout stays a UX choice; the **data model** above supports splitting “totals” vs “rank”.
 
@@ -160,9 +161,9 @@ Exact layout stays a UX choice; the **data model** above supports splitting “t
 
 ## 5. Strava validation layer (`strava-activity-validators.ts`)
 
-1. Return **both** `movingTime` and `elapsedTime` for the validated slice (whole activity or segment effort).
-2. Use **moving** as primary scoring time; fallback to **elapsed** if moving missing or 0.
-3. **Segment race:** compare and return **moving** time from `StravaDetailedSegmentEffort`; same fallback.
+1. Return **both** `movingTime` and `elapsedTime` for the validated slice (whole activity or segment effort). Store them **strictly** — pass through the Strava values (including `null`) without coercing moving into elapsed. UI/display layer owns any fallback.
+2. Ranking still prefers **moving** and falls back to **elapsed** at metric-extraction time (see `getMetricTimeForContribution` / `getPreferredTime`), but that is a pure computation; it does not mutate the stored `moving_time` / `elapsed_time`.
+3. **Segment race:** compare and return **moving** time from `StravaDetailedSegmentEffort`; same non-mutating fallback rules at ranking time.
 4. Extend `ValidationResult` (or parallel fields) so the processor can persist **best_efforts**, **splits_metric**, **splits_standard**, **laps**, and **activity_snapshot** without re-parsing.
 
 **Dependencies:** `StravaDetailedActivityCamel` already includes `movingTime`, `elapsedTime`, `bestEfforts`, splits, laps.
@@ -183,15 +184,15 @@ Use **`GET /api/v3/activities/{id}?include_all_efforts=true`** when loading an a
 
 Persist: `distance`, `moving_time`, `elapsed_time`, `best_efforts`, `splits_metric`, `splits_standard`, `laps`, `activity_snapshot` (all available from the detailed activity payload).
 
-Idempotency: unchanged (`participant_id` + `strava_activity_id`).
+Idempotency: unique index `uniq_contribution_participant_activity` on `(participant_id, strava_activity_id)`. Inserts use `ON CONFLICT DO NOTHING` and only run the state recompute when a row was actually inserted.
 
 ### 6.2 Recompute participant state
 
-**A. Type-specific aggregates (moving-based)**
+**A. Type-specific aggregates**
 
-- **Best effort:** Update **`result_distance`** and **`highlight_activity_id`** from the activity that yields the **best ranking metric** (§2.1). Recompute **`ranking_value_seconds`** from all contributions.
-- **Cumulative:** `result_distance` += contribution distance; `result_moving_time_total` += `moving_time`. Recompute **`ranking_value_seconds`** from metric across contributions.
-- **Segment race:** Best segment **moving** time; **`ranking_metric` ignored** for v1 scoring. **`ranking_value_seconds`** = same value (best segment moving time) so leaderboard sorting can use one field across challenge types.
+- **Best effort:** Update **`result_distance`**, **`result_moving_time_seconds`**, **`result_elapsed_time_seconds`**, and **`highlight_activity_id`** from the highlighted contribution (fastest ranking metric, with tie-breaks — §2.1). Recompute **`ranking_value_seconds`** from all contributions. Time columns mirror the highlighted contribution strictly; if Strava reported `null` they stay `null`.
+- **Cumulative:** Recompute from contributions: `result_distance` = `sumDistances`, `result_moving_time_seconds` = `sumMovingTimes`, `result_elapsed_time_seconds` = `sumElapsedTimes`. Recompute **`ranking_value_seconds`** from metric across contributions.
+- **Segment race:** Best segment **moving** time drives `ranking_value_seconds`; time columns mirror the highlighted segment effort. **`ranking_metric` ignored** for v1 scoring.
 
 **B. Ranking value**
 
@@ -233,7 +234,7 @@ Unchanged goal rules; use **moving** time where time is part of completion logic
 
 - Unit: metric extraction from `best_efforts` JSON; ties; missing efforts → unranked.
 - Integration: multi-activity best_effort chooses correct highlight + `ranking_value_seconds`.
-- Migration: apply to a fresh DB and confirm schema (enum, columns, indexes, no `time` / `result_time`). Processor tests cover `result_moving_time_total` vs sum of contributions.
+- Migration: apply to a fresh DB and confirm schema (enum, columns, indexes, no `time` / `result_time`). Processor tests cover `result_moving_time_seconds` / `result_elapsed_time_seconds` vs sum of contributions (cumulative) and highlighted-contribution passthrough (best_effort).
 
 ---
 

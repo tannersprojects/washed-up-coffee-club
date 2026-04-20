@@ -69,8 +69,8 @@ export class LeaderboardUI {
 				if (rankA == null && rankB == null) {
 					if (this.rankingMetric !== RANKING_METRIC.NONE) return 0;
 					if (this.challengeType === CHALLENGE_TYPE.SEGMENT_RACE) {
-						const movingA = a.resultMovingTimeTotal ?? Infinity;
-						const movingB = b.resultMovingTimeTotal ?? Infinity;
+						const movingA = a.resultMovingTimeSeconds ?? Infinity;
+						const movingB = b.resultMovingTimeSeconds ?? Infinity;
 						return movingA - movingB;
 					}
 					const distA = a.resultDistance ?? -1;

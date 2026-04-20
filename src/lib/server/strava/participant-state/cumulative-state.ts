@@ -2,6 +2,7 @@ import type { Challenge, ChallengeContribution, ChallengeParticipant } from '$li
 import {
 	computeRankingValueFromContributions,
 	sumDistances,
+	sumElapsedTimes,
 	sumMovingTimes
 } from '../challenge-ranking';
 import type { ParticipantStateResult } from './participant-state';
@@ -19,7 +20,8 @@ export function computeMetricsForCumulativeChallenge(
 	return {
 		metrics: {
 			resultDistance: totalDistance,
-			resultMovingTimeTotal: sumMovingTimes(contributions),
+			resultMovingTimeSeconds: sumMovingTimes(contributions),
+			resultElapsedTimeSeconds: sumElapsedTimes(contributions),
 			rankingValueSeconds: computeRankingValueFromContributions(
 				contributions,
 				challenge.rankingMetric

@@ -11,7 +11,8 @@ import { computeMetricsForSegmentRaceChallenge } from './segment-race-state';
 
 export type NextParticipantState = {
 	resultDistance: number | null;
-	resultMovingTimeTotal: number | null;
+	resultMovingTimeSeconds: number | null;
+	resultElapsedTimeSeconds: number | null;
 	rankingValueSeconds: number | null;
 	rankingComputedAt: Date;
 	status: ParticipantStatus;
@@ -20,7 +21,11 @@ export type NextParticipantState = {
 
 export type ParticipantContributionMetrics = Pick<
 	NextParticipantState,
-	'resultDistance' | 'resultMovingTimeTotal' | 'rankingValueSeconds' | 'highlightActivityId'
+	| 'resultDistance'
+	| 'resultMovingTimeSeconds'
+	| 'resultElapsedTimeSeconds'
+	| 'rankingValueSeconds'
+	| 'highlightActivityId'
 >;
 
 export type ParticipantStateResult = {

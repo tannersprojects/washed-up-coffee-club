@@ -50,17 +50,17 @@ export async function processCreateActivity(
 			continue;
 		}
 
-		const existingContribution = await findContributionForParticipantAndActivity(
+		console.log(`Inserting contribution for activity ${activity.id}`);
+		const inserted = await insertChallengeContribution(
 			participant.id,
-			activity.id
+			activity,
+			validation,
+			activityDate
 		);
-		if (existingContribution) {
+		if (!inserted) {
 			console.log(`Existing contribution found for activity ${activity.id}`);
 			continue;
 		}
-
-		console.log(`Inserting contribution for activity ${activity.id}`);
-		await insertChallengeContribution(participant.id, activity, validation, activityDate);
 
 		const participantContributions = await findContributionsForParticipant(participant.id);
 
@@ -98,38 +98,37 @@ async function findActiveParticipantChallengesForProfileOnDate(
 		);
 }
 
-async function findContributionForParticipantAndActivity(
-	participantId: string,
-	stravaActivityId: number
-) {
-	return db.query.challengeContributionsTable.findFirst({
-		where: and(
-			eq(challengeContributionsTable.participantId, participantId),
-			eq(challengeContributionsTable.stravaActivityId, stravaActivityId)
-		)
-	});
-}
-
 async function insertChallengeContribution(
 	participantId: string,
 	activity: StravaDetailedActivityCamel,
 	validation: ValidatedContribution,
 	occurredAt: Date
-): Promise<void> {
-	await db.insert(challengeContributionsTable).values({
-		participantId,
-		stravaActivityId: activity.id,
-		activityName: activity.name,
-		distance: validation.distance,
-		movingTime: validation.movingTime,
-		elapsedTime: validation.elapsedTime,
-		bestEfforts: validation.bestEfforts,
-		splitsMetric: validation.splitsMetric,
-		splitsStandard: validation.splitsStandard,
-		laps: validation.laps,
-		activitySnapshot: validation.activitySnapshot,
-		occurredAt
-	});
+): Promise<boolean> {
+	const [inserted] = await db
+		.insert(challengeContributionsTable)
+		.values({
+			participantId,
+			stravaActivityId: activity.id,
+			activityName: activity.name,
+			distance: validation.distance,
+			movingTime: validation.movingTime,
+			elapsedTime: validation.elapsedTime,
+			bestEfforts: validation.bestEfforts,
+			splitsMetric: validation.splitsMetric,
+			splitsStandard: validation.splitsStandard,
+			laps: validation.laps,
+			activitySnapshot: validation.activitySnapshot,
+			occurredAt
+		})
+		.onConflictDoNothing({
+			target: [
+				challengeContributionsTable.participantId,
+				challengeContributionsTable.stravaActivityId
+			]
+		})
+		.returning({ id: challengeContributionsTable.id });
+
+	return Boolean(inserted);
 }
 
 async function findContributionsForParticipant(participantId: string) {

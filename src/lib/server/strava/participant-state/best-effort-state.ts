@@ -23,7 +23,8 @@ export function computeMetricsForBestEffortChallenge(
 			rankingValueSeconds,
 			resultDistance: highlightedContribution?.distance ?? null,
 			highlightActivityId: highlightedContribution?.stravaActivityId ?? null,
-			resultMovingTimeTotal: null
+			resultMovingTimeSeconds: highlightedContribution?.movingTime ?? null,
+			resultElapsedTimeSeconds: highlightedContribution?.elapsedTime ?? null
 		},
 		goalMet
 	};
@@ -66,21 +67,22 @@ function getMetricTimeForContribution(
 	return getPreferredTime(contribution.movingTime, contribution.elapsedTime);
 }
 
+type HighlightContribution = {
+	stravaActivityId: number;
+	distance: number | null;
+	movingTime: number | null;
+	elapsedTime: number | null;
+};
+
 function selectHighlightContribution(
 	contributions: ChallengeContribution[],
 	metric: RankingMetric
-): { stravaActivityId: number; distance: number | null } | null {
+): HighlightContribution | null {
 	if (metric === RANKING_METRIC.NONE) {
-		const bestDistance = selectBestDistanceContribution(contributions);
-		if (bestDistance.stravaActivityId == null) return null;
-		return { stravaActivityId: bestDistance.stravaActivityId, distance: bestDistance.distance };
+		return selectBestDistanceContribution(contributions);
 	}
 
-	let best: {
-		stravaActivityId: number;
-		distance: number | null;
-		rankingValueSeconds: number;
-	} | null = null;
+	let best: (HighlightContribution & { rankingValueSeconds: number }) | null = null;
 
 	for (const contribution of contributions) {
 		const rankingValueSeconds = getMetricTimeForContribution(contribution, metric);
@@ -94,50 +96,71 @@ function selectHighlightContribution(
 			best = {
 				stravaActivityId: contribution.stravaActivityId,
 				distance: contribution.distance,
+				movingTime: contribution.movingTime,
+				elapsedTime: contribution.elapsedTime,
 				rankingValueSeconds
 			};
 		}
 	}
 
 	if (!best) return null;
-	return { stravaActivityId: best.stravaActivityId, distance: best.distance };
+	return {
+		stravaActivityId: best.stravaActivityId,
+		distance: best.distance,
+		movingTime: best.movingTime,
+		elapsedTime: best.elapsedTime
+	};
 }
 
-function selectBestDistanceContribution(contributions: ChallengeContribution[]): {
-	stravaActivityId: number | null;
-	distance: number | null;
-} {
-	let bestActivityId: number | null = null;
-	let bestDistance: number | null = null;
-	let bestTime: number | null = null;
+function selectBestDistanceContribution(
+	contributions: ChallengeContribution[]
+): HighlightContribution | null {
+	let best: (HighlightContribution & { distance: number; tieBreakTime: number | null }) | null =
+		null;
 
 	for (const contribution of contributions) {
 		const distance = contribution.distance ?? null;
 		if (distance == null) continue;
 
-		const isBetterDistance = bestDistance == null || distance > bestDistance;
-		if (isBetterDistance) {
-			bestDistance = distance;
-			bestActivityId = contribution.stravaActivityId;
-			bestTime = getPreferredTime(contribution.movingTime, contribution.elapsedTime);
+		const candidateTime = getPreferredTime(contribution.movingTime, contribution.elapsedTime);
+
+		if (best == null || distance > best.distance) {
+			best = {
+				stravaActivityId: contribution.stravaActivityId,
+				distance,
+				movingTime: contribution.movingTime,
+				elapsedTime: contribution.elapsedTime,
+				tieBreakTime: candidateTime
+			};
 			continue;
 		}
 
 		// Tie-break on faster time for same distance, then lower activity id for determinism.
-		if (bestDistance != null && distance === bestDistance) {
-			const candidateTime = getPreferredTime(contribution.movingTime, contribution.elapsedTime);
-			if (
-				(bestTime == null && candidateTime != null) ||
-				(candidateTime != null && bestTime != null && candidateTime < bestTime) ||
-				(candidateTime === bestTime &&
-					bestActivityId != null &&
-					contribution.stravaActivityId < bestActivityId)
-			) {
-				bestActivityId = contribution.stravaActivityId;
-				bestTime = candidateTime;
+		if (distance === best.distance) {
+			const swap =
+				(best.tieBreakTime == null && candidateTime != null) ||
+				(candidateTime != null &&
+					best.tieBreakTime != null &&
+					candidateTime < best.tieBreakTime) ||
+				(candidateTime === best.tieBreakTime &&
+					contribution.stravaActivityId < best.stravaActivityId);
+			if (swap) {
+				best = {
+					stravaActivityId: contribution.stravaActivityId,
+					distance,
+					movingTime: contribution.movingTime,
+					elapsedTime: contribution.elapsedTime,
+					tieBreakTime: candidateTime
+				};
 			}
 		}
 	}
 
-	return { stravaActivityId: bestActivityId, distance: bestDistance };
+	if (!best) return null;
+	return {
+		stravaActivityId: best.stravaActivityId,
+		distance: best.distance,
+		movingTime: best.movingTime,
+		elapsedTime: best.elapsedTime
+	};
 }

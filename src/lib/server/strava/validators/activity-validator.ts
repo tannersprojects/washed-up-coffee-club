@@ -15,8 +15,8 @@ export type ValidationResult =
 	| {
 			valid: true;
 			distance: number;
-			movingTime: number;
-			elapsedTime: number;
+			movingTime: number | null;
+			elapsedTime: number | null;
 			bestEfforts: ChallengeBestEffortsSnapshot | null;
 			splitsMetric: ChallengeSplitsSnapshot | null;
 			splitsStandard: ChallengeSplitsSnapshot | null;

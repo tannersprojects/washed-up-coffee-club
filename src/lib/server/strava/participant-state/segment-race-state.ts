@@ -16,13 +16,15 @@ export function computeMetricsForSegmentRaceChallenge(
 	// rankingValueSeconds = bestSegmentContribution?.movingTime ?? null;
 	// resultDistance = bestSegmentContribution?.distance ?? null;
 	// highlightActivityId = bestSegmentContribution?.stravaActivityId ?? null;
-	// resultMovingTimeTotal = null;
+	// resultMovingTimeSeconds = bestSegmentContribution?.movingTime ?? null;
+	// resultElapsedTimeSeconds = bestSegmentContribution?.elapsedTime ?? null;
 	// goalMet = challenge.segmentId != null && (rankingValueSeconds ?? 0) > 0;
 
 	return {
 		metrics: {
 			resultDistance: participant.resultDistance ?? null,
-			resultMovingTimeTotal: participant.resultMovingTimeTotal ?? null,
+			resultMovingTimeSeconds: participant.resultMovingTimeSeconds ?? null,
+			resultElapsedTimeSeconds: participant.resultElapsedTimeSeconds ?? null,
 			rankingValueSeconds: participant.rankingValueSeconds ?? null,
 			highlightActivityId: participant.highlightActivityId ?? null
 		},

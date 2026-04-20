@@ -1,7 +1,7 @@
 import type { Challenge } from '$lib/db/schema';
 import type { StravaDetailedActivityCamel } from '$lib/types/strava';
 import type { ValidationResult } from './activity-validator';
-import { buildActivitySnapshot, getPreferredTime, isRunActivity } from './_shared';
+import { buildActivitySnapshot, isRunActivity } from './_shared';
 
 export function validateActivityForCumulativeChallenge(
 	activity: StravaDetailedActivityCamel,
@@ -21,7 +21,7 @@ export function validateActivityForCumulativeChallenge(
 	return {
 		valid: true,
 		distance: activity.distance,
-		movingTime: getPreferredTime(activity.movingTime, activity.elapsedTime) ?? 0,
+		movingTime: activity.movingTime,
 		elapsedTime: activity.elapsedTime,
 		bestEfforts: activity.bestEfforts ?? null,
 		splitsMetric: activity.splitsMetric ?? null,
