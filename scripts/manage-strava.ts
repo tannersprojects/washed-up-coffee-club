@@ -12,6 +12,8 @@ const args = process.argv.slice(2);
 const isProd = args.includes('--prod');
 const actionArgs = args.filter((a) => a !== '--prod');
 
+console.log('isProd:', isProd);
+
 const baseUrl = isProd ? PUBLIC_APP_URL : PUBLIC_NGROK_URL;
 const requiredEnvVar = isProd ? 'PUBLIC_APP_URL' : 'PUBLIC_NGROK_URL';
 
