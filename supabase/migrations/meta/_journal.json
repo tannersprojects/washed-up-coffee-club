@@ -64,6 +64,20 @@
 			"when": 1775048578863,
 			"tag": "0008_clammy_bruce_banner",
 			"breakpoints": true
+		},
+		{
+			"idx": 9,
+			"version": "7",
+			"when": 1776715454487,
+			"tag": "0009_nifty_mastermind",
+			"breakpoints": true
+		},
+		{
+			"idx": 10,
+			"version": "7",
+			"when": 1776715454488,
+			"tag": "0010_rls_landing_copy",
+			"breakpoints": true
 		}
 	]
 }

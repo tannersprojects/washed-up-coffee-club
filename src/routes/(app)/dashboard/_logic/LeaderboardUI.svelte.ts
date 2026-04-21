@@ -1,6 +1,7 @@
 import {
 	CHALLENGE_TYPE,
 	RANKING_METRIC,
+	RANKING_METRIC_SHORT_LABEL,
 	LONG_DISTANCE_LABEL,
 	PARTICIPANT_STATUS,
 	type ChallengeType,
@@ -12,7 +13,13 @@ import type {
 	ChallengeParticipantWithRelations,
 	ChallengeStats
 } from '$lib/types/dashboard.js';
-import { calculateTotalDistance } from '$lib/utils/challenge.js';
+import {
+	calculateTotalDistance,
+	formatDisplayTime,
+	formatPace,
+	formatTime
+} from '$lib/utils/challenge.js';
+import { formatDistanceDisplay } from '$lib/utils/distance.js';
 
 const STATUS_ORDER: Record<string, number> = {
 	[PARTICIPANT_STATUS.COMPLETED]: 0,
@@ -21,14 +28,22 @@ const STATUS_ORDER: Record<string, number> = {
 	[PARTICIPANT_STATUS.DID_NOT_FINISH]: 3
 };
 
+type PrimarySecondary = {
+	primaryValue: string;
+	primaryLabel: string;
+	secondaryLine: string;
+};
+
 /**
  * LeaderboardUI class - Manages leaderboard data and statistics calculations
  *
- * This class transforms raw participant data into reactive leaderboard state with:
+ * Transforms raw participant data into reactive leaderboard state with:
  * - Sorted leaderboard rows
  * - Derived statistics (total runners, finishers, active runners)
  * - Total distance calculations
  * - Challenge stats object for components
+ * - Per-row display strings (primary value, metric label, secondary line) so
+ *   the row template can stay a pure renderer.
  */
 
 export class LeaderboardUI {
@@ -58,44 +73,12 @@ export class LeaderboardUI {
 		this.challengeType = challengeType;
 		this.rankingMetric = rankingMetric;
 		this.distanceUnit = distanceUnit;
+
 		this.leaderboardRows = $derived.by(() => {
-			const sorted = [...this.challengeParticipantsWithRelations].sort((a, b) => {
-				const statusA = STATUS_ORDER[a.status ?? ''] ?? 4;
-				const statusB = STATUS_ORDER[b.status ?? ''] ?? 4;
-				if (statusA !== statusB) return statusA - statusB;
-
-				const rankA = a.rankingValueSeconds;
-				const rankB = b.rankingValueSeconds;
-				if (rankA == null && rankB == null) {
-					if (this.rankingMetric !== RANKING_METRIC.NONE) return 0;
-					if (this.challengeType === CHALLENGE_TYPE.SEGMENT_RACE) {
-						const movingA = a.resultMovingTimeSeconds ?? Infinity;
-						const movingB = b.resultMovingTimeSeconds ?? Infinity;
-						return movingA - movingB;
-					}
-					const distA = a.resultDistance ?? -1;
-					const distB = b.resultDistance ?? -1;
-					return distB - distA;
-				}
-				if (rankA == null) return 1;
-				if (rankB == null) return -1;
-				return rankA - rankB;
-			});
-
-			return sorted.map((participant, idx) => {
-				const isRanked = participant.rankingValueSeconds != null;
-				const isFinished = participant.status === PARTICIPANT_STATUS.COMPLETED;
-
-				const row: LeaderboardRowData = {
-					participant,
-					profile: participant.profile,
-					//TODO: Should this be highlight activity?
-					contribution: participant.contributions?.[0] || null,
-					rank: isRanked && isFinished ? idx + 1 : null
-				};
-
-				return row;
-			});
+			const sorted = [...this.challengeParticipantsWithRelations].sort((a, b) =>
+				this.compareParticipants(a, b)
+			);
+			return sorted.map((participant, idx) => this.buildRow(participant, idx));
 		});
 
 		this.totalRunners = $derived(this.challengeParticipantsWithRelations.length);
@@ -145,5 +128,156 @@ export class LeaderboardUI {
 		this.challengeParticipantsWithRelations = this.challengeParticipantsWithRelations.filter(
 			(p) => p.id !== challengeParticipantWithRelationsId
 		);
+	}
+
+	private compareParticipants(
+		a: ChallengeParticipantWithRelations,
+		b: ChallengeParticipantWithRelations
+	): number {
+		const statusA = STATUS_ORDER[a.status ?? ''] ?? 4;
+		const statusB = STATUS_ORDER[b.status ?? ''] ?? 4;
+		if (statusA !== statusB) return statusA - statusB;
+
+		// NONE ranking metric: sort by distance desc, tie-break on faster moving time.
+		if (this.rankingMetric === RANKING_METRIC.NONE) {
+			const distA = a.resultDistance ?? -1;
+			const distB = b.resultDistance ?? -1;
+			if (distA !== distB) return distB - distA;
+			const movingA = a.resultMovingTimeSeconds ?? Infinity;
+			const movingB = b.resultMovingTimeSeconds ?? Infinity;
+			return movingA - movingB;
+		}
+
+		// Otherwise, sort by rankingValueSeconds ascending, nulls last.
+		const rankA = a.rankingValueSeconds;
+		const rankB = b.rankingValueSeconds;
+		if (rankA == null && rankB == null) return 0;
+		if (rankA == null) return 1;
+		if (rankB == null) return -1;
+		return rankA - rankB;
+	}
+
+	private buildRow(
+		participant: ChallengeParticipantWithRelations,
+		idx: number
+	): LeaderboardRowData {
+		const contribution =
+			participant.contributions?.find(
+				(c) => c.stravaActivityId === participant.highlightActivityId
+			) ?? null;
+
+		const isRanked =
+			this.rankingMetric === RANKING_METRIC.NONE
+				? participant.resultDistance != null
+				: participant.rankingValueSeconds != null;
+
+		const { primaryValue, primaryLabel, secondaryLine } = this.getPrimaryAndSecondary(participant);
+
+		return {
+			participant,
+			profile: participant.profile,
+			contribution,
+			rank: isRanked ? idx + 1 : null,
+			primaryValue,
+			primaryLabel,
+			secondaryLine
+		};
+	}
+
+	private getPrimaryAndSecondary(
+		participant: ChallengeParticipantWithRelations
+	): PrimarySecondary {
+		const metric = this.rankingMetric;
+		const type = this.challengeType;
+		const isNone = metric === RANKING_METRIC.NONE;
+		const metricLabel = RANKING_METRIC_SHORT_LABEL[metric];
+
+		const distanceDisplay =
+			participant.resultDistance != null
+				? formatDistanceDisplay(participant.resultDistance, this.distanceUnit)
+				: null;
+		const timeDisplay = formatDisplayTime(
+			participant.resultMovingTimeSeconds,
+			participant.resultElapsedTimeSeconds
+		);
+		const hasTime =
+			participant.resultMovingTimeSeconds != null ||
+			participant.resultElapsedTimeSeconds != null;
+		const paceDisplay = formatPace(
+			participant.resultMovingTimeSeconds,
+			participant.resultElapsedTimeSeconds,
+			participant.resultDistance,
+			this.distanceUnit
+		);
+		const hasPace = paceDisplay !== '--';
+
+		if (type === CHALLENGE_TYPE.CUMULATIVE && isNone) {
+			const parts: string[] = [];
+			if (hasTime) parts.push(`${timeDisplay} total`);
+			if (hasPace) parts.push(paceDisplay);
+			return {
+				primaryValue: distanceDisplay ?? '--',
+				primaryLabel: 'Total distance',
+				secondaryLine: parts.join(' · ')
+			};
+		}
+
+		if (type === CHALLENGE_TYPE.CUMULATIVE) {
+			const primaryValue =
+				participant.rankingValueSeconds != null
+					? formatTime(participant.rankingValueSeconds)
+					: '--';
+			const parts: string[] = [];
+			if (distanceDisplay) parts.push(distanceDisplay);
+			if (hasTime) parts.push(`${timeDisplay} total`);
+			if (hasPace) parts.push(paceDisplay);
+			return {
+				primaryValue,
+				primaryLabel: metricLabel,
+				secondaryLine: parts.join(' · ')
+			};
+		}
+
+		if (type === CHALLENGE_TYPE.BEST_EFFORT && isNone) {
+			const parts: string[] = [];
+			if (hasTime) parts.push(timeDisplay);
+			if (hasPace) parts.push(paceDisplay);
+			return {
+				primaryValue: distanceDisplay ?? '--',
+				primaryLabel: 'Longest run',
+				secondaryLine: parts.join(' · ')
+			};
+		}
+
+		if (type === CHALLENGE_TYPE.BEST_EFFORT) {
+			const primaryValue =
+				participant.rankingValueSeconds != null
+					? formatTime(participant.rankingValueSeconds)
+					: '--';
+			const parts: string[] = [];
+			if (distanceDisplay) parts.push(distanceDisplay);
+			if (hasTime) parts.push(timeDisplay);
+			if (hasPace) parts.push(paceDisplay);
+			return {
+				primaryValue,
+				primaryLabel: metricLabel,
+				secondaryLine: parts.join(' · ')
+			};
+		}
+
+		// SEGMENT_RACE
+		const primaryValue =
+			participant.rankingValueSeconds != null
+				? formatTime(participant.rankingValueSeconds)
+				: '--';
+		const parts: string[] = [];
+		if (distanceDisplay) parts.push(distanceDisplay);
+		if (hasTime) parts.push(timeDisplay);
+		if (hasPace) parts.push(paceDisplay);
+		return {
+			primaryValue,
+			primaryLabel: 'Segment time',
+			secondaryLine: parts.join(' · ')
+		};
 	}
 }

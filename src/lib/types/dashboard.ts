@@ -31,13 +31,20 @@ export type DashboardContextData = {
 };
 
 /**
- * Leaderboard row structure matching buildLeaderboard() function
+ * Leaderboard row structure matching buildLeaderboard() function.
+ *
+ * Display strings (`primaryValue`, `primaryLabel`, `secondaryLine`) are derived
+ * in `LeaderboardUI` from the participant + challenge + metric so the row
+ * template stays a pure renderer.
  */
 export type LeaderboardRowData = {
 	participant: ChallengeParticipantWithRelations;
 	profile: Profile;
 	contribution: ChallengeContribution | null;
 	rank: number | null;
+	primaryValue: string;
+	primaryLabel: string;
+	secondaryLine: string;
 };
 
 /**

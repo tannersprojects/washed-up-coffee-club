@@ -5,6 +5,7 @@ import {
 	CHALLENGE_STATUS_BADGE,
 	COUNTDOWN_LABEL,
 	DISTANCE_UNIT,
+	PACE_UNIT_LABEL,
 	PARTICIPANT_STATUS,
 	type ChallengeStatus,
 	type ChallengeStatusBadge,
@@ -156,4 +157,40 @@ export function formatResultDisplay(rankingValueSeconds: number | null): string 
 		return formatTime(rankingValueSeconds);
 	}
 	return '--';
+}
+
+/**
+ * Formats an activity time for display, preferring moving time and falling back
+ * to elapsed time when moving is not reported. Mirrors the UI-owned fallback
+ * agreed for the strict-storage contract on challenge_participants /
+ * challenge_contributions.
+ */
+export function formatDisplayTime(
+	movingSeconds: number | null,
+	elapsedSeconds: number | null
+): string {
+	if (movingSeconds != null) return formatTime(movingSeconds);
+	if (elapsedSeconds != null) return formatTime(elapsedSeconds);
+	return '--';
+}
+
+/**
+ * Formats running pace as MM:SS per the user's distance unit, preferring moving
+ * time and falling back to elapsed time to match the display-time contract.
+ * Returns "--" when time or distance is missing / zero.
+ */
+export function formatPace(
+	movingSeconds: number | null,
+	elapsedSeconds: number | null,
+	meters: number | null,
+	unit: DistanceUnit
+): string {
+	const seconds = movingSeconds ?? elapsedSeconds;
+	if (seconds == null || meters == null || meters <= 0) return '--';
+	const distance = unit === DISTANCE_UNIT.MILES ? metersToMiles(meters) : metersToKm(meters);
+	if (distance <= 0) return '--';
+	const paceSec = seconds / distance;
+	const mm = Math.floor(paceSec / 60);
+	const ss = Math.round(paceSec % 60);
+	return `${mm}:${ss.toString().padStart(2, '0')}${PACE_UNIT_LABEL[unit]}`;
 }

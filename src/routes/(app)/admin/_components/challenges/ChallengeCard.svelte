@@ -5,6 +5,8 @@
 		CHALLENGE_TYPE,
 		CHALLENGE_STATUS,
 		RANKING_METRIC,
+		RANKING_METRIC_LABEL,
+		RANKING_METRIC_VALUES,
 		CHALLENGE_TYPES_WITH_GOAL_DISTANCE,
 		DISTANCE_LABEL,
 		DISTANCE_UNIT,
@@ -59,24 +61,8 @@
 		isEditing = true;
 	}
 
-	const rankingMetricOptions: Array<{ value: RankingMetric; label: string }> = [
-		{ value: RANKING_METRIC.NONE, label: 'None (unranked)' },
-		{ value: RANKING_METRIC.ACTIVITY_TOTAL, label: 'Activity total moving time' },
-		{ value: RANKING_METRIC.STANDARD_400M, label: '400m' },
-		{ value: RANKING_METRIC.STANDARD_800M, label: '800m (1/2 mile)' },
-		{ value: RANKING_METRIC.STANDARD_1K, label: '1K' },
-		{ value: RANKING_METRIC.STANDARD_1_MILE, label: '1 mile' },
-		{ value: RANKING_METRIC.STANDARD_2_MILE, label: '2 mile' },
-		{ value: RANKING_METRIC.STANDARD_5K, label: '5K' },
-		{ value: RANKING_METRIC.STANDARD_10K, label: '10K' },
-		{ value: RANKING_METRIC.STANDARD_15K, label: '15K' },
-		{ value: RANKING_METRIC.STANDARD_10_MILE, label: '10 mile' },
-		{ value: RANKING_METRIC.STANDARD_20K, label: '20K' },
-		{ value: RANKING_METRIC.STANDARD_HALF_MARATHON, label: 'Half marathon' },
-		{ value: RANKING_METRIC.STANDARD_30K, label: '30K' },
-		{ value: RANKING_METRIC.STANDARD_MARATHON, label: 'Marathon' },
-		{ value: RANKING_METRIC.STANDARD_50K, label: '50K' }
-	];
+	const rankingMetricOptions: Array<{ value: RankingMetric; label: string }> =
+		RANKING_METRIC_VALUES.map((value) => ({ value, label: RANKING_METRIC_LABEL[value] }));
 
 	const typeLabels: Record<string, string> = {
 		[CHALLENGE_TYPE.CUMULATIVE]: 'Cumulative',

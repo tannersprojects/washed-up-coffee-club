@@ -81,6 +81,45 @@ export const RANKING_METRIC_DISTANCES: Record<RankingMetric, number | null> = {
 // `extractRankingValueFromBestEfforts` warns when distance-tolerance fallback
 // rescues a contribution whose `name` was not in this table — use those logs to
 // fix entries here.
+export const RANKING_METRIC_LABEL: Record<RankingMetric, string> = {
+	[RANKING_METRIC.NONE]: 'None (unranked)',
+	[RANKING_METRIC.ACTIVITY_TOTAL]: 'Activity total moving time',
+	[RANKING_METRIC.STANDARD_400M]: '400m',
+	[RANKING_METRIC.STANDARD_800M]: '800m (1/2 mile)',
+	[RANKING_METRIC.STANDARD_1K]: '1K',
+	[RANKING_METRIC.STANDARD_1_MILE]: '1 mile',
+	[RANKING_METRIC.STANDARD_2_MILE]: '2 mile',
+	[RANKING_METRIC.STANDARD_5K]: '5K',
+	[RANKING_METRIC.STANDARD_10K]: '10K',
+	[RANKING_METRIC.STANDARD_15K]: '15K',
+	[RANKING_METRIC.STANDARD_10_MILE]: '10 mile',
+	[RANKING_METRIC.STANDARD_20K]: '20K',
+	[RANKING_METRIC.STANDARD_HALF_MARATHON]: 'Half marathon',
+	[RANKING_METRIC.STANDARD_30K]: '30K',
+	[RANKING_METRIC.STANDARD_MARATHON]: 'Marathon',
+	[RANKING_METRIC.STANDARD_50K]: '50K'
+};
+
+// Short variant used for compact leaderboard row labels.
+export const RANKING_METRIC_SHORT_LABEL: Record<RankingMetric, string> = {
+	[RANKING_METRIC.NONE]: 'Unranked',
+	[RANKING_METRIC.ACTIVITY_TOTAL]: 'Activity time',
+	[RANKING_METRIC.STANDARD_400M]: '400m',
+	[RANKING_METRIC.STANDARD_800M]: '800m',
+	[RANKING_METRIC.STANDARD_1K]: '1K',
+	[RANKING_METRIC.STANDARD_1_MILE]: '1 mile',
+	[RANKING_METRIC.STANDARD_2_MILE]: '2 mile',
+	[RANKING_METRIC.STANDARD_5K]: '5K',
+	[RANKING_METRIC.STANDARD_10K]: '10K',
+	[RANKING_METRIC.STANDARD_15K]: '15K',
+	[RANKING_METRIC.STANDARD_10_MILE]: '10 mile',
+	[RANKING_METRIC.STANDARD_20K]: '20K',
+	[RANKING_METRIC.STANDARD_HALF_MARATHON]: 'Half marathon',
+	[RANKING_METRIC.STANDARD_30K]: '30K',
+	[RANKING_METRIC.STANDARD_MARATHON]: 'Marathon',
+	[RANKING_METRIC.STANDARD_50K]: '50K'
+};
+
 export const RANKING_METRIC_BEST_EFFORT_NAME: Record<RankingMetric, string | null> = {
 	[RANKING_METRIC.NONE]: null,
 	[RANKING_METRIC.ACTIVITY_TOTAL]: null,
