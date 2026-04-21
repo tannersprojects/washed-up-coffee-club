@@ -15,7 +15,7 @@
 	<div class="flex flex-col mix-blend-difference">
 		<div class="flex items-center gap-2">
 			<div class="h-3 w-3 rounded-full bg-(--accent-lime)"></div>
-			<div class="text-sm font-bold tracking-tight text-white uppercase">Washed Up Coffee Club</div>
+			<div class="text-sm font-bold tracking-tight text-white uppercase">WUCC</div>
 		</div>
 		<div class="hidden pl-5 font-mono text-[10px] tracking-widest text-gray-400 uppercase sm:block">
 			CHS / SC / USA
@@ -30,7 +30,7 @@
 				class="flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-4 py-1.5 text-xs font-bold tracking-widest text-white uppercase backdrop-blur-md transition-all hover:border-(--accent-lime) hover:text-(--accent-lime)"
 			>
 				<LayoutDashboard class="h-5 w-5 shrink-0 text-(--accent-lime)" aria-hidden="true" />
-				<span class="hidden md:inline">Dashboard</span>
+				<span>Dashboard</span>
 			</a>
 		{:else if !isLoggedIn && scrollY < 50}
 			<a
