@@ -23,26 +23,26 @@ This document consolidates findings from analyzing the admin page against patter
 
 ## Implementation Status
 
-| Item | Priority | Status |
-|------|----------|--------|
-| ScheduleCard/MemoryCard edit state fix | P0 | Pending |
-| AdminUI in-place updateFromServerData | P1 | Pending |
-| toggleRoutineSchedule error handling | P2 | Pending |
-| Explicit date hydration in Admin classes | P2 | Pending |
-| Centralize type/status labels | P3 | Pending |
-| Optional cleanup effect | P4 | Pending |
+| Item                                     | Priority | Status  |
+| ---------------------------------------- | -------- | ------- |
+| ScheduleCard/MemoryCard edit state fix   | P0       | Pending |
+| AdminUI in-place updateFromServerData    | P1       | Pending |
+| toggleRoutineSchedule error handling     | P2       | Pending |
+| Explicit date hydration in Admin classes | P2       | Pending |
+| Centralize type/status labels            | P3       | Pending |
+| Optional cleanup effect                  | P4       | Pending |
 
 ---
 
 ## 1. What Admin Does Well
 
-| Area | Implementation |
-|------|----------------|
-| **Error handling** | ChallengeCard, ScheduleForm, MemoryForm, ChallengeForm use `getFormActionError` + `toast.error` on form failure |
-| **Context init** | `untrack(() => setAdminContext(data))` in `+page.svelte` |
-| **Smart objects** | `MemoryAdmin`, `RoutineScheduleAdmin`, `ChallengeAdmin` hydrate raw data |
-| **Optimistic updates** | Create/delete forms use optimistic add/remove with rollback on failure |
-| **Server sync** | `$effect` calls `admin.updateFromServerData(data)` when `data` changes |
+| Area                   | Implementation                                                                                                  |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------- |
+| **Error handling**     | ChallengeCard, ScheduleForm, MemoryForm, ChallengeForm use `getFormActionError` + `toast.error` on form failure |
+| **Context init**       | `untrack(() => setAdminContext(data))` in `+page.svelte`                                                        |
+| **Smart objects**      | `MemoryAdmin`, `RoutineScheduleAdmin`, `ChallengeAdmin` hydrate raw data                                        |
+| **Optimistic updates** | Create/delete forms use optimistic add/remove with rollback on failure                                          |
+| **Server sync**        | `$effect` calls `admin.updateFromServerData(data)` when `data` changes                                          |
 
 ---
 
@@ -55,11 +55,9 @@ This document consolidates findings from analyzing the admin page against patter
 **Issue:** Edit fields use `$derived`:
 
 ```svelte
-let editDay = $derived(schedule.day);
-let editTime = $derived(schedule.time);
-let editLocation = $derived(schedule.location);
-let editAccentColor = $derived(schedule.accentColor);
-let editDescription = $derived(schedule.description);
+let editDay = $derived(schedule.day); let editTime = $derived(schedule.time); let editLocation =
+$derived(schedule.location); let editAccentColor = $derived(schedule.accentColor); let
+editDescription = $derived(schedule.description);
 ```
 
 Then an `$effect` tries to assign to them:
@@ -98,6 +96,7 @@ function startEditing() {
 4. When `isEditing` becomes true, call `startEditing()` to populate the form.
 
 **Files to change:**
+
 - `src/routes/(app)/admin/_components/schedules/ScheduleCard.svelte`
 - `src/routes/(app)/admin/_components/memories/MemoryCard.svelte`
 
@@ -142,6 +141,7 @@ updateFromServerData({ dashboardChallenges }: DashboardContextData) {
 4. For removed items (id in existing but not in server data), remove from array.
 
 **Files to change:**
+
 - `src/routes/(app)/admin/_logic/AdminUI.svelte.ts`
 - `src/routes/(app)/admin/_logic/MemoryAdmin.svelte.ts`
 - `src/routes/(app)/admin/_logic/RoutineScheduleAdmin.svelte.ts`
@@ -166,6 +166,7 @@ updateFromServerData({ dashboardChallenges }: DashboardContextData) {
 Add an enhance callback that handles `result.type === 'failure'` and calls `toast.error(getFormActionError(result) ?? 'Failed to update schedule.')`, consistent with other admin forms.
 
 **Files to change:**
+
 - `src/routes/(app)/admin/_components/schedules/ScheduleCard.svelte`
 
 ---
@@ -177,7 +178,7 @@ Add an enhance callback that handles `result.type === 'failure'` and calls `toas
 **Issue:** SvelteKit serializes load data to JSON, so dates become ISO strings. Constructors assign directly:
 
 ```ts
-this.startDate = row.startDate;  // May be string on client
+this.startDate = row.startDate; // May be string on client
 this.endDate = row.endDate;
 ```
 
@@ -197,6 +198,7 @@ this.updatedAt = new Date(row.updatedAt);
 ```
 
 **Files to change:**
+
 - `src/routes/(app)/admin/_logic/ChallengeAdmin.svelte.ts`
 - `src/routes/(app)/admin/_logic/MemoryAdmin.svelte.ts`
 - `src/routes/(app)/admin/_logic/RoutineScheduleAdmin.svelte.ts`
@@ -209,14 +211,14 @@ this.updatedAt = new Date(row.updatedAt);
 
 ```ts
 const typeLabels: Record<string, string> = {
-  [CHALLENGE_TYPE.CUMULATIVE]: 'Cumulative',
-  [CHALLENGE_TYPE.BEST_EFFORT]: 'Best Effort',
-  [CHALLENGE_TYPE.SEGMENT_RACE]: 'Segment Race'
+	[CHALLENGE_TYPE.CUMULATIVE]: 'Cumulative',
+	[CHALLENGE_TYPE.BEST_EFFORT]: 'Best Effort',
+	[CHALLENGE_TYPE.SEGMENT_RACE]: 'Segment Race'
 };
 const statusLabels: Record<string, string> = {
-  [CHALLENGE_STATUS.UPCOMING]: 'Upcoming',
-  [CHALLENGE_STATUS.ACTIVE]: 'Active',
-  [CHALLENGE_STATUS.COMPLETED]: 'Completed'
+	[CHALLENGE_STATUS.UPCOMING]: 'Upcoming',
+	[CHALLENGE_STATUS.ACTIVE]: 'Active',
+	[CHALLENGE_STATUS.COMPLETED]: 'Completed'
 };
 ```
 
@@ -227,6 +229,7 @@ const statusLabels: Record<string, string> = {
 Add `CHALLENGE_TYPE_LABEL` and `CHALLENGE_STATUS_LABEL` (or similar) in `$lib/constants/challenge.ts` and use them in ChallengeCard and ChallengeForm.
 
 **Files to change:**
+
 - `src/lib/constants/challenge.ts`
 - `src/routes/(app)/admin/_components/challenges/ChallengeCard.svelte`
 - `src/routes/(app)/admin/_components/challenges/ChallengeForm.svelte`
@@ -271,14 +274,14 @@ Admin uses the `formData` argument for optimistic IDs and field overrides. Both 
 
 ## 5. Summary: Recommended Changes
 
-| Priority | Item | Files |
-|----------|------|-------|
-| **P0** | Fix ScheduleCard/MemoryCard edit state: use `$state`, init on edit | `ScheduleCard.svelte`, `MemoryCard.svelte` |
-| **P1** | In-place `updateFromServerData` in AdminUI | `AdminUI.svelte.ts`, `MemoryAdmin.svelte.ts`, `RoutineScheduleAdmin.svelte.ts`, `ChallengeAdmin.svelte.ts` |
-| **P2** | Error handling for `toggleRoutineSchedule` | `ScheduleCard.svelte` |
-| **P2** | Explicit date hydration in Admin classes | `ChallengeAdmin.svelte.ts`, `MemoryAdmin.svelte.ts`, `RoutineScheduleAdmin.svelte.ts` |
-| **P3** | Centralize type/status labels | `$lib/constants/challenge.ts`, `ChallengeCard.svelte`, `ChallengeForm.svelte` |
-| **P4** | Optional cleanup effect for consistency | `AdminUI.svelte.ts`, `+page.svelte` |
+| Priority | Item                                                               | Files                                                                                                      |
+| -------- | ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
+| **P0**   | Fix ScheduleCard/MemoryCard edit state: use `$state`, init on edit | `ScheduleCard.svelte`, `MemoryCard.svelte`                                                                 |
+| **P1**   | In-place `updateFromServerData` in AdminUI                         | `AdminUI.svelte.ts`, `MemoryAdmin.svelte.ts`, `RoutineScheduleAdmin.svelte.ts`, `ChallengeAdmin.svelte.ts` |
+| **P2**   | Error handling for `toggleRoutineSchedule`                         | `ScheduleCard.svelte`                                                                                      |
+| **P2**   | Explicit date hydration in Admin classes                           | `ChallengeAdmin.svelte.ts`, `MemoryAdmin.svelte.ts`, `RoutineScheduleAdmin.svelte.ts`                      |
+| **P3**   | Centralize type/status labels                                      | `$lib/constants/challenge.ts`, `ChallengeCard.svelte`, `ChallengeForm.svelte`                              |
+| **P4**   | Optional cleanup effect for consistency                            | `AdminUI.svelte.ts`, `+page.svelte`                                                                        |
 
 ---
 
@@ -309,15 +312,15 @@ ChallengeCard (edit)                ScheduleCard, MemoryCard (edit)
 
 ## Appendix: File Change Summary
 
-| File | Changes |
-|------|---------|
-| `ScheduleCard.svelte` | Fix edit state: $state + startEditing(), add toggle error handling |
-| `MemoryCard.svelte` | Fix edit state: $state + startEditing() |
-| `AdminUI.svelte.ts` | In-place updateFromServerData |
-| `MemoryAdmin.svelte.ts` | Add updateFromServerData, explicit date hydration |
-| `RoutineScheduleAdmin.svelte.ts` | Add updateFromServerData, explicit date hydration |
-| `ChallengeAdmin.svelte.ts` | Add updateFromServerData, explicit date hydration |
-| `$lib/constants/challenge.ts` | Add CHALLENGE_TYPE_LABEL, CHALLENGE_STATUS_LABEL |
-| `ChallengeCard.svelte` | Use centralized label constants |
-| `ChallengeForm.svelte` | Use centralized label constants |
-| `+page.svelte` | Optional: add cleanup $effect |
+| File                             | Changes                                                            |
+| -------------------------------- | ------------------------------------------------------------------ |
+| `ScheduleCard.svelte`            | Fix edit state: $state + startEditing(), add toggle error handling |
+| `MemoryCard.svelte`              | Fix edit state: $state + startEditing()                            |
+| `AdminUI.svelte.ts`              | In-place updateFromServerData                                      |
+| `MemoryAdmin.svelte.ts`          | Add updateFromServerData, explicit date hydration                  |
+| `RoutineScheduleAdmin.svelte.ts` | Add updateFromServerData, explicit date hydration                  |
+| `ChallengeAdmin.svelte.ts`       | Add updateFromServerData, explicit date hydration                  |
+| `$lib/constants/challenge.ts`    | Add CHALLENGE_TYPE_LABEL, CHALLENGE_STATUS_LABEL                   |
+| `ChallengeCard.svelte`           | Use centralized label constants                                    |
+| `ChallengeForm.svelte`           | Use centralized label constants                                    |
+| `+page.svelte`                   | Optional: add cleanup $effect                                      |

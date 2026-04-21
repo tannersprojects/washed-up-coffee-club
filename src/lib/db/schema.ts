@@ -3,12 +3,15 @@ import {
 	CHALLENGE_STATUS,
 	PARTICIPANT_STATUS,
 	PROFILE_ROLE,
+	RANKING_METRIC,
+	RANKING_METRIC_VALUES,
 	WEBHOOK_OBJECT_TYPE,
 	WEBHOOK_ASPECT_TYPE,
 	WEBHOOK_STATUS,
 	LANDING_COPY_SECTION,
 	LANDING_COPY_KEY
 } from '$lib/constants';
+
 import {
 	pgTable,
 	uuid,
@@ -19,11 +22,18 @@ import {
 	integer,
 	boolean,
 	index,
+	uniqueIndex,
 	pgEnum,
 	real
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import type { InferSelectModel } from 'drizzle-orm';
+import type {
+	ChallengeActivitySnapshot,
+	ChallengeBestEffortsSnapshot,
+	ChallengeLapsSnapshot,
+	ChallengeSplitsSnapshot
+} from '$lib/types/challenge-ranking';
 
 // --- ENUMS ---
 // Enforcing strict types for logic branching
@@ -39,6 +49,8 @@ export const challengeTypeEnum = pgEnum('challenge_type', [
 	CHALLENGE_TYPE.SEGMENT_RACE,
 	CHALLENGE_TYPE.CUMULATIVE
 ]);
+
+export const challengeRankingMetricEnum = pgEnum('challenge_ranking_metric', RANKING_METRIC_VALUES);
 
 // 2. Challenge Status: Lifecycle of the event
 export const challengeStatusEnum = pgEnum('challenge_status', [
@@ -157,6 +169,9 @@ export const challengesTable = pgTable('challenges', {
 	title: text('title').notNull(),
 	description: text('description').notNull().default(''),
 	type: challengeTypeEnum('type').notNull().default(CHALLENGE_TYPE.CUMULATIVE),
+	rankingMetric: challengeRankingMetricEnum('ranking_metric')
+		.notNull()
+		.default(RANKING_METRIC.NONE),
 	goalDistance: real('goal_distance'),
 	segmentId: bigint('segment_id', { mode: 'number' }),
 	startDate: timestamp('start_date', { withTimezone: true }).notNull(),
@@ -182,12 +197,17 @@ export const challengeParticipantsTable = pgTable(
 		status: participantStatusEnum('status').default(PARTICIPANT_STATUS.REGISTERED),
 		joinedAt: timestamp('joined_at', { withTimezone: true }).defaultNow(),
 
-		// THE CACHED TOTAL
-		// For 'cumulative': Sum of value_distance from contributions.
-		// For 'best_effort': Max value_distance from contributions.
-		// For 'segment_race': Min value_time from contributions.
+		// Cached result columns, semantics differ by challenge.type:
+		//   best_effort:  highlighted contribution's distance / moving / elapsed (single run).
+		//   cumulative:   sum of contribution distance / moving / elapsed across all contributions.
+		//   segment_race: highlighted best segment effort's distance / moving / elapsed.
+		// Both time columns are strict: they mirror the source value and may be null when
+		// Strava did not report it. UI layer owns any moving->elapsed fallback.
 		resultDistance: real('result_distance'),
-		resultTime: integer('result_time'),
+		resultMovingTimeSeconds: integer('result_moving_time_seconds'),
+		resultElapsedTimeSeconds: integer('result_elapsed_time_seconds'),
+		rankingValueSeconds: integer('ranking_value_seconds'),
+		rankingComputedAt: timestamp('ranking_computed_at', { withTimezone: true }),
 
 		// For 'best_effort', this links to the winning activity.
 		// For 'cumulative', this could link to the *latest* activity that pushed them over the goal.
@@ -198,7 +218,7 @@ export const challengeParticipantsTable = pgTable(
 	(table) => [
 		index('idx_participant_challenge_profile').on(table.challengeId, table.profileId),
 		index('idx_participant_result_distance').on(table.challengeId, table.resultDistance),
-		index('idx_participant_result_time').on(table.challengeId, table.resultTime)
+		index('idx_participant_ranking_value').on(table.challengeId, table.rankingValueSeconds)
 	]
 );
 
@@ -220,7 +240,13 @@ export const challengeContributionsTable = pgTable(
 
 		// The value this specific run contributed (one of the two is set per challenge type)
 		distance: real('distance'),
-		time: integer('time'),
+		movingTime: integer('moving_time'),
+		elapsedTime: integer('elapsed_time'),
+		bestEfforts: jsonb('best_efforts').$type<ChallengeBestEffortsSnapshot | null>(),
+		splitsMetric: jsonb('splits_metric').$type<ChallengeSplitsSnapshot | null>(),
+		splitsStandard: jsonb('splits_standard').$type<ChallengeSplitsSnapshot | null>(),
+		laps: jsonb('laps').$type<ChallengeLapsSnapshot | null>(),
+		activitySnapshot: jsonb('activity_snapshot').$type<ChallengeActivitySnapshot | null>(),
 
 		// Verification
 		isValid: boolean('is_valid').default(true), // Allows you to "disqualify" a specific run without deleting it
@@ -230,7 +256,10 @@ export const challengeContributionsTable = pgTable(
 	},
 	(table) => [
 		// Ensure we don't accidentally double-count the same Strava activity for the same participant
-		index('idx_contribution_unique').on(table.participantId, table.stravaActivityId)
+		uniqueIndex('uniq_contribution_participant_activity').on(
+			table.participantId,
+			table.stravaActivityId
+		)
 	]
 );
 

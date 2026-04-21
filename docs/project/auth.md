@@ -40,12 +40,12 @@ Implementation: `src/lib/server/auth.ts`, `src/lib/server/strava.ts`, `src/route
 
 ## Key Files
 
-| Purpose | Path |
-|---------|------|
-| Shadow user creation, session | `src/lib/server/auth.ts` |
-| OAuth URL, token exchange, refresh | `src/lib/server/strava.ts` |
-| Login route | `src/routes/auth/strava/login/+server.ts` |
-| Callback route | `src/routes/auth/strava/callback/+server.ts` |
-| Logout route | `src/routes/auth/logout/+server.ts` |
-| Profile + token refresh on each request | `src/hooks.server.ts` |
-| Logout in nav dropdown | `src/lib/components/AppNav.svelte` |
+| Purpose                                 | Path                                         |
+| --------------------------------------- | -------------------------------------------- |
+| Shadow user creation, session           | `src/lib/server/auth.ts`                     |
+| OAuth URL, token exchange, refresh      | `src/lib/server/strava.ts`                   |
+| Login route                             | `src/routes/auth/strava/login/+server.ts`    |
+| Callback route                          | `src/routes/auth/strava/callback/+server.ts` |
+| Logout route                            | `src/routes/auth/logout/+server.ts`          |
+| Profile + token refresh on each request | `src/hooks.server.ts`                        |
+| Logout in nav dropdown                  | `src/lib/components/AppNav.svelte`           |

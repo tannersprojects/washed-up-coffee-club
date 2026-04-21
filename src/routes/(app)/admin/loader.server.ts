@@ -1,6 +1,11 @@
 import { asc } from 'drizzle-orm';
 import { db } from '$lib/db';
-import { memoriesTable, routineSchedulesTable, challengesTable, landingCopyTable } from '$lib/db/schema';
+import {
+	memoriesTable,
+	routineSchedulesTable,
+	challengesTable,
+	landingCopyTable
+} from '$lib/db/schema';
 import type { AdminContextData } from '$lib/types/admin.js';
 
 export async function loadAdminData(): Promise<AdminContextData> {

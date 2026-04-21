@@ -4,9 +4,13 @@
 	import {
 		CHALLENGE_TYPE,
 		CHALLENGE_STATUS,
+		RANKING_METRIC,
+		RANKING_METRIC_LABEL,
+		RANKING_METRIC_VALUES,
 		CHALLENGE_TYPES_WITH_GOAL_DISTANCE,
 		DISTANCE_LABEL,
 		DISTANCE_UNIT,
+		type RankingMetric,
 		type ChallengeStatus,
 		type ChallengeType,
 		type DistanceUnit
@@ -39,6 +43,7 @@
 	let editType = $state<ChallengeType>(CHALLENGE_TYPE.CUMULATIVE);
 	let editGoalDistance = $state('');
 	let editSegmentId = $state('');
+	let editRankingMetric = $state<RankingMetric>(RANKING_METRIC.NONE);
 	let editStartDate = $state('');
 	let editEndDate = $state('');
 	let editStatus = $state<ChallengeStatus>(CHALLENGE_STATUS.UPCOMING);
@@ -49,11 +54,15 @@
 		editType = challenge.type as ChallengeType;
 		editGoalDistance = metersToDisplayValue(challenge.goalDistance, unit);
 		editSegmentId = challenge.segmentId?.toString() ?? '';
+		editRankingMetric = challenge.rankingMetric;
 		editStartDate = formatDatetimeForInput(challenge.startDate);
 		editEndDate = formatDatetimeForInput(challenge.endDate);
 		editStatus = challenge.status as ChallengeStatus;
 		isEditing = true;
 	}
+
+	const rankingMetricOptions: Array<{ value: RankingMetric; label: string }> =
+		RANKING_METRIC_VALUES.map((value) => ({ value, label: RANKING_METRIC_LABEL[value] }));
 
 	const typeLabels: Record<string, string> = {
 		[CHALLENGE_TYPE.CUMULATIVE]: 'Cumulative',
@@ -113,6 +122,18 @@
 			<option value={CHALLENGE_TYPE.BEST_EFFORT}>Best Effort</option>
 			<option value={CHALLENGE_TYPE.SEGMENT_RACE}>Segment Race</option>
 		</select>
+		<select
+			name="rankingMetric"
+			bind:value={editRankingMetric}
+			class="rounded border border-white/20 bg-black/40 px-3 py-2 font-mono text-sm text-white"
+		>
+			{#each rankingMetricOptions as opt}
+				<option value={opt.value}>{opt.label}</option>
+			{/each}
+		</select>
+		{#if editType === CHALLENGE_TYPE.SEGMENT_RACE}
+			<p class="font-mono text-[10px] text-white/50">Stored but not used for scoring in v1.</p>
+		{/if}
 		{#if CHALLENGE_TYPES_WITH_GOAL_DISTANCE.includes(editType)}
 			<div class="flex flex-col gap-1">
 				<label for="edit-goal" class="font-mono text-xs text-white/80"

@@ -129,21 +129,23 @@ Types are colocated by feature in `src/lib/types/`. UI classes live in each rout
 
 Implemented in `LeaderboardUI.svelte.ts`. Participants are first grouped by status (completed, in progress, registered, did not finish). Within each status group:
 
-| Challenge Type | Completed | Incomplete |
-|-----------------|-----------|------------|
-| **CUMULATIVE** | Sort by time (faster = higher rank). Tiebreaker: has time ranks above no time. | Sort by distance (longer = higher rank). |
-| **BEST_EFFORT** | Sort by distance (longer = higher rank). Tiebreaker: has time ranks above no time. | Sort by distance. |
-| **SEGMENT_RACE** | Sort by time (faster = higher rank). | Sort by time. |
+| Challenge Type   | Completed                                                                          | Incomplete                               |
+| ---------------- | ---------------------------------------------------------------------------------- | ---------------------------------------- |
+| **CUMULATIVE**   | Sort by time (faster = higher rank). Tiebreaker: has time ranks above no time.     | Sort by distance (longer = higher rank). |
+| **BEST_EFFORT**  | Sort by distance (longer = higher rank). Tiebreaker: has time ranks above no time. | Sort by distance.                        |
+| **SEGMENT_RACE** | Sort by time (faster = higher rank).                                               | Sort by time.                            |
 
 ## 5. Authentication Flow
 
 **Method:** OAuth 2.0 Authorization Code Flow. See [`auth.md`](./auth.md) for full details (Shadow User pattern, flow, key files).
 
 **Scope Request:**
+
 - `read`: To view public profile info.
 - `activity:read`: To scan activities for the challenge.
 
 **Token Management (Supabase):**
+
 - **Crucial:** Store refresh_token in strava_connections table.
 - **Row Level Security (RLS):** Ensure strava_connections is only readable by the Service Role (backend) and the user themselves.
 
@@ -175,30 +177,30 @@ Dashboard and admin routes live under the `(app)` route group:
 
 ### Key file locations
 
-| Purpose | Path |
-|--------|------|
-| Shared UI components | `src/lib/components/` (Tabs, AppNav) |
-| DB schema, enums, relations | `src/lib/db/schema.ts` |
-| Dashboard types | `src/lib/types/dashboard.ts` |
-| Challenge/participant constants | `src/lib/constants/challenge.ts`, `participant.ts`, `profile.ts` |
-| Dashboard UI classes | `src/routes/(app)/dashboard/_logic/` (`DashboardUI.svelte.ts`, `ChallengeUI.svelte.ts`, `LeaderboardUI.svelte.ts`) |
-| Dashboard context | `src/routes/(app)/dashboard/_logic/context.ts` |
-| Admin UI classes | `src/routes/(app)/admin/_logic/` |
-| Auth (session, Strava shadow user) | `src/lib/server/auth.ts` |
-| Strava API helpers | `src/lib/server/strava.ts` |
-| Strava OAuth routes | `src/routes/auth/strava/login/`, `auth/strava/callback/` |
-| Strava webhook ingest | `src/routes/api/strava/webhook/+server.ts` |
-| Strava webhook processor | `src/routes/api/strava/process-webhook/+server.ts` |
-| Strava activity processor | `src/lib/server/strava-activity-processor.ts` |
-| Strava assets (buttons, logos) | `src/lib/assets/` |
+| Purpose                            | Path                                                                                                               |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Shared UI components               | `src/lib/components/` (Tabs, AppNav)                                                                               |
+| DB schema, enums, relations        | `src/lib/db/schema.ts`                                                                                             |
+| Dashboard types                    | `src/lib/types/dashboard.ts`                                                                                       |
+| Challenge/participant constants    | `src/lib/constants/challenge.ts`, `participant.ts`, `profile.ts`                                                   |
+| Dashboard UI classes               | `src/routes/(app)/dashboard/_logic/` (`DashboardUI.svelte.ts`, `ChallengeUI.svelte.ts`, `LeaderboardUI.svelte.ts`) |
+| Dashboard context                  | `src/routes/(app)/dashboard/_logic/context.ts`                                                                     |
+| Admin UI classes                   | `src/routes/(app)/admin/_logic/`                                                                                   |
+| Auth (session, Strava shadow user) | `src/lib/server/auth.ts`                                                                                           |
+| Strava API helpers                 | `src/lib/server/strava.ts`                                                                                         |
+| Strava OAuth routes                | `src/routes/auth/strava/login/`, `auth/strava/callback/`                                                           |
+| Strava webhook ingest              | `src/routes/api/strava/webhook/+server.ts`                                                                         |
+| Strava webhook processor           | `src/routes/api/strava/process-webhook/+server.ts`                                                                 |
+| Strava activity processor          | `src/lib/server/strava-activity-processor.ts`                                                                      |
+| Strava assets (buttons, logos)     | `src/lib/assets/`                                                                                                  |
 
 ## 7. Asset Placement Guide
 
-| Component | Asset Needed | Placement |
-|-----------|--------------|-----------|
-| Login Page | `btn_strava_connectwith_orange.svg` | Primary CTA. No other colors allowed. |
-| Leaderboard | `api_logo_pwrdBy_strava_horiz_light.svg` | Footer. Must be visible and distinct. |
-| Athlete Name | Link (`<a>`) | `<a href="https://strava.com/athletes/{id}" target="_blank">` |
+| Component    | Asset Needed                             | Placement                                                     |
+| ------------ | ---------------------------------------- | ------------------------------------------------------------- |
+| Login Page   | `btn_strava_connectwith_orange.svg`      | Primary CTA. No other colors allowed.                         |
+| Leaderboard  | `api_logo_pwrdBy_strava_horiz_light.svg` | Footer. Must be visible and distinct.                         |
+| Athlete Name | Link (`<a>`)                             | `<a href="https://strava.com/athletes/{id}" target="_blank">` |
 
 ## 8. Webhook Architecture (Primary Sync)
 
@@ -241,10 +243,11 @@ WHERE strava_athlete_id = [OWNER_STRAVA_ID];
 ### The Create Interface:
 
 **Form Inputs:**
+
 - **Title:** (e.g., "Sloppy Saturday")
 - **Start Time:** (Datetime Picker) -> Stored as UTC timestamp.
 - **End Time:** (Datetime Picker) -> Stored as UTC timestamp.
-- **Distance:** (Number, default 13.1) -> Converted to meters (x * 1609.34) before saving.
+- **Distance:** (Number, default 13.1) -> Converted to meters (x \* 1609.34) before saving.
 
 **Submit Action:** Inserts a new row into the challenges table with `status: 'active'`.
 
@@ -259,11 +262,13 @@ Once the challenge is created in the app, the Owner sends the group text: "Go ti
 ### Strategy:
 
 **Local Development:**
+
 - Do not use webhooks locally.
 - Rely entirely on the Admin "Force Sync" button logic.
 - When testing, click the button to manually trigger the "Fetch Activity" logic for your user.
 
 **Production Deployment:**
+
 - Register the webhook with Strava pointing to your live domain: `https://[your-domain].com/api/strava/webhook`.
 - The live app will update automatically via webhooks.
 - Configure `vault.secrets.webhook_url` to point to `https://[your-domain].com/api/strava/process-webhook` so the DB trigger can invoke the processor.

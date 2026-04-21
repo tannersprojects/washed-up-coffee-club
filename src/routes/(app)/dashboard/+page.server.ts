@@ -11,9 +11,7 @@ import {
 } from './loader.server.js';
 import type { PageServerLoad } from './$types.js';
 
-export const load: PageServerLoad = async ({
-	parent
-}): Promise<DashboardContextData> => {
+export const load: PageServerLoad = async ({ parent }): Promise<DashboardContextData> => {
 	const { profile } = await parent();
 
 	if (!profile) {

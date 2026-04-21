@@ -10,14 +10,14 @@ Web app for a **local running club**: community hub, live leaderboards from Stra
 
 ## Tech Stack
 
-| Layer        | Choice                          |
-|-------------|----------------------------------|
-| Frontend    | SvelteKit, **Svelte 5 (Runes)**  |
-| Backend     | SvelteKit (API routes, loaders)  |
-| Database    | Supabase (PostgreSQL)            |
-| ORM         | Drizzle                          |
+| Layer       | Choice                                                      |
+| ----------- | ----------------------------------------------------------- |
+| Frontend    | SvelteKit, **Svelte 5 (Runes)**                             |
+| Backend     | SvelteKit (API routes, loaders)                             |
+| Database    | Supabase (PostgreSQL)                                       |
+| ORM         | Drizzle                                                     |
 | Auth        | Strava OAuth → "shadow" user in Supabase for sessions + RLS |
-| Data source | Strava API (read profile + activities) |
+| Data source | Strava API (read profile + activities)                      |
 
 ## Architecture Highlights
 

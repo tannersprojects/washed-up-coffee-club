@@ -16,35 +16,35 @@
 
 ## What Dashboard Components Use
 
-| Field / Method        | Components                                      |
-| -------------------- | ----------------------------------------------- |
-| `id`                 | ListItems, JoinButton, Hero, ChallengeCard        |
-| `title`              | ListItems, Hero, Details, ChallengeCard         |
-| `description`        | ChallengeDetails                                |
-| `type`               | ChallengeDetails                                |
-| `goalValue`          | ChallengeDetails, LeaderboardRow                |
-| `startDate`, `endDate` | Hero, Details, ListItems, JoinButton          |
-| `isParticipating`    | Hero, ListItems, ChallengeCard                   |
-| `challengeTimeState` | ListItems, JoinButton, CountdownTimer, Details   |
-| `joinDisplayState`   | JoinButton                                      |
-| `timeLeft`           | CountdownTimer, ListItems, ChallengeCard         |
-| `isSubmitting`       | Hero, JoinButton                                |
-| `leaderboard`        | StatsGrid, ChallengeCard, LeaderboardTable       |
-| `activeTab`          | LeaderboardSection                              |
-| `join()`, `leave()`  | JoinButton, Hero                                |
-| `getCurrentUserRank()` | ListItems                                     |
+| Field / Method         | Components                                     |
+| ---------------------- | ---------------------------------------------- |
+| `id`                   | ListItems, JoinButton, Hero, ChallengeCard     |
+| `title`                | ListItems, Hero, Details, ChallengeCard        |
+| `description`          | ChallengeDetails                               |
+| `type`                 | ChallengeDetails                               |
+| `goalValue`            | ChallengeDetails, LeaderboardRow               |
+| `startDate`, `endDate` | Hero, Details, ListItems, JoinButton           |
+| `isParticipating`      | Hero, ListItems, ChallengeCard                 |
+| `challengeTimeState`   | ListItems, JoinButton, CountdownTimer, Details |
+| `joinDisplayState`     | JoinButton                                     |
+| `timeLeft`             | CountdownTimer, ListItems, ChallengeCard       |
+| `isSubmitting`         | Hero, JoinButton                               |
+| `leaderboard`          | StatsGrid, ChallengeCard, LeaderboardTable     |
+| `activeTab`            | LeaderboardSection                             |
+| `join()`, `leave()`    | JoinButton, Hero                               |
+| `getCurrentUserRank()` | ListItems                                      |
 
 ---
 
 ## What Dashboard Does NOT Use
 
-| Field       | Where Used                                                   |
-| ----------- | ------------------------------------------------------------ |
-| `segmentId` | Admin only (ChallengeForm, ChallengeCard edit)               |
-| `status`    | Replaced by `challengeTimeState.status`; DB value not needed |
-| `createdAt` | Not displayed anywhere                                       |
-| `participant` | Used internally by `leave()`; components read `isParticipating` |
-| `isActive`  | `isChallengeJoinable()` in challenge-utils; server loader filters by it |
+| Field         | Where Used                                                              |
+| ------------- | ----------------------------------------------------------------------- |
+| `segmentId`   | Admin only (ChallengeForm, ChallengeCard edit)                          |
+| `status`      | Replaced by `challengeTimeState.status`; DB value not needed            |
+| `createdAt`   | Not displayed anywhere                                                  |
+| `participant` | Used internally by `leave()`; components read `isParticipating`         |
+| `isActive`    | `isChallengeJoinable()` in challenge-utils; server loader filters by it |
 
 ---
 
@@ -81,9 +81,9 @@ Components use `challenge.displayState.status`, `challenge.displayState.label`, 
 Only surface what the dashboard needs from the DB:
 
 ```ts
-type ChallengeUIInput = Pick<Challenge,
-  'id' | 'title' | 'description' | 'type' | 'goalValue' |
-  'startDate' | 'endDate' | 'isActive'
+type ChallengeUIInput = Pick<
+	Challenge,
+	'id' | 'title' | 'description' | 'type' | 'goalValue' | 'startDate' | 'endDate' | 'isActive'
 > & { isParticipating: boolean; participant: ChallengeParticipant | null };
 ```
 
@@ -95,7 +95,9 @@ type ChallengeUIInput = Pick<Challenge,
 Replace the `initialState` variable in the constructor with:
 
 ```ts
-this.timeLeft = $state(formatTimeRemaining(getChallengeTimeStateFromDates(this.startDate, this.endDate).targetDate));
+this.timeLeft = $state(
+	formatTimeRemaining(getChallengeTimeStateFromDates(this.startDate, this.endDate).targetDate)
+);
 ```
 
 ### 4. Consider Making `participant` Internal

@@ -1,6 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 
-import { exchangeCodeForToken } from '$lib/server/strava';
+import { exchangeCodeForToken } from '$lib/server/strava/client';
 import { findOrCreateShadowUser } from '$lib/server/auth';
 
 import { PUBLIC_SUPABASE_URL } from '$env/static/public';

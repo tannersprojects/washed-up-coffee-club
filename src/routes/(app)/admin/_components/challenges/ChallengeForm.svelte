@@ -4,11 +4,15 @@
 	import {
 		CHALLENGE_TYPE,
 		CHALLENGE_STATUS,
+		RANKING_METRIC,
+		RANKING_METRIC_LABEL,
+		RANKING_METRIC_VALUES,
 		CHALLENGE_TYPES_WITH_GOAL_DISTANCE,
 		DISTANCE_LABEL,
 		DISTANCE_UNIT,
 		type ChallengeType,
-		type ChallengeStatus
+		type ChallengeStatus,
+		type RankingMetric
 	} from '$lib/constants';
 	import { getAdminContext } from '../../_logic/context.js';
 	import { getUserPreferencesContext } from '$lib/state/user-preferences.svelte.js';
@@ -26,6 +30,7 @@
 	let type = $state<ChallengeType>(CHALLENGE_TYPE.CUMULATIVE);
 	let goalDistance = $state<string>('');
 	let segmentId = $state<string>('');
+	let rankingMetric = $state<RankingMetric>(RANKING_METRIC.NONE);
 	let startDate = $state('');
 	let endDate = $state('');
 	let status = $state<ChallengeStatus>(CHALLENGE_STATUS.UPCOMING);
@@ -43,12 +48,16 @@
 		{ value: CHALLENGE_STATUS.COMPLETED, label: 'Completed' }
 	] as const;
 
+	const rankingMetricOptions: Array<{ value: RankingMetric; label: string }> =
+		RANKING_METRIC_VALUES.map((value) => ({ value, label: RANKING_METRIC_LABEL[value] }));
+
 	function resetForm() {
 		title = '';
 		description = '';
 		type = CHALLENGE_TYPE.CUMULATIVE;
 		goalDistance = '';
 		segmentId = '';
+		rankingMetric = RANKING_METRIC.NONE;
 		startDate = '';
 		endDate = '';
 		status = CHALLENGE_STATUS.UPCOMING;
@@ -93,6 +102,7 @@
 			title: title.trim(),
 			description: description.trim(),
 			type,
+			rankingMetric,
 			goalDistance: meters ?? null,
 			segmentId: segId ?? null,
 			startDate: start,
@@ -154,6 +164,24 @@
 				<option value={opt.value}>{opt.label}</option>
 			{/each}
 		</select>
+	</div>
+	<div class="flex flex-col gap-1">
+		<label for="challenge-ranking-metric" class="font-mono text-xs text-white/80"
+			>Ranking Metric</label
+		>
+		<select
+			id="challenge-ranking-metric"
+			name="rankingMetric"
+			bind:value={rankingMetric}
+			class="rounded border border-white/20 bg-black/40 px-3 py-2 font-mono text-sm text-white"
+		>
+			{#each rankingMetricOptions as opt}
+				<option value={opt.value}>{opt.label}</option>
+			{/each}
+		</select>
+		{#if type === CHALLENGE_TYPE.SEGMENT_RACE}
+			<p class="font-mono text-[10px] text-white/50">Stored but not used for scoring in v1.</p>
+		{/if}
 	</div>
 	{#if CHALLENGE_TYPES_WITH_GOAL_DISTANCE.includes(type)}
 		<div class="flex flex-col gap-1">

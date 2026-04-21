@@ -26,6 +26,7 @@ This document describes the full implementation of the DTO (Data Transfer Object
 ```
 
 **Current issues:**
+
 - Types extend schema (`Challenge & { ... }`) but data is serialized
 - No explicit mapping step; loader returns raw DB shapes
 - Dates typed as `Date` but arrive as strings
@@ -56,6 +57,7 @@ src/routes/(app)/dashboard/
 ```
 
 **New files:**
+
 - `_types/dto.ts` — DTO type definitions
 - `_types/hydrated.ts` — Hydrated type definitions
 - `_server/mappers.server.ts` — Server-side mappers
@@ -74,79 +76,79 @@ src/routes/(app)/dashboard/
  */
 
 export type ProfileDTO = {
-  id: string;
-  firstname: string;
-  lastname: string;
-  username: string;
-  stravaAthleteId: number | null;
-  role: string;
-  createdAt: string;
-  updatedAt: string;
+	id: string;
+	firstname: string;
+	lastname: string;
+	username: string;
+	stravaAthleteId: number | null;
+	role: string;
+	createdAt: string;
+	updatedAt: string;
 };
 
 export type ChallengeContributionDTO = {
-  id: string;
-  participantId: string;
-  stravaActivityId: number;
-  activityName: string | null;
-  distance: number | null;
-  time: number | null;
-  isValid: boolean | null;
-  occurredAt: string;
-  createdAt: string;
+	id: string;
+	participantId: string;
+	stravaActivityId: number;
+	activityName: string | null;
+	distance: number | null;
+	time: number | null;
+	isValid: boolean | null;
+	occurredAt: string;
+	createdAt: string;
 };
 
 export type ChallengeParticipantDTO = {
-  id: string;
-  challengeId: string;
-  profileId: string;
-  status: string | null;
-  joinedAt: string | null;
-  resultDistance: number | null;
-  resultTime: number | null;
-  highlightActivityId: number | null;
-  createdAt: string;
-  updatedAt: string;
-  profile: ProfileDTO;
-  contributions: ChallengeContributionDTO[];
+	id: string;
+	challengeId: string;
+	profileId: string;
+	status: string | null;
+	joinedAt: string | null;
+	resultDistance: number | null;
+	resultTime: number | null;
+	highlightActivityId: number | null;
+	createdAt: string;
+	updatedAt: string;
+	profile: ProfileDTO;
+	contributions: ChallengeContributionDTO[];
 };
 
 export type ChallengeDTO = {
-  id: string;
-  title: string;
-  description: string;
-  type: string;
-  goalDistance: number | null;
-  segmentId: number | null;
-  startDate: string;
-  endDate: string;
-  status: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
+	id: string;
+	title: string;
+	description: string;
+	type: string;
+	goalDistance: number | null;
+	segmentId: number | null;
+	startDate: string;
+	endDate: string;
+	status: string;
+	isActive: boolean;
+	createdAt: string;
+	updatedAt: string;
 };
 
 export type ChallengeWithParticipationDTO = ChallengeDTO & {
-  isParticipating: boolean;
-  participant: ChallengeParticipantDTO | null;
+	isParticipating: boolean;
+	participant: ChallengeParticipantDTO | null;
 };
 
 export type DashboardPageDataDTO = {
-  profile: ProfileDTO | null;
-  challengesWithParticipation: ChallengeWithParticipationDTO[];
-  challengeParticipantsWithRelationsByChallenge: Record<string, ChallengeParticipantDTO[]>;
+	profile: ProfileDTO | null;
+	challengesWithParticipation: ChallengeWithParticipationDTO[];
+	challengeParticipantsWithRelationsByChallenge: Record<string, ChallengeParticipantDTO[]>;
 };
 
 /** Action result for joinChallenge */
 export type JoinChallengeActionResultDTO = {
-  success: true;
-  challengeParticipantWithRelations: ChallengeParticipantDTO;
+	success: true;
+	challengeParticipantWithRelations: ChallengeParticipantDTO;
 };
 
 /** Action result for leaveChallenge */
 export type LeaveChallengeActionResultDTO = {
-  success: true;
-  challengeId: string;
+	success: true;
+	challengeId: string;
 };
 ```
 
@@ -164,55 +166,55 @@ export type LeaveChallengeActionResultDTO = {
 import type { ProfileDTO, ChallengeContributionDTO, ChallengeParticipantDTO } from './dto.js';
 
 export type ProfileHydrated = Omit<ProfileDTO, 'createdAt' | 'updatedAt'> & {
-  createdAt: Date;
-  updatedAt: Date;
+	createdAt: Date;
+	updatedAt: Date;
 };
 
 export type ChallengeContributionHydrated = Omit<
-  ChallengeContributionDTO,
-  'occurredAt' | 'createdAt'
+	ChallengeContributionDTO,
+	'occurredAt' | 'createdAt'
 > & {
-  occurredAt: Date;
-  createdAt: Date;
+	occurredAt: Date;
+	createdAt: Date;
 };
 
 export type ChallengeParticipantWithRelationsHydrated = Omit<
-  ChallengeParticipantDTO,
-  'joinedAt' | 'createdAt' | 'updatedAt' | 'profile' | 'contributions'
+	ChallengeParticipantDTO,
+	'joinedAt' | 'createdAt' | 'updatedAt' | 'profile' | 'contributions'
 > & {
-  joinedAt: Date | null;
-  createdAt: Date;
-  updatedAt: Date;
-  profile: ProfileHydrated;
-  contributions: ChallengeContributionHydrated[];
+	joinedAt: Date | null;
+	createdAt: Date;
+	updatedAt: Date;
+	profile: ProfileHydrated;
+	contributions: ChallengeContributionHydrated[];
 };
 
 export type ChallengeWithParticipationHydrated = Omit<
-  import('./dto.js').ChallengeWithParticipationDTO,
-  'startDate' | 'endDate' | 'createdAt' | 'updatedAt' | 'participant'
+	import('./dto.js').ChallengeWithParticipationDTO,
+	'startDate' | 'endDate' | 'createdAt' | 'updatedAt' | 'participant'
 > & {
-  startDate: Date;
-  endDate: Date;
-  createdAt: Date;
-  updatedAt: Date;
-  participant: ChallengeParticipantWithRelationsHydrated | null;
+	startDate: Date;
+	endDate: Date;
+	createdAt: Date;
+	updatedAt: Date;
+	participant: ChallengeParticipantWithRelationsHydrated | null;
 };
 
 export type DashboardContextDataHydrated = {
-  profile: ProfileHydrated | null;
-  challengesWithParticipation: ChallengeWithParticipationHydrated[];
-  challengeParticipantsWithRelationsByChallenge: Record<
-    string,
-    ChallengeParticipantWithRelationsHydrated[]
-  >;
+	profile: ProfileHydrated | null;
+	challengesWithParticipation: ChallengeWithParticipationHydrated[];
+	challengeParticipantsWithRelationsByChallenge: Record<
+		string,
+		ChallengeParticipantWithRelationsHydrated[]
+	>;
 };
 
 /** Leaderboard row structure (derived, not transferred) */
 export type LeaderboardRowData = {
-  participant: ChallengeParticipantWithRelationsHydrated;
-  profile: ProfileHydrated;
-  contribution: ChallengeContributionHydrated | null;
-  rank: number | null;
+	participant: ChallengeParticipantWithRelationsHydrated;
+	profile: ProfileHydrated;
+	contribution: ChallengeContributionHydrated | null;
+	rank: number | null;
 };
 ```
 
@@ -224,96 +226,98 @@ export type LeaderboardRowData = {
 
 ```ts
 import type {
-  Profile,
-  Challenge,
-  ChallengeParticipant,
-  ChallengeContribution
+	Profile,
+	Challenge,
+	ChallengeParticipant,
+	ChallengeContribution
 } from '$lib/db/schema';
 import type {
-  ProfileDTO,
-  ChallengeDTO,
-  ChallengeContributionDTO,
-  ChallengeParticipantDTO,
-  ChallengeWithParticipationDTO
+	ProfileDTO,
+	ChallengeDTO,
+	ChallengeContributionDTO,
+	ChallengeParticipantDTO,
+	ChallengeWithParticipationDTO
 } from '../_types/dto.js';
 
 function toIso(d: Date | string): string {
-  return typeof d === 'string' ? d : d.toISOString();
+	return typeof d === 'string' ? d : d.toISOString();
 }
 
 export function toProfileDTO(p: Profile): ProfileDTO {
-  return {
-    id: p.id,
-    firstname: p.firstname,
-    lastname: p.lastname,
-    username: p.username,
-    stravaAthleteId: p.stravaAthleteId,
-    role: p.role,
-    createdAt: toIso(p.createdAt),
-    updatedAt: toIso(p.updatedAt)
-  };
+	return {
+		id: p.id,
+		firstname: p.firstname,
+		lastname: p.lastname,
+		username: p.username,
+		stravaAthleteId: p.stravaAthleteId,
+		role: p.role,
+		createdAt: toIso(p.createdAt),
+		updatedAt: toIso(p.updatedAt)
+	};
 }
 
 export function toChallengeContributionDTO(c: ChallengeContribution): ChallengeContributionDTO {
-  return {
-    id: c.id,
-    participantId: c.participantId,
-    stravaActivityId: c.stravaActivityId,
-    activityName: c.activityName,
-    distance: c.distance,
-    time: c.time,
-    isValid: c.isValid,
-    occurredAt: toIso(c.occurredAt),
-    createdAt: toIso(c.createdAt)
-  };
+	return {
+		id: c.id,
+		participantId: c.participantId,
+		stravaActivityId: c.stravaActivityId,
+		activityName: c.activityName,
+		distance: c.distance,
+		time: c.time,
+		isValid: c.isValid,
+		occurredAt: toIso(c.occurredAt),
+		createdAt: toIso(c.createdAt)
+	};
 }
 
 export function toChallengeParticipantDTO(
-  p: ChallengeParticipant & { profile: Profile; contributions: ChallengeContribution[] }
+	p: ChallengeParticipant & { profile: Profile; contributions: ChallengeContribution[] }
 ): ChallengeParticipantDTO {
-  return {
-    id: p.id,
-    challengeId: p.challengeId,
-    profileId: p.profileId,
-    status: p.status,
-    joinedAt: p.joinedAt ? toIso(p.joinedAt) : null,
-    resultDistance: p.resultDistance,
-    resultTime: p.resultTime,
-    highlightActivityId: p.highlightActivityId,
-    createdAt: toIso(p.createdAt),
-    updatedAt: toIso(p.updatedAt),
-    profile: toProfileDTO(p.profile),
-    contributions: p.contributions.map(toChallengeContributionDTO)
-  };
+	return {
+		id: p.id,
+		challengeId: p.challengeId,
+		profileId: p.profileId,
+		status: p.status,
+		joinedAt: p.joinedAt ? toIso(p.joinedAt) : null,
+		resultDistance: p.resultDistance,
+		resultTime: p.resultTime,
+		highlightActivityId: p.highlightActivityId,
+		createdAt: toIso(p.createdAt),
+		updatedAt: toIso(p.updatedAt),
+		profile: toProfileDTO(p.profile),
+		contributions: p.contributions.map(toChallengeContributionDTO)
+	};
 }
 
 export function toChallengeDTO(c: Challenge): ChallengeDTO {
-  return {
-    id: c.id,
-    title: c.title,
-    description: c.description,
-    type: c.type,
-    goalDistance: c.goalDistance,
-    segmentId: c.segmentId,
-    startDate: toIso(c.startDate),
-    endDate: toIso(c.endDate),
-    status: c.status,
-    isActive: c.isActive,
-    createdAt: toIso(c.createdAt),
-    updatedAt: toIso(c.updatedAt)
-  };
+	return {
+		id: c.id,
+		title: c.title,
+		description: c.description,
+		type: c.type,
+		goalDistance: c.goalDistance,
+		segmentId: c.segmentId,
+		startDate: toIso(c.startDate),
+		endDate: toIso(c.endDate),
+		status: c.status,
+		isActive: c.isActive,
+		createdAt: toIso(c.createdAt),
+		updatedAt: toIso(c.updatedAt)
+	};
 }
 
 export function toChallengeWithParticipationDTO(
-  c: Challenge,
-  isParticipating: boolean,
-  participant: (ChallengeParticipant & { profile: Profile; contributions: ChallengeContribution[] }) | null
+	c: Challenge,
+	isParticipating: boolean,
+	participant:
+		| (ChallengeParticipant & { profile: Profile; contributions: ChallengeContribution[] })
+		| null
 ): ChallengeWithParticipationDTO {
-  return {
-    ...toChallengeDTO(c),
-    isParticipating,
-    participant: participant ? toChallengeParticipantDTO(participant) : null
-  };
+	return {
+		...toChallengeDTO(c),
+		isParticipating,
+		participant: participant ? toChallengeParticipantDTO(participant) : null
+	};
 }
 ```
 
@@ -325,75 +329,81 @@ export function toChallengeWithParticipationDTO(
 
 ```ts
 import type {
-  ProfileDTO,
-  ChallengeContributionDTO,
-  ChallengeParticipantDTO,
-  ChallengeWithParticipationDTO,
-  DashboardPageDataDTO
+	ProfileDTO,
+	ChallengeContributionDTO,
+	ChallengeParticipantDTO,
+	ChallengeWithParticipationDTO,
+	DashboardPageDataDTO
 } from '../_types/dto.js';
 import type {
-  ProfileHydrated,
-  ChallengeContributionHydrated,
-  ChallengeParticipantWithRelationsHydrated,
-  ChallengeWithParticipationHydrated,
-  DashboardContextDataHydrated
+	ProfileHydrated,
+	ChallengeContributionHydrated,
+	ChallengeParticipantWithRelationsHydrated,
+	ChallengeWithParticipationHydrated,
+	DashboardContextDataHydrated
 } from '../_types/hydrated.js';
 
 function parseDate(s: string): Date {
-  return new Date(s);
+	return new Date(s);
 }
 
 export function hydrateProfile(dto: ProfileDTO): ProfileHydrated {
-  return {
-    ...dto,
-    createdAt: parseDate(dto.createdAt),
-    updatedAt: parseDate(dto.updatedAt)
-  };
+	return {
+		...dto,
+		createdAt: parseDate(dto.createdAt),
+		updatedAt: parseDate(dto.updatedAt)
+	};
 }
 
-export function hydrateChallengeContribution(dto: ChallengeContributionDTO): ChallengeContributionHydrated {
-  return {
-    ...dto,
-    occurredAt: parseDate(dto.occurredAt),
-    createdAt: parseDate(dto.createdAt)
-  };
+export function hydrateChallengeContribution(
+	dto: ChallengeContributionDTO
+): ChallengeContributionHydrated {
+	return {
+		...dto,
+		occurredAt: parseDate(dto.occurredAt),
+		createdAt: parseDate(dto.createdAt)
+	};
 }
 
-export function hydrateChallengeParticipant(dto: ChallengeParticipantDTO): ChallengeParticipantWithRelationsHydrated {
-  return {
-    ...dto,
-    joinedAt: dto.joinedAt ? parseDate(dto.joinedAt) : null,
-    createdAt: parseDate(dto.createdAt),
-    updatedAt: parseDate(dto.updatedAt),
-    profile: hydrateProfile(dto.profile),
-    contributions: dto.contributions.map(hydrateChallengeContribution)
-  };
+export function hydrateChallengeParticipant(
+	dto: ChallengeParticipantDTO
+): ChallengeParticipantWithRelationsHydrated {
+	return {
+		...dto,
+		joinedAt: dto.joinedAt ? parseDate(dto.joinedAt) : null,
+		createdAt: parseDate(dto.createdAt),
+		updatedAt: parseDate(dto.updatedAt),
+		profile: hydrateProfile(dto.profile),
+		contributions: dto.contributions.map(hydrateChallengeContribution)
+	};
 }
 
 export function hydrateChallengeWithParticipation(
-  dto: ChallengeWithParticipationDTO
+	dto: ChallengeWithParticipationDTO
 ): ChallengeWithParticipationHydrated {
-  return {
-    ...dto,
-    startDate: parseDate(dto.startDate),
-    endDate: parseDate(dto.endDate),
-    createdAt: parseDate(dto.createdAt),
-    updatedAt: parseDate(dto.updatedAt),
-    participant: dto.participant ? hydrateChallengeParticipant(dto.participant) : null
-  };
+	return {
+		...dto,
+		startDate: parseDate(dto.startDate),
+		endDate: parseDate(dto.endDate),
+		createdAt: parseDate(dto.createdAt),
+		updatedAt: parseDate(dto.updatedAt),
+		participant: dto.participant ? hydrateChallengeParticipant(dto.participant) : null
+	};
 }
 
 export function hydrateDashboardData(dto: DashboardPageDataDTO): DashboardContextDataHydrated {
-  return {
-    profile: dto.profile ? hydrateProfile(dto.profile) : null,
-    challengesWithParticipation: dto.challengesWithParticipation.map(hydrateChallengeWithParticipation),
-    challengeParticipantsWithRelationsByChallenge: Object.fromEntries(
-      Object.entries(dto.challengeParticipantsWithRelationsByChallenge).map(([k, arr]) => [
-        k,
-        arr.map(hydrateChallengeParticipant)
-      ])
-    )
-  };
+	return {
+		profile: dto.profile ? hydrateProfile(dto.profile) : null,
+		challengesWithParticipation: dto.challengesWithParticipation.map(
+			hydrateChallengeWithParticipation
+		),
+		challengeParticipantsWithRelationsByChallenge: Object.fromEntries(
+			Object.entries(dto.challengeParticipantsWithRelationsByChallenge).map(([k, arr]) => [
+				k,
+				arr.map(hydrateChallengeParticipant)
+			])
+		)
+	};
 }
 ```
 
@@ -406,63 +416,63 @@ export function hydrateDashboardData(dto: DashboardPageDataDTO): DashboardContex
 import { fail, redirect } from '@sveltejs/kit';
 import { isChallengeJoinable } from '$lib/utils/challenge.js';
 import {
-  checkUserParticipation,
-  joinChallenge,
-  loadChallenge,
-  leaveChallenge,
-  loadChallengeParticipantWithRelations,
-  loadDashboardData
+	checkUserParticipation,
+	joinChallenge,
+	loadChallenge,
+	leaveChallenge,
+	loadChallengeParticipantWithRelations,
+	loadDashboardData
 } from './loader.server.js';
 import {
-  toProfileDTO,
-  toChallengeParticipantDTO,
-  toChallengeWithParticipationDTO
+	toProfileDTO,
+	toChallengeParticipantDTO,
+	toChallengeWithParticipationDTO
 } from './_server/mappers.server.js';
 import type { PageServerLoad } from './$types.js';
 
 export const load: PageServerLoad = async ({ parent }) => {
-  const { profile } = await parent();
+	const { profile } = await parent();
 
-  if (!profile) {
-    throw redirect(302, '/');
-  }
+	if (!profile) {
+		throw redirect(302, '/');
+	}
 
-  const raw = await loadDashboardData(profile.id);
+	const raw = await loadDashboardData(profile.id);
 
-  return {
-    profile: toProfileDTO(profile),
-    challengesWithParticipation: raw.challengesWithParticipation.map((c) =>
-      toChallengeWithParticipationDTO(c, c.isParticipating, c.participant)
-    ),
-    challengeParticipantsWithRelationsByChallenge: Object.fromEntries(
-      Object.entries(raw.challengeParticipantsWithRelationsByChallenge).map(([id, arr]) => [
-        id,
-        arr.map(toChallengeParticipantDTO)
-      ])
-    )
-  };
+	return {
+		profile: toProfileDTO(profile),
+		challengesWithParticipation: raw.challengesWithParticipation.map((c) =>
+			toChallengeWithParticipationDTO(c, c.isParticipating, c.participant)
+		),
+		challengeParticipantsWithRelationsByChallenge: Object.fromEntries(
+			Object.entries(raw.challengeParticipantsWithRelationsByChallenge).map(([id, arr]) => [
+				id,
+				arr.map(toChallengeParticipantDTO)
+			])
+		)
+	};
 };
 
 export const actions = {
-  joinChallenge: async ({ request, locals }) => {
-    // ... existing validation ...
+	joinChallenge: async ({ request, locals }) => {
+		// ... existing validation ...
 
-    try {
-      const { id } = await joinChallenge(challengeId, profile.id);
-      const cp = await loadChallengeParticipantWithRelations(id);
-      if (!cp) throw new Error('Failed to load participant after joining.');
-      return {
-        success: true,
-        challengeParticipantWithRelations: toChallengeParticipantDTO(cp)
-      };
-    } catch (error) {
-      // ...
-    }
-  },
-  leaveChallenge: async ({ request, locals }) => {
-    // ... existing logic ...
-    return { success: true, challengeId };
-  }
+		try {
+			const { id } = await joinChallenge(challengeId, profile.id);
+			const cp = await loadChallengeParticipantWithRelations(id);
+			if (!cp) throw new Error('Failed to load participant after joining.');
+			return {
+				success: true,
+				challengeParticipantWithRelations: toChallengeParticipantDTO(cp)
+			};
+		} catch (error) {
+			// ...
+		}
+	},
+	leaveChallenge: async ({ request, locals }) => {
+		// ... existing logic ...
+		return { success: true, challengeId };
+	}
 };
 ```
 
@@ -488,18 +498,18 @@ import { DashboardUI } from './DashboardUI.svelte.js';
 const KEY = Symbol('DASHBOARD_CTX');
 
 export function setDashboardContext(data: DashboardPageDataDTO) {
-  const prefs = getUserPreferencesContext();
-  const hydrated = hydrateDashboardData(data);
-  const dashboard = new DashboardUI(
-    hydrated.challengesWithParticipation,
-    hydrated.challengeParticipantsWithRelationsByChallenge,
-    prefs.distanceUnit
-  );
-  return setContext<DashboardUI>(KEY, dashboard);
+	const prefs = getUserPreferencesContext();
+	const hydrated = hydrateDashboardData(data);
+	const dashboard = new DashboardUI(
+		hydrated.challengesWithParticipation,
+		hydrated.challengeParticipantsWithRelationsByChallenge,
+		prefs.distanceUnit
+	);
+	return setContext<DashboardUI>(KEY, dashboard);
 }
 
 export function getDashboardContext(): DashboardUI {
-  return getContext<DashboardUI>(KEY);
+	return getContext<DashboardUI>(KEY);
 }
 ```
 
@@ -579,10 +589,10 @@ import type { JoinChallengeActionResultDTO } from '../../_types/dto.js';
 
 // In use:enhance callback:
 if (result.type === 'success') {
-  const payload = result.data as JoinChallengeActionResultDTO;
-  const hydrated = hydrateChallengeParticipant(payload.challengeParticipantWithRelations);
-  challenge.join(hydrated);
-  await update();
+	const payload = result.data as JoinChallengeActionResultDTO;
+	const hydrated = hydrateChallengeParticipant(payload.challengeParticipantWithRelations);
+	challenge.join(hydrated);
+	await update();
 }
 ```
 
@@ -634,17 +644,17 @@ Components that receive `profile` (e.g. `ChallengesDrawer`, `DashboardChallenges
 
 ## 19. Files Summary
 
-| File | Action |
-|------|--------|
-| `dashboard/_types/dto.ts` | **Create** — DTO type definitions |
-| `dashboard/_types/hydrated.ts` | **Create** — Hydrated type definitions |
-| `dashboard/_server/mappers.server.ts` | **Create** — DB → DTO mappers |
-| `dashboard/_logic/hydrators.ts` | **Create** — DTO → hydrated hydrators |
-| `dashboard/+page.server.ts` | **Update** — Map load/action output to DTOs |
-| `dashboard/_logic/context.ts` | **Update** — Hydrate before DashboardUI, accept DTO |
-| `dashboard/_logic/DashboardUI.svelte.ts` | **Update** — Use hydrated types, accept DTO in updateFromServerData |
-| `dashboard/_logic/ChallengeUI.svelte.ts` | **Update** — Use hydrated types |
-| `dashboard/_logic/LeaderboardUI.svelte.ts` | **Update** — Use hydrated types |
-| `dashboard/_components/challenges/JoinChallengeButton.svelte` | **Update** — Hydrate action result |
-| `$lib/types/dashboard.ts` | **Update** — Remove/deprecate schema-based types, keep ChallengeStats |
-| `$lib/utils/challenge.ts` | **Update** — Use hydrated types where applicable |
+| File                                                          | Action                                                                |
+| ------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `dashboard/_types/dto.ts`                                     | **Create** — DTO type definitions                                     |
+| `dashboard/_types/hydrated.ts`                                | **Create** — Hydrated type definitions                                |
+| `dashboard/_server/mappers.server.ts`                         | **Create** — DB → DTO mappers                                         |
+| `dashboard/_logic/hydrators.ts`                               | **Create** — DTO → hydrated hydrators                                 |
+| `dashboard/+page.server.ts`                                   | **Update** — Map load/action output to DTOs                           |
+| `dashboard/_logic/context.ts`                                 | **Update** — Hydrate before DashboardUI, accept DTO                   |
+| `dashboard/_logic/DashboardUI.svelte.ts`                      | **Update** — Use hydrated types, accept DTO in updateFromServerData   |
+| `dashboard/_logic/ChallengeUI.svelte.ts`                      | **Update** — Use hydrated types                                       |
+| `dashboard/_logic/LeaderboardUI.svelte.ts`                    | **Update** — Use hydrated types                                       |
+| `dashboard/_components/challenges/JoinChallengeButton.svelte` | **Update** — Hydrate action result                                    |
+| `$lib/types/dashboard.ts`                                     | **Update** — Remove/deprecate schema-based types, keep ChallengeStats |
+| `$lib/utils/challenge.ts`                                     | **Update** — Use hydrated types where applicable                      |

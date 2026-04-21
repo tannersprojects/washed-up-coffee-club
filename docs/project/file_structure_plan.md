@@ -65,15 +65,15 @@ Pattern: Export a const instance of a class.
 ```typescript
 // src/lib/state/theme.svelte.ts
 class ThemeState {
-    mode: 'light' | 'dark';
+	mode: 'light' | 'dark';
 
-    constructor() {
-        this.mode = $state('light');
-    }
+	constructor() {
+		this.mode = $state('light');
+	}
 
-    toggle() {
-        this.mode = this.mode === 'light' ? 'dark' : 'light';
-    }
+	toggle() {
+		this.mode = this.mode === 'light' ? 'dark' : 'light';
+	}
 }
 
 export const theme = new ThemeState();
@@ -92,15 +92,15 @@ import { setContext, getContext } from 'svelte';
 const KEY = Symbol('PROJECT_CTX');
 
 export class Project {
-    // ... logic ...
+	// ... logic ...
 }
 
 export function initProject(data: any) {
-    return setContext(KEY, new Project(data));
+	return setContext(KEY, new Project(data));
 }
 
 export function getProject() {
-    return getContext(KEY) as Project;
+	return getContext(KEY) as Project;
 }
 ```
 
@@ -121,36 +121,36 @@ Responsible for its own state (isEditing, isLoading) and validation.
 ```typescript
 // src/routes/projects/[id]/_logic/Task.svelte.ts
 export class Task {
-    // Declare properties with types
-    id: string;
-    title: string;
-    status: 'todo' | 'done';
-    isEditing: boolean;
+	// Declare properties with types
+	id: string;
+	title: string;
+	status: 'todo' | 'done';
+	isEditing: boolean;
 
-    constructor(data: { id: string; title: string; status: 'todo' | 'done' }) {
-        // Initialize state in constructor
-        this.id = data.id;
-        this.title = $state(data.title);
-        this.status = $state(data.status);
+	constructor(data: { id: string; title: string; status: 'todo' | 'done' }) {
+		// Initialize state in constructor
+		this.id = data.id;
+		this.title = $state(data.title);
+		this.status = $state(data.status);
 
-        // UI State (Not persisted to DB)
-        this.isEditing = $state(false);
-    }
+		// UI State (Not persisted to DB)
+		this.isEditing = $state(false);
+	}
 
-    // Helper for JSON.stringify to remove UI state when sending to API
-    toJSON() {
-        return {
-            id: this.id,
-            title: this.title,
-            status: this.status
-        };
-    }
+	// Helper for JSON.stringify to remove UI state when sending to API
+	toJSON() {
+		return {
+			id: this.id,
+			title: this.title,
+			status: this.status
+		};
+	}
 
-    async updateTitle(newTitle: string) {
-        this.title = newTitle;
-        this.isEditing = false;
-        // API call logic here...
-    }
+	async updateTitle(newTitle: string) {
+		this.title = newTitle;
+		this.isEditing = false;
+		// API call logic here...
+	}
 }
 ```
 
@@ -163,20 +163,20 @@ Responsible for the collection (Add, Remove, Reorder, Filter).
 import { Task } from './Task.svelte.ts';
 
 export class Project {
-    tasks: Task[];
-    completedCount: number;
+	tasks: Task[];
+	completedCount: number;
 
-    constructor(rawTasks: any[]) {
-        // Hydrate raw data into Class Instances
-        this.tasks = $state(rawTasks.map(t => new Task(t)));
+	constructor(rawTasks: any[]) {
+		// Hydrate raw data into Class Instances
+		this.tasks = $state(rawTasks.map((t) => new Task(t)));
 
-        // Derived values update automatically
-        this.completedCount = $derived(this.tasks.filter(t => t.status === 'done').length);
-    }
+		// Derived values update automatically
+		this.completedCount = $derived(this.tasks.filter((t) => t.status === 'done').length);
+	}
 
-    removeTask(id: string) {
-        this.tasks = this.tasks.filter(t => t.id !== id);
-    }
+	removeTask(id: string) {
+		this.tasks = this.tasks.filter((t) => t.id !== id);
+	}
 }
 ```
 
@@ -187,28 +187,28 @@ Components should receive Class Instances as props, not raw data.
 ```svelte
 <!-- src/routes/projects/[id]/+page.svelte -->
 <script lang="ts">
-    import { initProject } from './_logic/Project.svelte.ts';
-    import TaskItem from './_components/TaskItem.svelte';
+	import { initProject } from './_logic/Project.svelte.ts';
+	import TaskItem from './_components/TaskItem.svelte';
 
-    let { data } = $props();
-    
-    // Initialize State Logic
-    const project = initProject(data.tasks);
+	let { data } = $props();
+
+	// Initialize State Logic
+	const project = initProject(data.tasks);
 </script>
 
 <h1>{project.completedCount} Completed</h1>
 
 {#each project.tasks as task (task.id)}
-    <!-- Pass the class instance -->
-    <TaskItem {task} />
+	<!-- Pass the class instance -->
+	<TaskItem {task} />
 {/each}
 ```
 
 ```svelte
 <!-- src/routes/projects/[id]/_components/TaskItem.svelte -->
 <script lang="ts">
-    import type { Task } from '../_logic/Task.svelte.ts';
-    let { task } = $props<{ task: Task }>();
+	import type { Task } from '../_logic/Task.svelte.ts';
+	let { task } = $props<{ task: Task }>();
 </script>
 
 <!-- Fine-grained reactivity: modifying task.title here only updates this DOM node -->

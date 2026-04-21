@@ -2,7 +2,7 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { STRAVA_WEBHOOK_VERIFY_TOKEN } from '$env/static/private';
 import { db } from '$lib/db';
-import { stravaWebhookLogsTable } from '$lib/db/schema';
+import { stravaWebhookLogsTable, type StravaWebhookLog } from '$lib/db/schema';
 import type { StravaWebhookPayload } from '$lib/types/strava';
 
 export const GET: RequestHandler = async ({ url }) => {
@@ -20,7 +20,8 @@ export const GET: RequestHandler = async ({ url }) => {
 export const POST: RequestHandler = async ({ request }) => {
 	try {
 		// TODO: Add logging
-		const body = (await request.json()) as StravaWebhookPayload;
+		const json = await request.json();
+		const body = json as StravaWebhookPayload;
 
 		await db.insert(stravaWebhookLogsTable).values({
 			payload: body,
