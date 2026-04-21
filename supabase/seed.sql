@@ -170,7 +170,31 @@ VALUES
   (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000013', 99013, 'Intervals at Hampton Park',    6400, 1920, 1920, '2026-01-20 06:30:00+00'),
   (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000014', 99014, 'Warmup + 400s',                3200, NULL, NULL, '2026-01-21 06:00:00+00');
 
--- 8. Webhook Vault Secrets (local dev)
+-- 8. Isolated test profile for the dev test-create-activity endpoint.
+-- Quinn Miles is enrolled ONLY in the Quarter-Mile Burner challenge so that
+-- processCreateActivity's profile+date fan-out naturally isolates to a single pair.
+INSERT INTO profile (id, firstname, lastname, username, role, strava_athlete_id)
+VALUES
+  ('d0c2c0e0-1111-4444-8888-000000000008', 'Quinn', 'Miles', 'qmiles', 'user', 1008)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO challenge_participants (
+  id,
+  challenge_id,
+  profile_id,
+  status,
+  result_distance,
+  result_moving_time_seconds,
+  result_elapsed_time_seconds,
+  ranking_value_seconds,
+  ranking_computed_at,
+  highlight_activity_id
+)
+VALUES
+  ('a0000000-0000-0000-0000-000000000018', 'c0000000-0000-0000-0000-000000000002', 'd0c2c0e0-1111-4444-8888-000000000008', 'registered', NULL, NULL, NULL, NULL, NULL, NULL)
+ON CONFLICT (id) DO NOTHING;
+
+-- 9. Webhook Vault Secrets (local dev)
 -- Uses vault.create_secret() to properly encrypt secrets at rest.
 -- Delete existing entries first since vault secret names must be unique.
 DELETE FROM vault.secrets WHERE name IN ('webhook_url');
