@@ -62,6 +62,7 @@ export async function processCreateActivity(
 			continue;
 		}
 
+		// This finds all contributions for the participant for a certain challenge
 		const participantContributions = await findContributionsForParticipant(participant.id);
 
 		const nextState = computeNextParticipantState(

@@ -2,7 +2,7 @@
 
 Reference for how contributions are validated, ranked, and reflected in each participant's row for every challenge type. Intended to be kept in sync with the runtime pipeline.
 
-## Pipeline refresher
+## Pipeline Refresher
 
 Ingestion path on a Strava activity create webhook:
 
@@ -21,9 +21,15 @@ Two key responsibilities:
 - **Validator** decides whether an activity qualifies as a `challenge_contributions` row. Rejected activities are never persisted as contributions.
 - **State strategy** recomputes the participant's aggregate row (`result_distance`, `ranking_value_seconds`, `highlight_activity_id`) from the set of contributions that already survived validation, and returns whether the participant has met the challenge goal (`goalMet`).
 
-The dispatcher in `participant-state.ts` reads `goalMet` from the strategy result and flips `status` to `COMPLETED` when true. Each strategy owns its own definition of "complete" — there is no shared `isGoalMet` ladder.
+The dispatcher in `participant-state.ts` reads `goalMet` from the strategy result and flips
+`status` to `COMPLETED` when true. Each strategy owns its own definition of "complete" — there is
+no shared `isGoalMet` ladder.
 
-BEST_EFFORT-specific ranking helpers (`getMetricTimeForContribution`, `selectFastestRanking`, `selectHighlightContribution`, `selectBestDistanceContribution`) are colocated inside `participant-state/best-effort-state.ts` rather than `challenge-ranking.ts`. The latter retains only shared data primitives (`extractRankingValueFromBestEfforts`, `getPreferredTime`, sums) and the CUMULATIVE-only reducer.
+BEST_EFFORT-specific ranking helpers
+(`getMetricTimeForContribution`, `selectFastestRanking`, `selectHighlightContribution`,
+`selectBestDistanceContribution`) are colocated inside `participant-state/best-effort-state.ts`
+rather than `challenge-ranking.ts`. The latter retains only shared data primitives
+(`extractRankingValueFromBestEfforts`, `getPreferredTime`, sums) and the CUMULATIVE-only reducer.
 
 ## Shared terminology
 
@@ -36,7 +42,8 @@ BEST_EFFORT-specific ranking helpers (`getMetricTimeForContribution`, `selectFas
 
 ## BEST_EFFORT
 
-Goal: complete a single qualifying run whose distance is at least `goal_distance`. Ranked by the fastest ranking-metric time across qualifying attempts.
+**Goal:** complete a single qualifying run whose distance is at least `goal_distance`. Ranked by the
+fastest ranking-metric time across qualifying attempts.
 
 ### Validator behavior — `validators/best-effort-validator.ts`
 
@@ -53,14 +60,27 @@ Over the set of qualifying contributions:
 
 - `goalMet` = `contributions.some((c) => (c.distance ?? 0) >= goalDistance)`. Reads contributions directly so a metric-extraction failure cannot block completion.
 - `rankingValueSeconds` = fastest metric time via `selectFastestRanking(contributions, rankingMetric)`.
-- `highlightActivityId` + `resultDistance` + `resultMovingTimeSeconds` + `resultElapsedTimeSeconds` = the contribution owning that fastest time via `selectHighlightContribution(contributions, rankingMetric)`. The two time columns mirror the highlighted contribution's `movingTime` / `elapsedTime` strictly (may be `null`); UI layer owns any fallback display.
+- `highlightActivityId` + `resultDistance` + `resultMovingTimeSeconds` +
+  `resultElapsedTimeSeconds` = the contribution owning that fastest time via
+  `selectHighlightContribution(contributions, rankingMetric)`. The two time columns mirror the
+  highlighted contribution's `movingTime` / `elapsedTime` strictly (may be `null`); UI layer owns
+  any fallback display.
 
-Both `selectFastestRanking` and `selectHighlightContribution` evaluate one contribution at a time through `getMetricTimeForContribution`, which:
+Both `selectFastestRanking` and `selectHighlightContribution` evaluate one contribution at a time
+through `getMetricTimeForContribution`, which:
 
 1. Returns `null` for `RANKING_METRIC.NONE` (the highlight selector handles NONE separately via distance ranking).
 2. For `RANKING_METRIC.ACTIVITY_TOTAL`, returns the activity's `movingTime` (or `elapsedTime` fallback).
-3. For a standard distance, first tries `extractRankingValueFromBestEfforts` against the contribution's `bestEfforts` snapshot. Splits are matched **name-first** via `RANKING_METRIC_BEST_EFFORT_NAME` (e.g. `STANDARD_5K` -> `'5k'`); if no split with that name is present, the historical 1% `DISTANCE_TOLERANCE_RATIO` distance check acts as a defensive fallback and emits a `console.warn` so the name table can be corrected.
-4. **Fallback (BEST_EFFORT only):** when splits are missing or unusable (neither name nor distance matched), if the activity's total `distance` is within `FALLBACK_TOTAL_TOLERANCE_RATIO` (2%) of the metric's target distance, use the activity's total `movingTime` (or `elapsedTime` fallback). This recovers ranking for activities whose total distance is essentially the target distance but whose `bestEfforts` payload is empty or out-of-tolerance.
+3. For a standard distance, first tries `extractRankingValueFromBestEfforts` against the
+   contribution's `bestEfforts` snapshot. Splits are matched **name-first** via
+   `RANKING_METRIC_BEST_EFFORT_NAME` (e.g. `STANDARD_5K` -> `'5k'`); if no split with that name is
+   present, the historical 1% `DISTANCE_TOLERANCE_RATIO` distance check acts as a defensive
+   fallback and emits a `console.warn` so the name table can be corrected.
+4. **Fallback (BEST_EFFORT only):** when splits are missing or unusable (neither name nor distance
+   matched), if the activity's total `distance` is within `FALLBACK_TOTAL_TOLERANCE_RATIO` (2%) of
+   the metric's target distance, use the activity's total `movingTime` (or `elapsedTime` fallback).
+   This recovers ranking for activities whose total distance is essentially the target distance but
+   whose `bestEfforts` payload is empty or out-of-tolerance.
 
 Tie-break rules inside `selectHighlightContribution`:
 
@@ -71,7 +91,9 @@ Special case: when `rankingMetric === NONE`, ranking falls back to `selectBestDi
 
 ### Scenarios
 
-Status legend: **OK** = current behavior matches expectation. **BUG** = current behavior diverges from expectation and should be fixed. **POLICY** = behavior is defensible but is a product decision that should be confirmed.
+**Status legend:** **OK** = current behavior matches expectation. **BUG** = current behavior diverges
+from expectation and should be fixed. **POLICY** = behavior is defensible but is a product decision
+that should be confirmed.
 
 | # | Prior state | New activity | Expectation | Current behavior | Status |
 |---|---|---|---|---|---|
@@ -88,7 +110,8 @@ Status legend: **OK** = current behavior matches expectation. **BUG** = current 
 
 ## CUMULATIVE
 
-Goal: accumulate `goal_distance` meters across any number of qualifying runs during the active window.
+**Goal:** accumulate `goal_distance` meters across any number of qualifying runs during the active
+window.
 
 ### Validator behavior — `validators/cumulative-validator.ts`
 
@@ -105,39 +128,20 @@ Current logic accepts any run-type activity with no distance filter. Every run c
 
 ### Scenarios
 
-Status legend: **CURRENT** = what code does today. **TARGET** = agreed policy for cumulative refactor.
+**Status legend:** **CURRENT** = what code does today. **TARGET** = agreed policy for cumulative
+refactor.
 
-#### 1) Goal distance = 13.1 miles, ranking metric = fastest mile (`STANDARD_1_MILE`)
+| # | Scenario | Current behavior | Target behavior | Status |
+|---|---|---|---|---|
+| 1 | Goal = 13.1 miles, ranking metric = fastest mile (`STANDARD_1_MILE`), runner does it in one contribution | If the activity has a mile best effort, ranking is populated from that single activity; completion still depends on cumulative distance meeting goal. | Same behavior. | TARGET defined |
+| 2 | Goal = 13.1 miles, ranking metric = fastest mile (`STANDARD_1_MILE`), runner does it across many contributions | Ranking is the fastest mile from any single contribution; no cross-activity stitched mile. | Same behavior (single-activity split remains primary for this metric). | TARGET defined |
+| 3 | Goal = 13.1 miles, ranking metric = `STANDARD_HALF_MARATHON`, runner does HM in one contribution | Ranked via that activity's split/effort when available. | Rule A wins (single-activity best effort/split extraction); fallback not used. | TARGET defined |
+| 4 | Goal = 13.1 miles, ranking metric = `STANDARD_HALF_MARATHON`, runner spreads HM across many contributions | Often completes goal but remains unranked for `STANDARD_HALF_MARATHON` unless one activity alone contains a HM effort. | Attempt Rule A first; if unavailable, apply Rule B fallback to produce a ranking value from cumulative context. | TARGET defined |
+| 5 | Goal = 13.1 miles, ranking metric = `STANDARD_HALF_MARATHON`, runner totals 14 miles (single or many contributions) | Same split behavior as above; extra distance does not change extraction mode. | Same extraction order: Rule A first, Rule B only when needed. Exceeding goal does not disable either path. | TARGET defined |
+| 6 | Goal = 13.1 miles, participant ends slightly short in meters vs canonical race distance (e.g. 21097m) | Strict comparisons can create "13.1 miles shown, but not 21097m" edge behavior depending on stored meter values and split availability. | Add a tolerance gate for cumulative fallback evaluation: if end-result distance is within 1-2% of goal distance, treat as close enough for time fallback usage. | TARGET defined |
 
-- **Single contribution path**
-  - **CURRENT:** if the activity has a mile best effort, ranking is populated from that single activity; completion depends on cumulative distance meeting goal.
-  - **TARGET:** same behavior.
-- **Multiple contributions path**
-  - **CURRENT:** ranking is the fastest mile from any single contribution; no cross-activity stitched mile.
-  - **TARGET:** same behavior (single-activity split remains primary for this metric).
-
-#### 2) Goal distance = 13.1 miles, ranking metric = `STANDARD_HALF_MARATHON`
-
-- **Primary rule (Rule A):** derive ranking from a single qualifying activity whose half-marathon split/effort can be read directly.
-- **Fallback rule (Rule B):** when Rule A cannot provide a ranking but participant has enough cumulative distance, allow cumulative fallback ranking.
-
-##### Scenario matrix
-
-- **Runner does half-marathon in one contribution**
-  - **CURRENT:** ranked via that activity's split/effort when available.
-  - **TARGET:** Rule A wins; fallback not used.
-- **Runner spreads half-marathon across many contributions**
-  - **CURRENT:** often completes goal but remains unranked for `STANDARD_HALF_MARATHON` unless one activity alone contains a HM effort.
-  - **TARGET:** attempt Rule A first; if unavailable, apply Rule B fallback to produce a ranking value from cumulative context.
-- **Runner totals 14 miles (single or multiple contributions)**
-  - **CURRENT:** same split behavior as above; extra distance does not change extraction mode.
-  - **TARGET:** same extraction order: Rule A first, Rule B only when needed. Exceeding goal does not disable either path.
-
-#### 3) Goal distance = 13.1 miles, participant ends slightly short in meters vs canonical race distance
-
-- **CURRENT:** strict comparisons can create "13.1 miles shown, but not 21097m" edge behavior depending on stored meter values and split availability.
-- **TARGET:** add a tolerance gate for cumulative fallback evaluation: if end-result distance is within 1-2% of goal distance, treat as close enough for time fallback usage.
-- **Interpretation:** tolerance is a recovery mechanism for real-world rounding/GPS variance and should be deterministic and documented.
+Interpretation note: tolerance is a recovery mechanism for real-world rounding/GPS variance and
+should be deterministic and documented.
 
 ### CUMULATIVE ranking policy (agreed)
 
