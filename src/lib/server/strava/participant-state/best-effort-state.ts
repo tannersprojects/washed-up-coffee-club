@@ -15,6 +15,8 @@ export function computeMetricsForBestEffortChallenge(
 	const goalMet = contributions.some((c) => (c.distance ?? 0) >= goalDistance);
 
 	const rankingMetric = challenge.rankingMetric;
+
+	// TODO: There are two loops here, there could be a single loop
 	const rankingValueSeconds = selectFastestRanking(contributions, rankingMetric);
 	const highlightedContribution = selectHighlightContribution(contributions, rankingMetric);
 
@@ -139,9 +141,7 @@ function selectBestDistanceContribution(
 		if (distance === best.distance) {
 			const swap =
 				(best.tieBreakTime == null && candidateTime != null) ||
-				(candidateTime != null &&
-					best.tieBreakTime != null &&
-					candidateTime < best.tieBreakTime) ||
+				(candidateTime != null && best.tieBreakTime != null && candidateTime < best.tieBreakTime) ||
 				(candidateTime === best.tieBreakTime &&
 					contribution.stravaActivityId < best.stravaActivityId);
 			if (swap) {
