@@ -1,10 +1,6 @@
 import type { Challenge, ChallengeContribution, ChallengeParticipant } from '$lib/db/schema';
-import {
-	computeRankingValueFromContributions,
-	sumDistances,
-	sumElapsedTimes,
-	sumMovingTimes
-} from '../challenge-ranking';
+import { sumDistances, sumElapsedTimes, sumMovingTimes } from './ranking/shared-ranking';
+import { computeCumulativeRankingValue } from './ranking/cumulative-ranking';
 import type { ParticipantStateResult } from './participant-state';
 
 export function computeMetricsForCumulativeChallenge(
@@ -22,10 +18,7 @@ export function computeMetricsForCumulativeChallenge(
 			resultDistance: totalDistance,
 			resultMovingTimeSeconds: sumMovingTimes(contributions),
 			resultElapsedTimeSeconds: sumElapsedTimes(contributions),
-			rankingValueSeconds: computeRankingValueFromContributions(
-				contributions,
-				challenge.rankingMetric
-			),
+			rankingValueSeconds: computeCumulativeRankingValue(contributions, challenge.rankingMetric),
 			highlightActivityId: activityId
 		},
 		goalMet

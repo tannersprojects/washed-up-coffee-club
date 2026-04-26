@@ -57,6 +57,19 @@ This epic separates concerns so each challenge type owns its ranking behavior wh
   - CUMULATIVE-owned.
 - Produce a final target module map.
 
+**Helper ownership inventory (finalized)**
+
+| Existing helper | Owner | Destination module | Why |
+| --- | --- | --- | --- |
+| `sumDistances` | Shared primitive | `src/lib/server/strava/ranking/shared-ranking.ts` | Pure numeric aggregation with no strategy policy |
+| `sumMovingTimes` | Shared primitive | `src/lib/server/strava/ranking/shared-ranking.ts` | Pure numeric aggregation with no strategy policy |
+| `sumElapsedTimes` | Shared primitive | `src/lib/server/strava/ranking/shared-ranking.ts` | Pure numeric aggregation with no strategy policy |
+| `getPreferredTime` | Shared primitive | `src/lib/server/strava/ranking/shared-ranking.ts` | Time-field selection fallback usable across strategies |
+| `extractRankingValueFromBestEfforts` | BEST_EFFORT-owned | `src/lib/server/strava/ranking/best-effort-ranking.ts` | Uses BEST_EFFORT split snapshot naming/distance matching |
+| `computeRankingValueFromContributions` | CUMULATIVE-owned (transitional) | `src/lib/server/strava/ranking/cumulative-ranking.ts` as `computeCumulativeRankingValue` | CUMULATIVE currently consumes this behavior; explicit owner avoids ambiguous shared policy |
+| `DISTANCE_TOLERANCE_RATIO` | BEST_EFFORT-owned | `src/lib/server/strava/ranking/best-effort-ranking.ts` | Tolerance constant tied to split extraction semantics |
+| `getFastestContribution` | Segment-race owned (deferred) | Removed from shared surface; reintroduce under segment-race module when segment ranking is implemented | Not challenge-agnostic and currently unused in active logic |
+
 **Acceptance criteria**
 - Every helper has a clear owner.
 - No helper is left in a "temporary/maybe shared" category.
@@ -67,6 +80,31 @@ This epic separates concerns so each challenge type owns its ranking behavior wh
   - `participant-state/cumulative-ranking.ts`,
   - a slimmed `challenge-ranking.ts` for pure shared math/time primitives.
 - Define naming conventions and export boundaries.
+
+**Target file/module structure (finalized)**
+
+- `src/lib/server/strava/ranking/shared-ranking.ts`
+  - Shared math/time primitives only (`sum*`, `getPreferredTime`).
+- `src/lib/server/strava/ranking/best-effort-ranking.ts`
+  - BEST_EFFORT ranking extraction/selection and highlight logic.
+- `src/lib/server/strava/ranking/cumulative-ranking.ts`
+  - CUMULATIVE ranking entrypoint (`computeCumulativeRankingValue`) with strategy-owned policy path.
+- `src/lib/server/strava/challenge-ranking.ts`
+  - Transitional compatibility barrel that re-exports shared primitives from `ranking/shared-ranking.ts`.
+- `src/lib/server/strava/participant-state/best-effort-state.ts`
+  - Orchestration-only state assembly; imports BEST_EFFORT ranking entrypoints.
+- `src/lib/server/strava/participant-state/cumulative-state.ts`
+  - Orchestration-only state assembly; imports CUMULATIVE entrypoint + shared aggregate helpers.
+
+**Naming and export boundaries**
+
+- Keep `compute*` naming for strategy entrypoints (`computeBestEffortRankingValue`, `computeCumulativeRankingValue`).
+- Keep `select*`/`extract*` naming for strategy-local internals.
+- Keep named exports only across `ranking/*` modules (no wildcard strategy re-exporting).
+- Keep import directions one-way:
+  - `participant-state/* -> ranking/*`
+  - `ranking/* -> ranking/shared-ranking.ts`
+  - no `best-effort-ranking <-> cumulative-ranking` cross-imports.
 
 **Acceptance criteria**
 - Import graph is acyclic and readable.
