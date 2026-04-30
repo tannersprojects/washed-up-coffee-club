@@ -1,25 +1,38 @@
 import type { Challenge, ChallengeContribution, ChallengeParticipant } from '$lib/db/schema';
 import { sumDistances, sumElapsedTimes, sumMovingTimes } from './ranking/shared-ranking';
-import { computeCumulativeRankingValue } from './ranking/cumulative-ranking';
+import {
+	computeCumulativeRankingValue,
+	selectCumulativeHighlightActivityId
+} from './ranking/cumulative-ranking';
 import type { ParticipantStateResult } from './participant-state';
 
 export function computeMetricsForCumulativeChallenge(
 	_participant: ChallengeParticipant,
 	challenge: Challenge,
-	activityId: number,
+	_activityId: number,
 	contributions: ChallengeContribution[]
 ): ParticipantStateResult {
+	const rankingMetric = challenge.rankingMetric;
 	const goalDistance = challenge.goalDistance ?? 0;
-	const totalDistance = sumDistances(contributions);
-	const goalMet = totalDistance >= goalDistance;
+	const resultDistance = sumDistances(contributions);
+	const goalMet = resultDistance >= goalDistance;
+
+	const resultMovingTimeSeconds = sumMovingTimes(contributions);
+	const resultElapsedTimeSeconds = sumElapsedTimes(contributions);
+	const rankingValueSeconds = computeCumulativeRankingValue({
+		contributions,
+		rankingMetric,
+		goalDistance
+	});
+	const highlightActivityId = selectCumulativeHighlightActivityId(contributions);
 
 	return {
 		metrics: {
-			resultDistance: totalDistance,
-			resultMovingTimeSeconds: sumMovingTimes(contributions),
-			resultElapsedTimeSeconds: sumElapsedTimes(contributions),
-			rankingValueSeconds: computeCumulativeRankingValue(contributions, challenge.rankingMetric),
-			highlightActivityId: activityId
+			resultDistance,
+			resultMovingTimeSeconds,
+			resultElapsedTimeSeconds,
+			rankingValueSeconds,
+			highlightActivityId
 		},
 		goalMet
 	};

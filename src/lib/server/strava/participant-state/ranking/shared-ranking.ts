@@ -1,3 +1,6 @@
+// TODO(challenge-ranking): Revisit whether shared split matching tolerance should remain 1%.
+export const DISTANCE_TOLERANCE_RATIO = 0.01;
+
 export function sumDistances(contributions: Array<{ distance: number | null }>): number {
 	return contributions.reduce((acc, c) => acc + (c.distance ?? 0), 0);
 }

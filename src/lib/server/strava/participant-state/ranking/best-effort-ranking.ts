@@ -6,9 +6,8 @@ import {
 } from '$lib/constants';
 import type { ChallengeContribution } from '$lib/db/schema';
 import type { ChallengeBestEffortsSnapshot } from '$lib/types/challenge-ranking';
-import { getPreferredTime } from './shared-ranking';
+import { DISTANCE_TOLERANCE_RATIO, getPreferredTime } from './shared-ranking';
 
-const DISTANCE_TOLERANCE_RATIO = 0.01;
 const FALLBACK_TOTAL_TOLERANCE_RATIO = 0.02;
 
 type HighlightContribution = {

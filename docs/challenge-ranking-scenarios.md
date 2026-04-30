@@ -122,8 +122,10 @@ Current logic accepts any run-type activity with no distance filter. Every run c
 - `resultDistance` = `sumDistances(contributions)`.
 - `resultMovingTimeSeconds` = `sumMovingTimes(contributions)`.
 - `resultElapsedTimeSeconds` = `sumElapsedTimes(contributions)`.
-- `rankingValueSeconds` = currently `computeRankingValueFromContributions(contributions, rankingMetric)` (best single-run metric time, same algorithm as BEST_EFFORT).
-- `highlightActivityId` = the **current** activity id (always the most recent activity that triggered processing).
+- `rankingValueSeconds`:
+  - for `ACTIVITY_TOTAL`, equals cumulative `sumMovingTimes(contributions)` (lower is better),
+  - for standard-distance metrics, uses CUMULATIVE Rule A then Rule B fallback.
+- `highlightActivityId` = longest contribution by distance; ties break by faster preferred time, then lower activity id.
 - `goalMet` = `totalDistance >= goalDistance`. Strategy returns this; dispatcher flips status to `COMPLETED` accordingly.
 
 ### Scenarios
@@ -138,7 +140,7 @@ refactor.
 | 3 | Goal = 13.1 miles, ranking metric = `STANDARD_HALF_MARATHON`, runner does HM in one contribution | Ranked via that activity's split/effort when available. | Rule A wins (single-activity best effort/split extraction); fallback not used. | TARGET defined |
 | 4 | Goal = 13.1 miles, ranking metric = `STANDARD_HALF_MARATHON`, runner spreads HM across many contributions | Often completes goal but remains unranked for `STANDARD_HALF_MARATHON` unless one activity alone contains a HM effort. | Attempt Rule A first; if unavailable, apply Rule B fallback to produce a ranking value from cumulative context. | TARGET defined |
 | 5 | Goal = 13.1 miles, ranking metric = `STANDARD_HALF_MARATHON`, runner totals 14 miles (single or many contributions) | Same split behavior as above; extra distance does not change extraction mode. | Same extraction order: Rule A first, Rule B only when needed. Exceeding goal does not disable either path. | TARGET defined |
-| 6 | Goal = 13.1 miles, participant ends slightly short in meters vs canonical race distance (e.g. 21097m) | Strict comparisons can create "13.1 miles shown, but not 21097m" edge behavior depending on stored meter values and split availability. | Add a tolerance gate for cumulative fallback evaluation: if end-result distance is within 1-2% of goal distance, treat as close enough for time fallback usage. | TARGET defined |
+| 6 | Goal = 13.1 miles, participant ends slightly short in meters vs canonical race distance (e.g. 21097m) | Strict comparisons can create "13.1 miles shown, but not 21097m" edge behavior depending on stored meter values and split availability. | Add a 1% tolerance gate for cumulative fallback evaluation: if end-result distance is within 1% of goal distance, treat as close enough for time fallback usage. | TARGET defined |
 
 Interpretation note: tolerance is a recovery mechanism for real-world rounding/GPS variance and
 should be deterministic and documented.
@@ -151,9 +153,9 @@ For cumulative challenges:
 2. **Ranking extraction order for standard-distance metrics:**
    - First try **Rule A** (single-activity best effort/split extraction).
    - If Rule A fails and participant is otherwise eligible, apply **Rule B** cumulative fallback.
-3. **Ranking visibility gate:** do not display rank/time before participant completion.
+3. **Ranking visibility gate:** do not display rank/time before participant completion; in-progress participants may still show progress totals.
 4. **Rule B fallback quality target:** Rule B should produce a value as close as possible to the true ranking distance metric.
-5. **Tolerance fallback:** allow a 1-2% distance tolerance check for near-goal outcomes when deciding whether fallback ranking can be used. This does not bypass completion.
+5. **Tolerance fallback:** allow a 1% distance tolerance check for near-goal outcomes when deciding whether fallback ranking can be used. This does not bypass completion.
 6. **Rule B time source:** use cumulative `movingTime` (store both moving + elapsed in DB; ranking derivation prefers moving time).
 7. **Units:** persist canonical distances in meters; admin input may be miles/km and is converted server-side.
 8. **Over-goal totals are valid:** going beyond goal (e.g. 14 miles in a 13.1-mile challenge) is allowed and should not penalize ranking extraction.
@@ -165,7 +167,6 @@ For cumulative challenges:
 
 ### Known open questions
 
-- Exact tolerance constant: lock to a single value (1% or 2%) and apply consistently.
 - Tie-breaking policy across all ranking modes (not only Rule B): define deterministic ordering if times are equal.
 - UPDATE/DELETE webhook behavior remains TODO (expected low impact, mostly metadata updates).
 - Minimum-contribution guardrails are intentionally deferred for now.
@@ -199,3 +200,4 @@ Not functional. The validator and state strategy are stubs guarded by `TODO(segm
 - `best_effort` split matching switched to name-first (`RANKING_METRIC_BEST_EFFORT_NAME` in `src/lib/constants/challenge.ts`); the existing 1% `DISTANCE_TOLERANCE_RATIO` is retained as a defensive fallback that emits a `console.warn` when it rescues a name miss, so the mapping table can be corrected.
 - Renamed `result_moving_time_total` -> `result_moving_time_seconds` and added `result_elapsed_time_seconds` on `challenge_participants`. BEST_EFFORT now populates both columns from the highlighted contribution (strict, no moving->elapsed fallback server-side). CUMULATIVE populates both as `sumMovingTimes` / `sumElapsedTimes`. SEGMENT_RACE passes through cached values. Validators stopped collapsing missing `movingTime` into `elapsedTime` on insert; contributions now store exactly what Strava reports. UI layer owns any fallback display logic.
 - Promoted `idx_contribution_unique` to `uniqueIndex('uniq_contribution_participant_activity')`; contribution insert now uses `onConflictDoNothing` to handle concurrent webhook redelivery.
+- CUMULATIVE `ACTIVITY_TOTAL` ranking now uses cumulative moving-time totals (`sumMovingTimes`) instead of fastest single activity time.
