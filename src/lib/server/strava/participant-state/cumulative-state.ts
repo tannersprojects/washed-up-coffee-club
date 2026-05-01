@@ -6,6 +6,7 @@ import {
 } from './ranking/cumulative-ranking';
 import type { ParticipantStateResult } from './participant-state';
 
+// TODO: This may not need to take in participant and activityId as parameters
 export function computeMetricsForCumulativeChallenge(
 	_participant: ChallengeParticipant,
 	challenge: Challenge,
