@@ -49,8 +49,8 @@ VALUES (
   'The "Sunday Scaries" Half', 
   'Shake off the weekend with a half marathon.',
   'cumulative', 
-  'activity_total',
-  21097, -- 21.1 km in meters
+  'standard_half_marathon',
+  21083, -- 13.1 miles converted to meters (rounded)
   CURRENT_DATE::timestamp with time zone,    -- Today at 00:00:00+00
   (CURRENT_DATE + 1)::timestamp with time zone + TIME '23:59:59', -- Tomorrow at 23:59:59+00
   'active',

@@ -149,7 +149,7 @@ function isCumulativeRuleBEligible({
 	if (rankingMetric === RANKING_METRIC.ACTIVITY_TOTAL) return false;
 	if (goalDistance == null || goalDistance <= 0) return false;
 	if (targetMetricDistance == null || targetMetricDistance <= 0) return false;
-	if (goalDistance !== targetMetricDistance) return false;
+	if (!isGoalDistanceCompatibleWithMetricDistance(goalDistance, targetMetricDistance)) return false;
 	if (!isWithinCumulativeFallbackDistanceTolerance(totalDistance, targetMetricDistance)) {
 		return false;
 	}
@@ -166,6 +166,15 @@ function isWithinCumulativeFallbackDistanceTolerance(
 
 	const minimumEligibleDistance = targetMetricDistance * (1 - DISTANCE_TOLERANCE_RATIO);
 	return totalDistance >= minimumEligibleDistance;
+}
+
+function isGoalDistanceCompatibleWithMetricDistance(
+	goalDistance: number,
+	targetMetricDistance: number
+): boolean {
+	const minimumCompatibleGoal = targetMetricDistance * (1 - DISTANCE_TOLERANCE_RATIO);
+	const maximumCompatibleGoal = targetMetricDistance * (1 + DISTANCE_TOLERANCE_RATIO);
+	return goalDistance >= minimumCompatibleGoal && goalDistance <= maximumCompatibleGoal;
 }
 
 function deriveCumulativeRuleBTime({
