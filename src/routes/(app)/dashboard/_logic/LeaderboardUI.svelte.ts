@@ -138,6 +138,10 @@ export class LeaderboardUI {
 		const statusB = STATUS_ORDER[b.status ?? ''] ?? 4;
 		if (statusA !== statusB) return statusA - statusB;
 
+		const rankableA = this.isParticipantRankable(a);
+		const rankableB = this.isParticipantRankable(b);
+		if (rankableA !== rankableB) return rankableA ? -1 : 1;
+
 		// NONE ranking metric: sort by distance desc, tie-break on faster moving time.
 		if (this.rankingMetric === RANKING_METRIC.NONE) {
 			const distA = a.resultDistance ?? -1;
@@ -166,10 +170,7 @@ export class LeaderboardUI {
 				(c) => c.stravaActivityId === participant.highlightActivityId
 			) ?? null;
 
-		const isRanked =
-			this.rankingMetric === RANKING_METRIC.NONE
-				? participant.resultDistance != null
-				: participant.rankingValueSeconds != null;
+		const isRanked = this.isParticipantRankable(participant);
 
 		const { primaryValue, primaryLabel, secondaryLine } = this.getPrimaryAndSecondary(participant);
 
@@ -223,8 +224,9 @@ export class LeaderboardUI {
 		}
 
 		if (type === CHALLENGE_TYPE.CUMULATIVE) {
+			const canShowRanking = this.isParticipantRankable(participant);
 			const primaryValue =
-				participant.rankingValueSeconds != null
+				canShowRanking && participant.rankingValueSeconds != null
 					? formatTime(participant.rankingValueSeconds)
 					: '--';
 			const parts: string[] = [];
@@ -279,5 +281,20 @@ export class LeaderboardUI {
 			primaryLabel: 'Segment time',
 			secondaryLine: parts.join(' · ')
 		};
+	}
+
+	private isParticipantRankable(participant: ChallengeParticipantWithRelations): boolean {
+		if (
+			this.challengeType === CHALLENGE_TYPE.CUMULATIVE &&
+			participant.status !== PARTICIPANT_STATUS.COMPLETED
+		) {
+			return false;
+		}
+
+		if (this.rankingMetric === RANKING_METRIC.NONE) {
+			return participant.resultDistance != null;
+		}
+
+		return participant.rankingValueSeconds != null;
 	}
 }

@@ -1,0 +1,507 @@
+{
+  "info": {
+    "name": "Test Create Activity - Cumulative Scenarios",
+    "_postman_id": "f1f4d8a5-7f24-4f19-bfc8-8f0f7f1ff6d7",
+    "description": "Postman collection derived from docs/dev/test-create-activity-cumulative-scenarios.md. Covers bad request validation and cumulative ranking scenarios for POST /api/dev/test-create-activity.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "BASE_URL",
+      "value": "http://localhost:5173/api/dev/test-create-activity",
+      "type": "string"
+    },
+    {
+      "key": "PROFILE_ID",
+      "value": "d0c2c0e0-1111-4444-8888-000000000007",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1) Bad Request Scenarios",
+      "item": [
+        {
+          "name": "BR-1 Missing Content-Type",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}",
+              "host": [
+                "{{BASE_URL}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 400', function () {",
+                  "  pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error mentions Content-Type', function () {",
+                  "  pm.expect(pm.response.text()).to.include('Content-Type must be application/json');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "BR-2 Invalid JSON Body",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{invalid",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}",
+              "host": [
+                "{{BASE_URL}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 400', function () {",
+                  "  pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error mentions valid JSON', function () {",
+                  "  pm.expect(pm.response.text()).to.include('Request body must be valid JSON');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "BR-3 Empty JSON Object",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}",
+              "host": [
+                "{{BASE_URL}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 400', function () {",
+                  "  pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error mentions request body required', function () {",
+                  "  pm.expect(pm.response.text()).to.include('Request body is required');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "BR-4 Unexpected Top-Level Field",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"profileId\": \"{{PROFILE_ID}}\",\n  \"foo\": \"bar\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}",
+              "host": [
+                "{{BASE_URL}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 400', function () {",
+                  "  pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error mentions unexpected field', function () {",
+                  "  pm.expect(pm.response.text()).to.include('Unexpected request body field: foo');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "BR-5 Invalid startDate",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"profileId\": \"{{PROFILE_ID}}\",\n  \"startDate\": \"not-a-date\",\n  \"overrides\": {\n    \"id\": 970001\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}",
+              "host": [
+                "{{BASE_URL}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 400', function () {",
+                  "  pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error mentions valid ISO date', function () {",
+                  "  pm.expect(pm.response.text()).to.include('startDate must be a valid ISO date string');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "BR-6 Invalid overrides.id",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"profileId\": \"{{PROFILE_ID}}\",\n  \"startDate\": \"2026-04-29T12:00:00.000Z\",\n  \"overrides\": {\n    \"id\": -1\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}",
+              "host": [
+                "{{BASE_URL}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 400', function () {",
+                  "  pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error mentions positive integer id', function () {",
+                  "  pm.expect(pm.response.text()).to.include('overrides.id must be a positive integer');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2) CUMULATIVE Scenario Set",
+      "item": [
+        {
+          "name": "C-A Rule A Success (HM Cascade)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"profileId\": \"{{PROFILE_ID}}\",\n  \"bestEffortsMode\": \"injectHalfMarathonCascade\",\n  \"halfMarathonEffortTimeSeconds\": 5600,\n  \"halfMarathonEffortSource\": \"moving\",\n  \"cascadeStrategy\": \"vdotDefault\",\n  \"rounding\": \"nearestSecond\",\n  \"overrides\": {\n    \"id\": 980301,\n    \"distance\": 21083,\n    \"movingTime\": 5650,\n    \"elapsedTime\": 5720,\n    \"sportType\": \"Run\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}",
+              "host": [
+                "{{BASE_URL}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response ok is true', function () {",
+                  "  var data = pm.response.json();",
+                  "  pm.expect(data.ok).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "C-B Rule B Fallback (Single 13.1mi Run)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"profileId\": \"{{PROFILE_ID}}\",\n  \"bestEffortsMode\": \"none\",\n  \"overrides\": {\n    \"id\": 980302,\n    \"distance\": 21083,\n    \"movingTime\": 6000,\n    \"elapsedTime\": 6100,\n    \"sportType\": \"Run\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}",
+              "host": [
+                "{{BASE_URL}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response ok is true', function () {",
+                  "  var data = pm.response.json();",
+                  "  pm.expect(data.ok).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "C-C1 Multi-Contribution Step 1 (Below Goal)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"profileId\": \"{{PROFILE_ID}}\",\n  \"bestEffortsMode\": \"none\",\n  \"overrides\": {\n    \"id\": 980303,\n    \"distance\": 12000,\n    \"movingTime\": 3600,\n    \"elapsedTime\": 3700,\n    \"sportType\": \"Run\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}",
+              "host": [
+                "{{BASE_URL}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response ok is true', function () {",
+                  "  var data = pm.response.json();",
+                  "  pm.expect(data.ok).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "C-C2 Multi-Contribution Step 2 (Cross Goal)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"profileId\": \"{{PROFILE_ID}}\",\n  \"bestEffortsMode\": \"none\",\n  \"overrides\": {\n    \"id\": 980304,\n    \"distance\": 10083,\n    \"movingTime\": 3200,\n    \"elapsedTime\": 3290,\n    \"sportType\": \"Run\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}",
+              "host": [
+                "{{BASE_URL}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response ok is true', function () {",
+                  "  var data = pm.response.json();",
+                  "  pm.expect(data.ok).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "C-D Duplicate Activity Id (Idempotency)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"profileId\": \"{{PROFILE_ID}}\",\n  \"bestEffortsMode\": \"none\",\n  \"overrides\": {\n    \"id\": 980304,\n    \"distance\": 9999,\n    \"movingTime\": 9999,\n    \"elapsedTime\": 9999,\n    \"sportType\": \"Run\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}",
+              "host": [
+                "{{BASE_URL}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response ok is true', function () {",
+                  "  var data = pm.response.json();",
+                  "  pm.expect(data.ok).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

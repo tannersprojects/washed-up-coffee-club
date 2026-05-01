@@ -27,6 +27,6 @@ export function validateActivityForCumulativeChallenge(
 		splitsMetric: activity.splitsMetric ?? null,
 		splitsStandard: activity.splitsStandard ?? null,
 		laps: activity.laps ?? null,
-		activitySnapshot: buildActivitySnapshot(activity)
+		activitySnapshot: buildActivitySnapshot(activity) // TODO: In the future, should I remove this? Not sure what the purpose is
 	};
 }
