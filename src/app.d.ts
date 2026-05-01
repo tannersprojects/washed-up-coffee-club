@@ -1,4 +1,5 @@
 import type { Session, SupabaseClient, User } from '@supabase/supabase-js';
+import type { Logger } from 'pino';
 import type { Profile } from '$lib/db/schema';
 
 // See https://svelte.dev/docs/kit/types#app.d.ts
@@ -12,6 +13,8 @@ declare global {
 			session: Session | null;
 			user: User | null;
 			profile: Profile | null;
+			requestId: string;
+			logger: Logger;
 		}
 		interface PageData {
 			session: Session | null;
