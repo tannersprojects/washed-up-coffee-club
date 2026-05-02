@@ -48,7 +48,6 @@ function handleBestEffortValidation(
 	activity: StravaDetailedActivityCamel,
 	challenge: Challenge
 ): ValidationResult {
-	console.log(`Validating activity ${activity.id} for best-effort challenge ${challenge.id}`);
 	return validateActivityForBestEffortChallenge(activity, challenge);
 }
 
@@ -56,7 +55,6 @@ function handleCumulativeValidation(
 	activity: StravaDetailedActivityCamel,
 	challenge: Challenge
 ): ValidationResult {
-	console.log(`Validating activity ${activity.id} for cumulative challenge ${challenge.id}`);
 	return validateActivityForCumulativeChallenge(activity, challenge);
 }
 
@@ -64,6 +62,5 @@ function handleSegmentRaceValidation(
 	activity: StravaDetailedActivityCamel,
 	challenge: Challenge
 ): ValidationResult {
-	console.log(`Validating activity ${activity.id} for segment-race challenge ${challenge.id}`);
 	return validateActivityForSegmentRaceChallenge(activity, challenge);
 }

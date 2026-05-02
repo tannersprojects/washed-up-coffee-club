@@ -1,4 +1,3 @@
-export async function processUpdateActivity() {
-	console.log('processUpdateActivity');
+export async function processUpdateActivity(): Promise<void> {
 	return;
 }

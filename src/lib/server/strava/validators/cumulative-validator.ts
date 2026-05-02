@@ -7,16 +7,12 @@ export function validateActivityForCumulativeChallenge(
 	activity: StravaDetailedActivityCamel,
 	challenge: Challenge
 ): ValidationResult {
+	void challenge;
 	const isRun = isRunActivity(activity.sportType);
 
 	if (!isRun) {
-		console.log(`Activity ${activity.id} is not a run`);
 		return { valid: false };
 	}
-
-	console.log(`Activity ${activity.id} is valid for challenge ${challenge.id}`);
-	console.log(`Activity distance: ${activity.distance}`);
-	console.log(`Elapsed time: ${activity.elapsedTime}`);
 
 	return {
 		valid: true,

@@ -7,7 +7,11 @@ import {
 	type Challenge,
 	type ChallengeParticipant
 } from '$lib/db/schema';
+import { LoggingEvents } from '$lib/server/logging/events';
+import { logger } from '$lib/server/logging/logger';
+import type { WebhookCorrelation } from '$lib/server/strava/webhook-correlation';
 import { and, eq, gte, lte } from 'drizzle-orm';
+import type { Logger } from 'pino';
 import type { StravaDetailedActivityCamel } from '$lib/types/strava';
 import {
 	validateActivityForChallenge,
@@ -25,11 +29,29 @@ type ParticipantChallengePair = {
 
 type ValidatedContribution = Extract<ValidationResult, { valid: true }>;
 
+function createActivityLogger(
+	profileId: string,
+	activityId: number,
+	correlation: WebhookCorrelation | undefined,
+	parentLogger?: Logger
+): Logger {
+	const base = parentLogger ?? logger;
+	return base.child({
+		profileId,
+		activityId,
+		...(correlation?.webhookLogId != null && { webhookLogId: correlation.webhookLogId })
+	});
+}
+
 /** Process a newly created Strava activity against all active challenges the profile participates in */
 export async function processCreateActivity(
 	activity: StravaDetailedActivityCamel,
-	profileId: string
+	profileId: string,
+	correlation?: WebhookCorrelation,
+	parentLogger?: Logger
 ): Promise<void> {
+	const log = createActivityLogger(profileId, activity.id, correlation, parentLogger);
+
 	const activityDate = new Date(activity.startDate);
 
 	const participantChallengePairs = await findActiveParticipantChallengesForProfileOnDate(
@@ -37,32 +59,73 @@ export async function processCreateActivity(
 		activityDate
 	);
 
-	console.log(
-		`Found ${participantChallengePairs.length} active challenges for profile ${profileId}`
-	);
+	const eligibleChallengeCount = participantChallengePairs.length;
+
+	let contributionsInserted = 0;
+	let contributionsDuplicate = 0;
+	let challengesSkippedValidation = 0;
+	let participantStateUpdates = 0;
 
 	for (const { participant, challenge } of participantChallengePairs) {
-		console.log(`Validating activity ${activity.id} for challenge ${challenge.id}`);
 		const validation = validateActivityForChallenge(activity, challenge);
 
-		console.log(`Validation result: ${JSON.stringify(validation)}`);
 		if (!validation.valid) {
+			challengesSkippedValidation++;
+			log.debug(
+				{
+					event: LoggingEvents.STRAVA_ACTIVITY_CHALLENGE_SKIPPED,
+					challengeId: challenge.id,
+					challengeType: challenge.type,
+					participantId: participant.id
+				},
+				'challenge validation skipped'
+			);
 			continue;
 		}
 
-		console.log(`Inserting contribution for activity ${activity.id}`);
+		log.debug(
+			{
+				event: LoggingEvents.STRAVA_ACTIVITY_CHALLENGE_VALIDATED,
+				challengeId: challenge.id,
+				challengeType: challenge.type,
+				participantId: participant.id,
+				distance: validation.distance
+			},
+			'challenge validated'
+		);
+
 		const inserted = await insertChallengeContribution(
 			participant.id,
 			activity,
 			validation,
 			activityDate
 		);
+
 		if (!inserted) {
-			console.log(`Existing contribution found for activity ${activity.id}`);
+			contributionsDuplicate++;
+			log.debug(
+				{
+					event: LoggingEvents.STRAVA_ACTIVITY_CHALLENGE_DUPLICATE,
+					challengeId: challenge.id,
+					participantId: participant.id,
+					activityId: activity.id
+				},
+				'duplicate contribution'
+			);
 			continue;
 		}
 
-		// This finds all contributions for the participant for a certain challenge
+		contributionsInserted++;
+		log.debug(
+			{
+				event: LoggingEvents.STRAVA_ACTIVITY_CHALLENGE_CONTRIBUTION_INSERTED,
+				challengeId: challenge.id,
+				participantId: participant.id,
+				activityId: activity.id
+			},
+			'contribution inserted'
+		);
+
 		const participantContributions = await findContributionsForParticipant(participant.id);
 
 		const nextState = computeNextParticipantState(
@@ -71,10 +134,42 @@ export async function processCreateActivity(
 			activity.id,
 			participantContributions
 		);
-		console.log(`Next participant state: ${JSON.stringify(nextState)}`);
 
 		await updateChallengeParticipantAggregates(participant.id, nextState);
+		participantStateUpdates++;
+
+		log.info(
+			{
+				event: LoggingEvents.STRAVA_ACTIVITY_PARTICIPANT_STATE_UPDATED,
+				profileId,
+				challengeId: challenge.id,
+				participantId: participant.id,
+				activityId: activity.id,
+				resultDistance: nextState.resultDistance,
+				rankingValueSeconds: nextState.rankingValueSeconds,
+				resultMovingTimeSeconds: nextState.resultMovingTimeSeconds,
+				resultElapsedTimeSeconds: nextState.resultElapsedTimeSeconds,
+				status: nextState.status,
+				highlightActivityId: nextState.highlightActivityId
+			},
+			'participant state updated'
+		);
 	}
+
+	log.info(
+		{
+			event: LoggingEvents.STRAVA_ACTIVITY_CREATE_SUMMARY,
+			profileId,
+			activityId: activity.id,
+			eligibleChallengeCount,
+			contributionsInserted,
+			contributionsDuplicate,
+			challengesSkippedValidation,
+			participantStateUpdates,
+			...(correlation?.webhookLogId != null && { webhookLogId: correlation.webhookLogId })
+		},
+		'activity create summary'
+	);
 }
 
 async function findActiveParticipantChallengesForProfileOnDate(

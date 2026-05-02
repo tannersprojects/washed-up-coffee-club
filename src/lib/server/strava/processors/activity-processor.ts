@@ -1,11 +1,18 @@
 import { WEBHOOK_ASPECT_TYPE, type WebhookAspectType } from '$lib/constants/strava';
 import type { StravaConnection } from '$lib/db/schema';
+import { LoggingEvents } from '$lib/server/logging/events';
+import { logger, serializeError } from '$lib/server/logging/logger';
+import type { WebhookCorrelation } from '$lib/server/strava/webhook-correlation';
 import { getActivityById } from '../client';
 import { processCreateActivity } from './activity-create-processor';
 import { processDeleteActivity } from './activity-delete-processor';
 import { processUpdateActivity } from './activity-update-processor';
 
-type ActivityHandler = (activityId: number, connection: StravaConnection) => Promise<void>;
+type ActivityHandler = (
+	activityId: number,
+	connection: StravaConnection,
+	correlation?: WebhookCorrelation
+) => Promise<void>;
 
 const ACTIVITY_HANDLERS = {
 	[WEBHOOK_ASPECT_TYPE.CREATE]: handleCreateActivity,
@@ -16,33 +23,58 @@ const ACTIVITY_HANDLERS = {
 export async function processActivity(
 	aspectType: WebhookAspectType,
 	activityId: number,
-	connection: StravaConnection
+	connection: StravaConnection,
+	correlation?: WebhookCorrelation
 ): Promise<void> {
-	const handler = ACTIVITY_HANDLERS[aspectType];
-	await handler(activityId, connection);
+	const procLog = logger.child({
+		profileId: connection.profileId,
+		activityId,
+		aspectType,
+		...(correlation?.webhookLogId != null && { webhookLogId: correlation.webhookLogId })
+	});
+
+	procLog.info({ event: LoggingEvents.STRAVA_ACTIVITY_PROCESS_STARTED }, 'activity process started');
+
+	try {
+		const handler = ACTIVITY_HANDLERS[aspectType];
+		await handler(activityId, connection, correlation);
+		procLog.info({ event: LoggingEvents.STRAVA_ACTIVITY_PROCESS_COMPLETED }, 'activity process completed');
+	} catch (err) {
+		procLog.error(
+			{ event: LoggingEvents.STRAVA_ACTIVITY_PROCESS_FAILED, err: serializeError(err) },
+			'activity process failed'
+		);
+		throw err;
+	}
 }
 
 async function handleCreateActivity(
 	activityId: number,
-	connection: StravaConnection
+	connection: StravaConnection,
+	correlation?: WebhookCorrelation
 ): Promise<void> {
 	const activity = await getActivityById(activityId, true, connection.accessToken);
-	console.log(`Processing CREATE for activity ${activity.id} on profile ${connection.profileId}`);
-	await processCreateActivity(activity, connection.profileId);
+	await processCreateActivity(activity, connection.profileId, correlation);
 }
 
 async function handleUpdateActivity(
 	activityId: number,
-	_connection: StravaConnection
+	connection: StravaConnection,
+	correlation?: WebhookCorrelation
 ): Promise<void> {
-	console.log(`UPDATE for activity ${activityId} — not yet implemented`);
+	void activityId;
+	void connection;
+	void correlation;
 	await processUpdateActivity();
 }
 
 async function handleDeleteActivity(
 	activityId: number,
-	_connection: StravaConnection
+	connection: StravaConnection,
+	correlation?: WebhookCorrelation
 ): Promise<void> {
-	console.log(`DELETE for activity ${activityId} — not yet implemented`);
+	void activityId;
+	void connection;
+	void correlation;
 	await processDeleteActivity();
 }
