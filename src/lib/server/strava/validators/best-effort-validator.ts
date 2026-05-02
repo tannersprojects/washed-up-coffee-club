@@ -11,18 +11,13 @@ export function validateActivityForBestEffortChallenge(
 	const isRun = isRunActivity(activity.sportType);
 
 	if (!isRun) {
-		console.log(`Activity ${activity.id} is not a run`);
 		return { valid: false };
 	}
 
 	if (activity.distance < goalDistance) {
-		console.log(
-			`Activity ${activity.id} is less than the goal distance ${activity.distance} < ${goalDistance}`
-		);
 		return { valid: false };
 	}
 
-	console.log(`Activity ${activity.id} is valid for challenge ${challenge.id}`);
 	return {
 		valid: true,
 		distance: activity.distance,

@@ -86,7 +86,7 @@ const HM_CASCADE_METRICS = [
 const HM_METERS = RANKING_METRIC_DISTANCES[RANKING_METRIC.STANDARD_HALF_MARATHON] ?? 21097;
 const HM_DISTANCE_TOLERANCE_RATIO = 0.01;
 
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ locals: { logger }, request }) => {
 	if (!dev) throw error(404, 'Not found');
 
 	const body = await parseBody(request);
@@ -115,7 +115,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	// so default the activity's startDate to now to guarantee it falls in range.
 	activity.startDate = resolvedStartDate;
 
-	await processCreateActivity(activity, profileId);
+	await processCreateActivity(activity, profileId, undefined, logger);
 
 	return json({
 		ok: true,
@@ -187,7 +187,10 @@ function validateBody(body: unknown): asserts body is TestCreateActivityBody {
 		parsedBody.bestEffortsMode != null &&
 		!BEST_EFFORTS_MODE_VALUES.has(parsedBody.bestEffortsMode)
 	) {
-		throw error(400, 'bestEffortsMode must be fixture, none, stripHalfMarathon, or injectHalfMarathonCascade');
+		throw error(
+			400,
+			'bestEffortsMode must be fixture, none, stripHalfMarathon, or injectHalfMarathonCascade'
+		);
 	}
 	if (
 		parsedBody.halfMarathonEffortSource != null &&
@@ -210,7 +213,10 @@ function validateBody(body: unknown): asserts body is TestCreateActivityBody {
 			!Number.isInteger(parsedBody.halfMarathonEffortTimeSeconds) ||
 			parsedBody.halfMarathonEffortTimeSeconds <= 0)
 	) {
-		throw error(400, 'halfMarathonEffortTimeSeconds must be a positive integer when injectHalfMarathonCascade is used');
+		throw error(
+			400,
+			'halfMarathonEffortTimeSeconds must be a positive integer when injectHalfMarathonCascade is used'
+		);
 	}
 }
 
@@ -332,8 +338,7 @@ function isHalfMarathonEffort(
 	const name = effort.name ?? '';
 	const byName = name.toLowerCase() === 'half-marathon'.toLowerCase();
 	const byDistance =
-		distance != null &&
-		Math.abs(distance - HM_METERS) / HM_METERS <= HM_DISTANCE_TOLERANCE_RATIO;
+		distance != null && Math.abs(distance - HM_METERS) / HM_METERS <= HM_DISTANCE_TOLERANCE_RATIO;
 	return byName || byDistance;
 }
 
