@@ -100,7 +100,11 @@
 				<!-- Multiple challenges: sidebar (fixed) + stage -->
 				<DashboardChallengesSidebar profile={data.profile} />
 
-				<div class="flex flex-1 flex-col">
+				<!-- md:pl-80 must match sidebar w-80 (DashboardChallengesSidebar) -->
+				<div
+					class="flex flex-1 flex-col transition-[padding] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+					class:md:pl-80={dashboard.sidebarExpanded}
+				>
 					<div class="mx-auto w-full max-w-7xl flex-1 px-6 pt-8">
 						{@render challengeStage()}
 					</div>

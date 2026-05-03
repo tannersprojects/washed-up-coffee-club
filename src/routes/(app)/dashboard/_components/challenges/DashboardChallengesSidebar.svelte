@@ -9,7 +9,6 @@
 	const dashboard = getDashboardContext();
 	const challenges = $derived(dashboard.challenges);
 	const selectedChallengeId = $derived(dashboard.selectedChallengeId);
-	const expanded = $derived(dashboard.sidebarPinned || dashboard.sidebarHovered);
 
 	let leaveTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -37,9 +36,10 @@
 	}
 </script>
 
+<!-- Keep w-80 in sync with main column md:pl-80 in +page.svelte -->
 <aside
 	class="fixed top-24 bottom-0 left-0 z-40 hidden w-80 flex-col border-r border-white/10 bg-[#050505] shadow-2xl transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] md:flex"
-	style="transform: translateX({expanded ? '0' : '-100%'});"
+	style="transform: translateX({dashboard.sidebarExpanded ? '0' : '-100%'});"
 	onmouseenter={handleMouseEnter}
 	onmouseleave={handleMouseLeave}
 >
@@ -74,7 +74,7 @@
 </aside>
 
 <!-- Floating trigger button (only visible when collapsed) -->
-{#if !expanded}
+{#if !dashboard.sidebarExpanded}
 	<button
 		type="button"
 		onclick={handleToggle}

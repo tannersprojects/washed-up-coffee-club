@@ -7,6 +7,7 @@ export class DashboardUI {
 	challenges: ChallengeUI[];
 	selectedChallengeId: string | null;
 	selectedChallenge: ChallengeUI | null;
+	sidebarExpanded: boolean;
 
 	// UI state
 	activeTab: DashboardTab;
@@ -42,6 +43,7 @@ export class DashboardUI {
 			if (!this.selectedChallengeId) return null;
 			return this.findChallengeById(this.selectedChallengeId!) ?? null;
 		});
+		this.sidebarExpanded = $derived(this.sidebarPinned || this.sidebarHovered);
 	}
 
 	private findChallengeById(id: string): ChallengeUI | undefined {
