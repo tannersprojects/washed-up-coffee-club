@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { tick } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import {
 		CHALLENGE_TYPE,
@@ -23,6 +22,7 @@
 	import { kmToMeters, metersToKm, metersToMiles, milesToMeters } from '$lib/utils/distance.js';
 	import type { ChallengeAdmin } from '../../_logic/ChallengeAdmin.svelte.js';
 	import { getAdminContext } from '../../_logic/context.js';
+	import AdminDeleteConfirmDialog from '../AdminDeleteConfirmDialog.svelte';
 
 	type Props = {
 		challenge: ChallengeAdmin;
@@ -79,7 +79,6 @@
 	let showDeleteConfirm = $state(false);
 	let isDeleting = $state(false);
 	let deleteFormEl: HTMLFormElement | undefined = $state();
-	let deleteCancelButtonEl: HTMLButtonElement | undefined = $state();
 
 	const deleteDialogTitleId = $derived(`challenge-delete-title-${challenge.id}`);
 	const deleteDialogDescId = $derived(`challenge-delete-desc-${challenge.id}`);
@@ -99,23 +98,6 @@
 		showDeleteConfirm = false;
 		deleteFormEl.requestSubmit();
 	}
-
-	$effect(() => {
-		if (!showDeleteConfirm) return;
-
-		void tick().then(() => {
-			deleteCancelButtonEl?.focus();
-		});
-
-		const onKeyDown = (e: KeyboardEvent) => {
-			if (e.key === 'Escape') {
-				e.preventDefault();
-				closeDeleteConfirm();
-			}
-		};
-		window.addEventListener('keydown', onKeyDown);
-		return () => window.removeEventListener('keydown', onKeyDown);
-	});
 </script>
 
 {#if isEditing}
@@ -139,7 +121,8 @@
 				}
 			};
 		}}
-		class="flex flex-col gap-3 rounded-lg border border-white/10 bg-white/5 p-4"
+		class="flex flex-col gap-3 rounded-lg border border-white/10 bg-white/5 p-4 border-l-4"
+		style="border-left-color: var(--accent-lime);"
 	>
 		<input type="hidden" name="id" value={challenge.id} />
 		<input
@@ -244,7 +227,10 @@
 		</div>
 	</form>
 {:else}
-	<div class="rounded-lg border border-white/10 bg-white/5 p-4">
+	<div
+		class="flex flex-col rounded-lg border border-white/10 bg-white/5 p-4 border-l-4"
+		style="border-left-color: var(--accent-lime);"
+	>
 		<div class="flex items-start justify-between gap-2">
 			<div>
 				<h3 class="font-mono text-sm font-bold text-white">{challenge.title}</h3>
@@ -254,14 +240,12 @@
 						getChallengeTimeStateFromDates(challenge.startDate, challenge.endDate).status
 					]}
 				</p>
-				<p class="mt-2 font-mono text-[10px] text-white/40">
-					{formatDate(challenge.startDate)} – {formatDate(challenge.endDate)}
-				</p>
-				<p class="mt-1 font-mono text-[10px] text-white/40">
+				<p class="mt-2 font-mono text-xs text-white/60">
+					{formatDate(challenge.startDate)} – {formatDate(challenge.endDate)} ·
 					{challenge.participantCount} participants
 				</p>
 			</div>
-			<div class="flex items-center gap-2">
+			<div class="flex shrink-0 items-center gap-2">
 				<button
 					onclick={startEditing}
 					class="font-mono text-[10px] text-(--accent-lime) hover:underline">Edit</button
@@ -299,53 +283,21 @@
 		{/if}
 	</div>
 
-	{#if showDeleteConfirm}
-		<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-			<button
-				type="button"
-				class="absolute inset-0 cursor-default bg-black/70"
-				aria-label="Close dialog"
-				onclick={closeDeleteConfirm}
-			></button>
-			<div
-				role="dialog"
-				tabindex="-1"
-				aria-modal="true"
-				aria-labelledby={deleteDialogTitleId}
-				aria-describedby={deleteDialogDescId}
-				class="relative z-10 w-full max-w-md rounded-lg border border-white/10 bg-black/90 p-4 shadow-xl outline-none backdrop-blur-sm"
-			>
-				<h2 id={deleteDialogTitleId} class="font-mono text-sm font-bold text-white">
-					Delete challenge?
-				</h2>
-				<p id={deleteDialogDescId} class="mt-2 font-mono text-xs text-white/70">
-					This will permanently remove <span class="font-bold text-white">{challenge.title}</span>
-					{#if challenge.participantCount > 0}
-						({challenge.participantCount} participants joined).
-					{:else}
-						.
-					{/if}
-					This cannot be undone.
-				</p>
-				<div class="mt-4 flex justify-end gap-2">
-					<button
-						bind:this={deleteCancelButtonEl}
-						type="button"
-						onclick={closeDeleteConfirm}
-						class="rounded border border-white/20 px-3 py-1.5 font-mono text-xs text-white/80 hover:bg-white/5"
-					>
-						Cancel
-					</button>
-					<button
-						type="button"
-						disabled={isDeleting}
-						onclick={submitDelete}
-						class="rounded bg-red-600 px-3 py-1.5 font-mono text-xs font-bold text-white hover:bg-red-500 disabled:opacity-50"
-					>
-						Delete
-					</button>
-				</div>
-			</div>
-		</div>
-	{/if}
+	<AdminDeleteConfirmDialog
+		open={showDeleteConfirm}
+		title="Delete challenge?"
+		titleId={deleteDialogTitleId}
+		descriptionId={deleteDialogDescId}
+		busy={isDeleting}
+		onclose={closeDeleteConfirm}
+		onconfirm={submitDelete}
+	>
+		This will permanently remove <span class="font-bold text-white">{challenge.title}</span>
+		{#if challenge.participantCount > 0}
+			({challenge.participantCount} participants joined).
+		{:else}
+			.
+		{/if}
+		This cannot be undone.
+	</AdminDeleteConfirmDialog>
 {/if}
