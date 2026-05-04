@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { tick } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import {
 		CHALLENGE_TYPE,
@@ -74,6 +75,47 @@
 		[CHALLENGE_STATUS.ACTIVE]: 'Active',
 		[CHALLENGE_STATUS.COMPLETED]: 'Completed'
 	};
+
+	let showDeleteConfirm = $state(false);
+	let isDeleting = $state(false);
+	let deleteFormEl: HTMLFormElement | undefined = $state();
+	let deleteCancelButtonEl: HTMLButtonElement | undefined = $state();
+
+	const deleteDialogTitleId = $derived(`challenge-delete-title-${challenge.id}`);
+	const deleteDialogDescId = $derived(`challenge-delete-desc-${challenge.id}`);
+
+	function openDeleteConfirm() {
+		showDeleteConfirm = true;
+	}
+
+	function closeDeleteConfirm() {
+		if (isDeleting) return;
+		showDeleteConfirm = false;
+	}
+
+	function submitDelete() {
+		if (!deleteFormEl || isDeleting) return;
+		isDeleting = true;
+		showDeleteConfirm = false;
+		deleteFormEl.requestSubmit();
+	}
+
+	$effect(() => {
+		if (!showDeleteConfirm) return;
+
+		void tick().then(() => {
+			deleteCancelButtonEl?.focus();
+		});
+
+		const onKeyDown = (e: KeyboardEvent) => {
+			if (e.key === 'Escape') {
+				e.preventDefault();
+				closeDeleteConfirm();
+			}
+		};
+		window.addEventListener('keydown', onKeyDown);
+		return () => window.removeEventListener('keydown', onKeyDown);
+	});
 </script>
 
 {#if isEditing}
@@ -127,7 +169,7 @@
 			bind:value={editRankingMetric}
 			class="rounded border border-white/20 bg-black/40 px-3 py-2 font-mono text-sm text-white"
 		>
-			{#each rankingMetricOptions as opt}
+			{#each rankingMetricOptions as opt (opt.value)}
 				<option value={opt.value}>{opt.label}</option>
 			{/each}
 		</select>
@@ -225,12 +267,14 @@
 					class="font-mono text-[10px] text-(--accent-lime) hover:underline">Edit</button
 				>
 				<form
+					bind:this={deleteFormEl}
 					method="POST"
 					action="?/deleteChallenge"
 					use:enhance={() => {
 						const id = challenge.id;
 						admin.removeChallengeOptimistic(id);
 						return async ({ result, update }) => {
+							isDeleting = false;
 							if (result.type === 'success') {
 								await update();
 							} else {
@@ -242,8 +286,10 @@
 					class="inline-flex"
 				>
 					<input type="hidden" name="id" value={challenge.id} />
-					<button type="submit" class="font-mono text-[10px] text-red-400 hover:underline"
-						>Delete</button
+					<button
+						type="button"
+						onclick={openDeleteConfirm}
+						class="font-mono text-[10px] text-red-400 hover:underline">Delete</button
 					>
 				</form>
 			</div>
@@ -252,4 +298,54 @@
 			<p class="mt-2 line-clamp-2 font-mono text-xs text-white/70">{challenge.description}</p>
 		{/if}
 	</div>
+
+	{#if showDeleteConfirm}
+		<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+			<button
+				type="button"
+				class="absolute inset-0 cursor-default bg-black/70"
+				aria-label="Close dialog"
+				onclick={closeDeleteConfirm}
+			></button>
+			<div
+				role="dialog"
+				tabindex="-1"
+				aria-modal="true"
+				aria-labelledby={deleteDialogTitleId}
+				aria-describedby={deleteDialogDescId}
+				class="relative z-10 w-full max-w-md rounded-lg border border-white/10 bg-black/90 p-4 shadow-xl outline-none backdrop-blur-sm"
+			>
+				<h2 id={deleteDialogTitleId} class="font-mono text-sm font-bold text-white">
+					Delete challenge?
+				</h2>
+				<p id={deleteDialogDescId} class="mt-2 font-mono text-xs text-white/70">
+					This will permanently remove <span class="font-bold text-white">{challenge.title}</span>
+					{#if challenge.participantCount > 0}
+						({challenge.participantCount} participants joined).
+					{:else}
+						.
+					{/if}
+					This cannot be undone.
+				</p>
+				<div class="mt-4 flex justify-end gap-2">
+					<button
+						bind:this={deleteCancelButtonEl}
+						type="button"
+						onclick={closeDeleteConfirm}
+						class="rounded border border-white/20 px-3 py-1.5 font-mono text-xs text-white/80 hover:bg-white/5"
+					>
+						Cancel
+					</button>
+					<button
+						type="button"
+						disabled={isDeleting}
+						onclick={submitDelete}
+						class="rounded bg-red-600 px-3 py-1.5 font-mono text-xs font-bold text-white hover:bg-red-500 disabled:opacity-50"
+					>
+						Delete
+					</button>
+				</div>
+			</div>
+		</div>
+	{/if}
 {/if}
