@@ -22,6 +22,7 @@
 	import { kmToMeters, metersToKm, metersToMiles, milesToMeters } from '$lib/utils/distance.js';
 	import type { ChallengeAdmin } from '../../_logic/ChallengeAdmin.svelte.js';
 	import { getAdminContext } from '../../_logic/context.js';
+	import AdminDeleteConfirmDialog from '../AdminDeleteConfirmDialog.svelte';
 
 	type Props = {
 		challenge: ChallengeAdmin;
@@ -74,6 +75,29 @@
 		[CHALLENGE_STATUS.ACTIVE]: 'Active',
 		[CHALLENGE_STATUS.COMPLETED]: 'Completed'
 	};
+
+	let showDeleteConfirm = $state(false);
+	let isDeleting = $state(false);
+	let deleteFormEl: HTMLFormElement | undefined = $state();
+
+	const deleteDialogTitleId = $derived(`challenge-delete-title-${challenge.id}`);
+	const deleteDialogDescId = $derived(`challenge-delete-desc-${challenge.id}`);
+
+	function openDeleteConfirm() {
+		showDeleteConfirm = true;
+	}
+
+	function closeDeleteConfirm() {
+		if (isDeleting) return;
+		showDeleteConfirm = false;
+	}
+
+	function submitDelete() {
+		if (!deleteFormEl || isDeleting) return;
+		isDeleting = true;
+		showDeleteConfirm = false;
+		deleteFormEl.requestSubmit();
+	}
 </script>
 
 {#if isEditing}
@@ -97,7 +121,8 @@
 				}
 			};
 		}}
-		class="flex flex-col gap-3 rounded-lg border border-white/10 bg-white/5 p-4"
+		class="flex flex-col gap-3 rounded-lg border border-white/10 bg-white/5 p-4 border-l-4"
+		style="border-left-color: var(--accent-lime);"
 	>
 		<input type="hidden" name="id" value={challenge.id} />
 		<input
@@ -127,7 +152,7 @@
 			bind:value={editRankingMetric}
 			class="rounded border border-white/20 bg-black/40 px-3 py-2 font-mono text-sm text-white"
 		>
-			{#each rankingMetricOptions as opt}
+			{#each rankingMetricOptions as opt (opt.value)}
 				<option value={opt.value}>{opt.label}</option>
 			{/each}
 		</select>
@@ -202,7 +227,10 @@
 		</div>
 	</form>
 {:else}
-	<div class="rounded-lg border border-white/10 bg-white/5 p-4">
+	<div
+		class="flex flex-col rounded-lg border border-white/10 bg-white/5 p-4 border-l-4"
+		style="border-left-color: var(--accent-lime);"
+	>
 		<div class="flex items-start justify-between gap-2">
 			<div>
 				<h3 class="font-mono text-sm font-bold text-white">{challenge.title}</h3>
@@ -212,25 +240,25 @@
 						getChallengeTimeStateFromDates(challenge.startDate, challenge.endDate).status
 					]}
 				</p>
-				<p class="mt-2 font-mono text-[10px] text-white/40">
-					{formatDate(challenge.startDate)} – {formatDate(challenge.endDate)}
-				</p>
-				<p class="mt-1 font-mono text-[10px] text-white/40">
+				<p class="mt-2 font-mono text-xs text-white/60">
+					{formatDate(challenge.startDate)} – {formatDate(challenge.endDate)} ·
 					{challenge.participantCount} participants
 				</p>
 			</div>
-			<div class="flex items-center gap-2">
+			<div class="flex shrink-0 items-center gap-2">
 				<button
 					onclick={startEditing}
 					class="font-mono text-[10px] text-(--accent-lime) hover:underline">Edit</button
 				>
 				<form
+					bind:this={deleteFormEl}
 					method="POST"
 					action="?/deleteChallenge"
 					use:enhance={() => {
 						const id = challenge.id;
 						admin.removeChallengeOptimistic(id);
 						return async ({ result, update }) => {
+							isDeleting = false;
 							if (result.type === 'success') {
 								await update();
 							} else {
@@ -242,8 +270,10 @@
 					class="inline-flex"
 				>
 					<input type="hidden" name="id" value={challenge.id} />
-					<button type="submit" class="font-mono text-[10px] text-red-400 hover:underline"
-						>Delete</button
+					<button
+						type="button"
+						onclick={openDeleteConfirm}
+						class="font-mono text-[10px] text-red-400 hover:underline">Delete</button
 					>
 				</form>
 			</div>
@@ -252,4 +282,22 @@
 			<p class="mt-2 line-clamp-2 font-mono text-xs text-white/70">{challenge.description}</p>
 		{/if}
 	</div>
+
+	<AdminDeleteConfirmDialog
+		open={showDeleteConfirm}
+		title="Delete challenge?"
+		titleId={deleteDialogTitleId}
+		descriptionId={deleteDialogDescId}
+		busy={isDeleting}
+		onclose={closeDeleteConfirm}
+		onconfirm={submitDelete}
+	>
+		This will permanently remove <span class="font-bold text-white">{challenge.title}</span>
+		{#if challenge.participantCount > 0}
+			({challenge.participantCount} participants joined).
+		{:else}
+			.
+		{/if}
+		This cannot be undone.
+	</AdminDeleteConfirmDialog>
 {/if}

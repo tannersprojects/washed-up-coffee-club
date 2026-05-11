@@ -4,6 +4,7 @@
 	import { getFormActionError } from '$lib/utils/form-action.js';
 	import type { MemoryAdmin } from '../../_logic/MemoryAdmin.svelte.js';
 	import { getAdminContext } from '../../_logic/context.js';
+	import AdminDeleteConfirmDialog from '../AdminDeleteConfirmDialog.svelte';
 
 	type Props = {
 		memory: MemoryAdmin;
@@ -24,6 +25,29 @@
 			editIsActive = memory.isActive;
 		}
 	});
+
+	let showDeleteConfirm = $state(false);
+	let isDeleting = $state(false);
+	let deleteFormEl: HTMLFormElement | undefined = $state();
+
+	const deleteDialogTitleId = $derived(`memory-delete-title-${memory.id}`);
+	const deleteDialogDescId = $derived(`memory-delete-desc-${memory.id}`);
+
+	function openDeleteConfirm() {
+		showDeleteConfirm = true;
+	}
+
+	function closeDeleteConfirm() {
+		if (isDeleting) return;
+		showDeleteConfirm = false;
+	}
+
+	function submitDelete() {
+		if (!deleteFormEl || isDeleting) return;
+		isDeleting = true;
+		showDeleteConfirm = false;
+		deleteFormEl.requestSubmit();
+	}
 </script>
 
 {#if isEditing}
@@ -40,7 +64,8 @@
 					toast.error(errorMsg);
 				}
 			}}
-		class="flex flex-col gap-3 rounded-lg border border-white/10 bg-white/5 p-4"
+		class="flex flex-col gap-3 rounded-lg border border-white/10 bg-white/5 p-4 border-l-4"
+		style="border-left-color: var(--accent-lime);"
 	>
 		<input type="hidden" name="id" value={memory.id} />
 		<input
@@ -81,15 +106,18 @@
 	</form>
 {:else}
 	<div
-		class="flex flex-col overflow-hidden rounded-lg border border-white/10 bg-white/5 {!memory.isActive
+		class="flex flex-col overflow-hidden rounded-lg border border-white/10 bg-white/5 border-l-4 {!memory.isActive
 			? 'opacity-60'
 			: ''}"
+		style="border-left-color: var(--accent-lime);"
 	>
 		<img src={memory.src} alt={memory.caption} class="aspect-square w-full object-cover" />
-		<div class="flex flex-col gap-2 p-3">
-			<p class="line-clamp-2 font-mono text-xs text-white/80">{memory.caption}</p>
-			<p class="font-mono text-[10px] text-white/40">Order: {memory.sortOrder}</p>
-			<div class="flex items-center gap-2">
+		<div class="flex flex-col gap-2 p-4">
+			<p class="line-clamp-2 font-mono text-sm font-bold text-white">{memory.caption}</p>
+			<p class="font-mono text-xs text-white/60">
+				Order: {memory.sortOrder} · {memory.isActive ? 'Active' : 'Inactive'}
+			</p>
+			<div class="flex shrink-0 items-center gap-2">
 				<button
 					type="button"
 					onclick={() => (isEditing = true)}
@@ -98,12 +126,14 @@
 					Edit
 				</button>
 				<form
+					bind:this={deleteFormEl}
 					method="POST"
 					action="?/deleteMemory"
 					use:enhance={() => {
 						const id = memory.id;
 						admin.removeMemoryOptimistic(id);
 						return async ({ result, update }) => {
+							isDeleting = false;
 							if (result.type === 'success') {
 								await update();
 							} else {
@@ -116,11 +146,28 @@
 					class="inline-flex"
 				>
 					<input type="hidden" name="id" value={memory.id} />
-					<button type="submit" class=" font-mono text-[10px] text-red-400 hover:underline">
+					<button
+						type="button"
+						onclick={openDeleteConfirm}
+						class="font-mono text-[10px] text-red-400 hover:underline"
+					>
 						Delete
 					</button>
 				</form>
 			</div>
 		</div>
 	</div>
+
+	<AdminDeleteConfirmDialog
+		open={showDeleteConfirm}
+		title="Delete memory?"
+		titleId={deleteDialogTitleId}
+		descriptionId={deleteDialogDescId}
+		busy={isDeleting}
+		onclose={closeDeleteConfirm}
+		onconfirm={submitDelete}
+	>
+		This will permanently remove this image and
+		<span class="font-bold text-white">{memory.caption}</span>. This cannot be undone.
+	</AdminDeleteConfirmDialog>
 {/if}
