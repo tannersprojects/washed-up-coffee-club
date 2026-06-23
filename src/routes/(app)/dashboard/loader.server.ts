@@ -1,6 +1,6 @@
 import { db } from '$lib/db';
 import { challengeParticipantsTable, challengesTable } from '$lib/db/schema';
-import { eq, and, inArray } from 'drizzle-orm';
+import { eq, and, inArray, desc } from 'drizzle-orm';
 import type {
 	DashboardChallenge,
 	ChallengeParticipantWithRelations
@@ -17,7 +17,8 @@ export async function loadChallenge(challengeId: string) {
 
 export async function loadActiveChallenges() {
 	return await db.query.challengesTable.findMany({
-		where: eq(challengesTable.isActive, true)
+		where: eq(challengesTable.isActive, true),
+		orderBy: [desc(challengesTable.startDate)]
 	});
 }
 

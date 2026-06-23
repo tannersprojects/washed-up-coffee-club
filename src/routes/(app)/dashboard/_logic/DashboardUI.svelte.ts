@@ -1,6 +1,7 @@
 import { ChallengeUI } from './ChallengeUI.svelte.js';
 import type { DashboardContextData, DashboardChallenge } from '$lib/types/dashboard.js';
 import { DASHBOARD_TAB, type DashboardTab, type DistanceUnit } from '$lib/constants';
+import { resolveSelectedChallengeId } from './resolveSelectedChallengeId.js';
 
 export class DashboardUI {
 	// Data
@@ -21,7 +22,8 @@ export class DashboardUI {
 	constructor(
 		dashboardChallenges: DashboardChallenge[],
 		profileId: string,
-		distanceUnit: DistanceUnit
+		distanceUnit: DistanceUnit,
+		initialSelectedChallengeId: string | null = null
 	) {
 		this.distanceUnit = distanceUnit;
 
@@ -29,8 +31,10 @@ export class DashboardUI {
 		const challenges = dashboardChallenges.map((c) => new ChallengeUI(c, profileId, distanceUnit));
 		this.challenges = $state(challenges);
 
-		// Selection
-		this.selectedChallengeId = $state(challenges[0]?.id || null);
+		// Selection — resolve from server-validated initial ID (already sorted latest first)
+		this.selectedChallengeId = $state(
+			resolveSelectedChallengeId(dashboardChallenges, initialSelectedChallengeId)
+		);
 
 		// UI state
 		this.activeTab = $state(DASHBOARD_TAB.Challenges);
@@ -51,7 +55,12 @@ export class DashboardUI {
 	}
 
 	static fromServerData(data: DashboardContextData, distanceUnit: DistanceUnit) {
-		return new DashboardUI(data.dashboardChallenges, data.profile.id, distanceUnit);
+		return new DashboardUI(
+			data.dashboardChallenges,
+			data.profile.id,
+			distanceUnit,
+			data.initialSelectedChallengeId
+		);
 	}
 
 	// Selection

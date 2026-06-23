@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import { DASHBOARD_TAB } from '$lib/constants';
+	import { page } from '$app/state';
+	import { goto } from '$app/navigation';
+	import { DASHBOARD_TAB, DASHBOARD_QUERY_PARAM } from '$lib/constants';
 
 	import EmptyState from '$lib/components/EmptyState.svelte';
 	import AppFooter from '$lib/components/AppFooter.svelte';
@@ -13,6 +15,10 @@
 		DashboardTabs
 	} from './_components';
 	import { setDashboardContext } from './_logic/context.js';
+	import {
+		resolveSelectedChallengeId,
+		buildDashboardChallengeHref
+	} from './_logic/resolveSelectedChallengeId.js';
 	import { Menu } from 'lucide-svelte';
 
 	let { data } = $props();
@@ -28,6 +34,59 @@
 	// Stop countdown timers when navigating away
 	$effect(() => {
 		return () => dashboard.cleanup();
+	});
+
+	// --- URL ↔ selection sync ---
+	// Tracks whether the initial ?challenge= param has been written. Used to
+	// distinguish replace (init / fix invalid) from push (deliberate switch).
+	let hasCompletedInitialUrlSync = false;
+	// Prevents the selection→URL effect from firing while URL→selection is
+	// updating state, breaking any feedback loop.
+	let syncingFromUrl = false;
+
+	// A) URL → selection: handles browser back/forward and manual URL edits.
+	// Only reacts to URL/data changes — untrack selection so a user click doesn't
+	// get reverted while the URL is still catching up.
+	$effect(() => {
+		const param = page.url.searchParams.get(DASHBOARD_QUERY_PARAM.challenge);
+		const resolved = resolveSelectedChallengeId(data.dashboardChallenges, param);
+		if (!resolved) return;
+
+		const currentSelection = untrack(() => dashboard.selectedChallengeId);
+		if (resolved === currentSelection) return;
+
+		syncingFromUrl = true;
+		dashboard.selectChallenge(resolved);
+		syncingFromUrl = false;
+	});
+
+	// B) Selection → URL: writes the param on first load, on user switches,
+	// and immediately corrects invalid/stale params.
+	$effect(() => {
+		if (syncingFromUrl) return;
+		if (dashboard.challenges.length === 0) return;
+
+		const id = dashboard.selectedChallengeId;
+		if (!id) return;
+
+		const current = page.url.searchParams.get(DASHBOARD_QUERY_PARAM.challenge);
+		if (current === id) {
+			hasCompletedInitialUrlSync = true;
+			return;
+		}
+
+		const href = buildDashboardChallengeHref(page.url.pathname, page.url.search, id);
+
+		// replaceState on first auto-set and on invalid param correction so bad
+		// bookmarks or bare /dashboard visits don't pollute history.
+		// pushState on subsequent user-driven switches so back undoes them.
+		const isInvalidParam =
+			current !== null && !data.dashboardChallenges.some((c) => c.id === current);
+		const useReplace = !hasCompletedInitialUrlSync || isInvalidParam;
+
+		goto(href, { replaceState: useReplace, keepFocus: true, noScroll: true });
+
+		hasCompletedInitialUrlSync = true;
 	});
 
 	let drawerTriggerRef = $state<HTMLButtonElement | undefined>(undefined);

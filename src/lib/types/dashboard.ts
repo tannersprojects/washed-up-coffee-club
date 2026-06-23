@@ -28,6 +28,7 @@ export type DashboardChallenge = Challenge & {
 export type DashboardContextData = {
 	profile: Profile;
 	dashboardChallenges: DashboardChallenge[];
+	initialSelectedChallengeId: string | null;
 };
 
 /**
