@@ -1,3 +1,7 @@
+export const DASHBOARD_QUERY_PARAM = {
+	challenge: 'challenge'
+} as const;
+
 export const DASHBOARD_TAB = {
 	Challenges: 'challenges',
 	ClubLeaderboard: 'club-leaderboard'

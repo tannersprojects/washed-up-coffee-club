@@ -11,9 +11,11 @@ import {
 	loadChallengeParticipantWithRelations,
 	loadDashboardData
 } from './loader.server.js';
+import { resolveSelectedChallengeId } from './_logic/resolveSelectedChallengeId.js';
+import { DASHBOARD_QUERY_PARAM } from '$lib/constants';
 import type { PageServerLoad } from './$types.js';
 
-export const load: PageServerLoad = async ({ parent }): Promise<DashboardContextData> => {
+export const load: PageServerLoad = async ({ parent, url }): Promise<DashboardContextData> => {
 	const { profile } = await parent();
 
 	if (!profile) {
@@ -21,10 +23,13 @@ export const load: PageServerLoad = async ({ parent }): Promise<DashboardContext
 	}
 
 	const dashboardChallenges = await loadDashboardData();
+	const challengeParam = url.searchParams.get(DASHBOARD_QUERY_PARAM.challenge);
+	const initialSelectedChallengeId = resolveSelectedChallengeId(dashboardChallenges, challengeParam);
 
 	return {
 		profile,
-		dashboardChallenges
+		dashboardChallenges,
+		initialSelectedChallengeId
 	};
 };
 
